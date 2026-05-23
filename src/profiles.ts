@@ -35,6 +35,7 @@ export interface ProfileSwitchPlan extends ResolvedProfile {
   outputPath: string;
   command: string;
   written: boolean;
+  backupPath: string | null;
 }
 
 type ProfileJsonShape = {
@@ -70,6 +71,33 @@ async function readProfileJson(profileRoot: string, profileName: string): Promis
   return { filePath, profile: JSON.parse(raw) as ProfileJsonShape };
 }
 
+async function pathExists(targetPath: string): Promise<boolean> {
+  try {
+    await fs.access(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function timestampForFileName(): string {
+  return new Date().toISOString().replace(/[:.]/g, "-");
+}
+
+async function backupFileIfExists(filePath: string, backupDirectory: string): Promise<string | null> {
+  if (!await pathExists(filePath)) {
+    return null;
+  }
+
+  await fs.mkdir(backupDirectory, { recursive: true });
+  const backupPath = path.join(
+    backupDirectory,
+    `${path.basename(filePath)}.${timestampForFileName()}.bak`
+  );
+  await fs.copyFile(filePath, backupPath);
+  return backupPath;
+}
+
 export async function readEditableProfile(profileName: string, profileRoot: string = DEFAULT_PROFILE_ROOT): Promise<{ filePath: string; profile: ProfileJsonShape }> {
   return readProfileJson(profileRoot, profileName);
 }
@@ -78,12 +106,13 @@ export async function writeEditableProfile(
   profileName: string,
   profile: ProfileJsonShape,
   profileRoot: string = DEFAULT_PROFILE_ROOT
-): Promise<string> {
+): Promise<{ filePath: string; backupPath: string | null }> {
   assertValidProfileName(profileName);
   const filePath = path.join(profileRoot, `${profileName}.json`);
   await fs.mkdir(path.dirname(filePath), { recursive: true });
+  const backupPath = await backupFileIfExists(filePath, path.join(profileRoot, "_backups"));
   await fs.writeFile(filePath, `${JSON.stringify(profile, null, 2)}\n`, "utf-8");
-  return filePath;
+  return { filePath, backupPath };
 }
 
 function extractServerMap(profile: ProfileJsonShape): Record<string, unknown> {
@@ -192,9 +221,11 @@ export async function prepareProfileSwitch(
     options.outputPath ??
     path.join(profileRoot, "_generated", `${profileName}.mcp.json`);
   const command = `claude --mcp-config ${quoteCommandPath(outputPath)}`;
+  let backupPath: string | null = null;
 
   if (options.write === true) {
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
+    backupPath = await backupFileIfExists(outputPath, path.join(path.dirname(outputPath), "_backups"));
     await fs.writeFile(outputPath, JSON.stringify(resolved.config, null, 2), "utf-8");
   }
 
@@ -202,7 +233,8 @@ export async function prepareProfileSwitch(
     ...resolved,
     outputPath,
     command,
-    written: options.write === true
+    written: options.write === true,
+    backupPath
   };
 }
 

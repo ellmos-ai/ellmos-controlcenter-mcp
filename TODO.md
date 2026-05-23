@@ -2,7 +2,6 @@
 
 ## P0
 
-- Dashboard-UX testen und absichern
 - Profilschema robuster lesen
 - Katalogformat stabilisieren
 - Fehlerausgaben für fehlende Profile nutzerfreundlicher machen

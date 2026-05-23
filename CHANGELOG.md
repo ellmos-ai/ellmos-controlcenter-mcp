@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.1 - 2026-05-23
+
+- Alpha-Release für GitHub und npm vorbereitet
+- Dashboard-Schreibaktionen mit Bestätigung und Backups abgesichert
+- Security-Dokumentation ergänzt
+- README mit Alpha-Hinweis, npm-Installation und Grenzen aktualisiert
+
 ## 0.1.0 - 2026-05-23
 
 - Neues MVP-Repo für `ellmos-controlcenter-mcp` angelegt

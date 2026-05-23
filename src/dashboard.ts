@@ -21,6 +21,12 @@ import {
 const DEFAULT_HOST = process.env.ELLMOS_DASHBOARD_HOST ?? "127.0.0.1";
 const DEFAULT_PORT = Number.parseInt(process.env.ELLMOS_DASHBOARD_PORT ?? "3737", 10);
 
+class DashboardRequestError extends Error {
+  constructor(message: string, readonly statusCode: number = 400) {
+    super(message);
+  }
+}
+
 function sendJson(response: http.ServerResponse, statusCode: number, payload: unknown): void {
   response.writeHead(statusCode, {
     "content-type": "application/json; charset=utf-8",
@@ -44,6 +50,12 @@ async function readBody(request: http.IncomingMessage): Promise<Record<string, u
   }
   if (chunks.length === 0) return {};
   return JSON.parse(Buffer.concat(chunks).toString("utf-8")) as Record<string, unknown>;
+}
+
+function requireConfirmed(body: Record<string, unknown>, action: string): void {
+  if (body.confirm !== true) {
+    throw new DashboardRequestError(`${action} requires confirm: true`);
+  }
 }
 
 async function getOverview() {
@@ -81,9 +93,9 @@ async function setServerEnabled(profileName: string, serverName: string, enabled
   }
 
   const updatedProfile = { ...editable.profile, mcpServers };
-  const filePath = await writeEditableProfile(profileName, updatedProfile, DEFAULT_PROFILE_ROOT);
+  const writeResult = await writeEditableProfile(profileName, updatedProfile, DEFAULT_PROFILE_ROOT);
   const resolved = await resolveClaudeProfile(profileName, DEFAULT_PROFILE_ROOT);
-  return { filePath, resolved };
+  return { ...writeResult, resolved };
 }
 
 function htmlPage(): string {
@@ -308,11 +320,21 @@ function htmlPage(): string {
       document.querySelectorAll("[data-server]").forEach((input) => {
         input.addEventListener("change", async (event) => {
           const checkbox = event.target;
-          await api("/api/profiles/" + selectedProfile + "/servers/" + checkbox.dataset.server, {
-            method: "POST",
-            body: JSON.stringify({ enabled: checkbox.checked })
-          });
-          await loadOverview();
+          const verb = checkbox.checked ? "aktivieren" : "deaktivieren";
+          if (!confirm("Server '" + checkbox.dataset.server + "' im Profil '" + selectedProfile + "' " + verb + "? Vor dem Schreiben wird ein Backup erzeugt.")) {
+            checkbox.checked = !checkbox.checked;
+            return;
+          }
+          try {
+            await api("/api/profiles/" + selectedProfile + "/servers/" + checkbox.dataset.server, {
+              method: "POST",
+              body: JSON.stringify({ enabled: checkbox.checked, confirm: true })
+            });
+            await loadOverview();
+          } catch (error) {
+            checkbox.checked = !checkbox.checked;
+            throw error;
+          }
         });
       });
     }
@@ -334,9 +356,10 @@ function htmlPage(): string {
     });
     document.getElementById("refresh").addEventListener("click", loadOverview);
     document.getElementById("write-config").addEventListener("click", async () => {
+      if (!confirm("Generierte MCP-Config für Profil '" + selectedProfile + "' schreiben? Eine vorhandene Datei wird vorher gesichert.")) return;
       const result = await api("/api/profiles/" + selectedProfile + "/generated-config", {
         method: "POST",
-        body: JSON.stringify({ write: true })
+        body: JSON.stringify({ write: true, confirm: true })
       });
       document.getElementById("output").textContent = JSON.stringify(result, null, 2);
     });
@@ -372,6 +395,9 @@ async function handleApi(request: http.IncomingMessage, response: http.ServerRes
   if (request.method === "POST" && generatedConfigMatch) {
     const profileName = decodeURIComponent(generatedConfigMatch[1]);
     const body = await readBody(request);
+    if (body.write === true) {
+      requireConfirmed(body, "Writing generated MCP config");
+    }
     sendJson(response, 200, await prepareProfileSwitch(profileName, {
       write: body.write === true,
       outputPath: typeof body.outputPath === "string" ? body.outputPath : undefined
@@ -384,6 +410,7 @@ async function handleApi(request: http.IncomingMessage, response: http.ServerRes
     const profileName = decodeURIComponent(serverToggleMatch[1]);
     const serverName = decodeURIComponent(serverToggleMatch[2]);
     const body = await readBody(request);
+    requireConfirmed(body, "Changing profile server activation");
     sendJson(response, 200, await setServerEnabled(profileName, serverName, body.enabled === true));
     return;
   }
@@ -405,7 +432,8 @@ export function createDashboardServer(): http.Server {
       }
       sendJson(response, 404, { error: "Not found" });
     })().catch((error) => {
-      sendJson(response, 500, { error: error instanceof Error ? error.message : String(error) });
+      const statusCode = error instanceof DashboardRequestError ? error.statusCode : 500;
+      sendJson(response, statusCode, { error: error instanceof Error ? error.message : String(error) });
     });
   });
 }

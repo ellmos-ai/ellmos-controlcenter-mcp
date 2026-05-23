@@ -6,6 +6,7 @@
 - TypeScript-MCP-Grundgerüst vorhanden
 - Erste Discovery- und Profiltools implementiert
 - Tests für Kernlogik vorhanden
+- Version `0.1.0-alpha.1` für GitHub/npm-Release vorbereitet
 
 ## Was der MVP schon kann
 
@@ -22,6 +23,7 @@
 - Profile auf erste Policy-Hinweise auditieren
 - Lokales Browser-Dashboard starten
 - Server pro Profil über das Dashboard aktivieren/deaktivieren
+- Schreibaktionen mit Bestätigung und Backup absichern
 
 ## Was noch fehlt
 

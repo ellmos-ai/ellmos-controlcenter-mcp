@@ -8,12 +8,15 @@
 
 *Part of the [ellmos-ai](https://github.com/ellmos-ai) family.*
 
-`ellmos-controlcenter-mcp` ist als Infrastruktur-Schicht über euren bestehenden MCP-Servern gedacht. Der erste MVP konzentriert sich bewusst auf **Discovery, Profilsicht und Empfehlungen**. Themen wie Gateway, Policy-Enforcement, Auth und langlebige Orchestrierung bleiben als nächste Ausbaustufen offen.
+`ellmos-controlcenter-mcp` ist als Infrastruktur-Schicht über euren bestehenden MCP-Servern gedacht. Der erste Alpha-Release konzentriert sich bewusst auf **Discovery, Profilsicht, Dashboard, Capability-Bundles und erste Policy-Audits**. Gateway, echtes Policy-Enforcement, Auth und Tool-Level-Rechte sind geplant, aber noch nicht als Sicherheitsgrenze umgesetzt.
+
+> **Alpha-Hinweis:** Diese Version ist nützlich für lokale Verwaltung und Preview-Tests. Sie ist noch kein abgesicherter MCP-Gateway und sollte nicht als Schutzschicht für untrusted Tools oder fremde Nutzer verwendet werden.
 
 ## Status
 
-- **Phase:** MVP / Alpha
-- **Repository:** Private preview under `ellmos-ai/ellmos-controlcenter-mcp`
+- **Phase:** Alpha
+- **Version:** `0.1.0-alpha.1`
+- **Repository:** `ellmos-ai/ellmos-controlcenter-mcp`
 - **CI:** `npm run test` and `npm run build`
 - **Ziel:** Lokalen MCP-Stack sichtbar und steuerbar machen
 - **Schwerpunkt:** Katalogisierung, Profilübersicht, Profilempfehlung
@@ -47,11 +50,36 @@ Standardadresse:
 http://127.0.0.1:3737
 ```
 
-Die GUI kann aktuell lokale Server anzeigen, Profile anzeigen, Server pro Profil aktivieren/deaktivieren, Profil-Audits zusammenfassen und eine generierte `--mcp-config` schreiben.
+Die GUI kann aktuell lokale Server anzeigen, Profile anzeigen, Server pro Profil aktivieren/deaktivieren, Profil-Audits zusammenfassen und eine generierte `--mcp-config` schreiben. Schreibaktionen verlangen eine Bestätigung und legen vor dem Überschreiben ein Backup an.
 
 ## ellmos Ecosystem Entry
 
 **ellmos ControlCenter MCP** verwaltet lokale MCP-Server, Claude-Profile, Capability-Bundles und erste Policy-Audits. Es ist der geplante Control-Plane- und Gateway-Baustein für Tool-Bloat-Management, Profilwechsel und spätere Tool-Level-Rechte im ellmos-Ökosystem.
+
+## Aktuelle Grenzen
+
+- Tool-Level-Rechte sind sichtbar geplant, aber noch nicht technisch durchgesetzt.
+- Ein aktivierter Backend-MCP-Server stellt weiterhin alle eigenen Tools bereit, solange kein Gateway davor geschaltet ist.
+- Das Dashboard ist ein lokales Admin-Werkzeug ohne Benutzerlogin.
+- Die i18n-Schicht ist noch nicht implementiert; die Alpha-Oberfläche ist deutschsprachig.
+
+## Installation via npm
+
+```bash
+npm install -g ellmos-controlcenter-mcp@alpha
+```
+
+MCP-Server starten:
+
+```bash
+ellmos-controlcenter
+```
+
+Dashboard starten:
+
+```bash
+ellmos-controlcenter-dashboard
+```
 
 ## Installation
 

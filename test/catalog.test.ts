@@ -16,7 +16,8 @@ import {
   readEditableProfile,
   resolveClaudeProfile,
   suggestProfile,
-  summarizeProfile
+  summarizeProfile,
+  writeEditableProfile
 } from "../src/profiles.js";
 import { auditResolvedProfile, summarizePolicyFindings } from "../src/policy.js";
 
@@ -182,6 +183,31 @@ describe("profile helpers", () => {
     expect(written.mcpServers.github.command).toBe("npx");
   });
 
+  it("backs up existing generated mcp config files before overwriting", async () => {
+    const root = await createTempDirectory("controlcenter-profile-root-");
+    const outputPath = path.join(root, "_generated", "base.mcp.json");
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+    await fs.writeFile(outputPath, JSON.stringify({ old: true }), "utf-8");
+    await fs.writeFile(
+      path.join(root, "base.json"),
+      JSON.stringify({
+        mcpServers: {
+          github: { command: "npx" }
+        }
+      }),
+      "utf-8"
+    );
+
+    const plan = await prepareProfileSwitch("base", {
+      profileRoot: root,
+      outputPath,
+      write: true
+    });
+
+    expect(plan.backupPath).not.toBeNull();
+    expect(JSON.parse(await fs.readFile(plan.backupPath ?? "", "utf-8"))).toEqual({ old: true });
+  });
+
   it("can read editable profiles from disk", async () => {
     const root = await createTempDirectory("controlcenter-profile-root-");
     await fs.writeFile(
@@ -197,6 +223,24 @@ describe("profile helpers", () => {
     const editable = await readEditableProfile("base", root);
     expect(editable.filePath).toContain("base.json");
     expect(extractServerNames(editable.profile)).toEqual(["github"]);
+  });
+
+  it("backs up existing editable profiles before writing", async () => {
+    const root = await createTempDirectory("controlcenter-profile-root-");
+    await fs.writeFile(
+      path.join(root, "base.json"),
+      JSON.stringify({
+        mcpServers: {
+          github: { command: "npx" }
+        }
+      }),
+      "utf-8"
+    );
+
+    const result = await writeEditableProfile("base", { mcpServers: {} }, root);
+
+    expect(result.backupPath).not.toBeNull();
+    expect(extractServerNames(JSON.parse(await fs.readFile(result.backupPath ?? "", "utf-8")))).toEqual(["github"]);
   });
 
   it("suggests ai-lab for MCP-oriented tasks", () => {
