@@ -10,3 +10,4 @@
 - Erstes Profil-Audit mit Policy-Findings ergänzt
 - `ROADMAP.md` und lokales Browser-Dashboard ergänzt
 - GitHub-CI und Emblem-Asset ergänzt
+- Logo auf ControlCenter-Siegel nach User-Vorlage umgestellt

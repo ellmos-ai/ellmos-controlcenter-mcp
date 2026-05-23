@@ -1,7 +1,7 @@
 # ellmos ControlCenter MCP
 
 <p align="center">
-  <img src="assets/controlcenter-emblem.svg" alt="ellmos ControlCenter MCP emblem" width="700">
+  <img src="assets/controlcenter-logo.svg" alt="ellmos ControlCenter MCP logo" width="420">
 </p>
 
 > Ein MCP-Server als Steuerzentrale für den lokalen MCP-Stack: Server entdecken, Profile lesen, passende Profile empfehlen und Kataloge erzeugen.
