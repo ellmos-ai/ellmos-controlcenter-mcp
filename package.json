@@ -1,0 +1,65 @@
+{
+  "name": "ellmos-controlcenter-mcp",
+  "version": "0.1.0",
+  "mcpName": "io.github.ellmos-ai/ellmos-controlcenter-mcp",
+  "description": "An MCP control plane server for local MCP stack discovery, profile inspection, and profile recommendation",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "ellmos-controlcenter": "dist/index.js",
+    "ellmos-controlcenter-dashboard": "dist/dashboard.js"
+  },
+  "files": [
+    "dist/",
+    "assets/",
+    "README.md",
+    "START.md",
+    "ARCHITECTURE.md",
+    "ROADMAP.md",
+    "STATE.md",
+    "DECISIONS.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node node_modules/typescript/bin/tsc",
+    "start": "node dist/index.js",
+    "dashboard": "node dist/dashboard.js",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "control-plane",
+    "profile-management",
+    "tool-discovery",
+    "ellmos",
+    "claude",
+    "ai-lab",
+    "mcp-server"
+  ],
+  "author": "Lukas (BACH)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ellmos-ai/ellmos-controlcenter-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ellmos-ai/ellmos-controlcenter-mcp/issues"
+  },
+  "homepage": "https://github.com/ellmos-ai/ellmos-controlcenter-mcp#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.6"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
