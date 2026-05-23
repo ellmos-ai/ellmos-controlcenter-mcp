@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-alpha.2 - 2026-05-23
+
+- CI-Lockfile-Reproduzierbarkeit auf Linux verbessert
+- `@emnapi/*` Dev-Dependencies für GitHub Actions stabilisiert
+
 ## 0.1.0-alpha.1 - 2026-05-23
 
 - Alpha-Release für GitHub und npm vorbereitet

@@ -15,7 +15,7 @@
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.1.0-alpha.1`
+- **Version:** `0.1.0-alpha.2`
 - **Repository:** `ellmos-ai/ellmos-controlcenter-mcp`
 - **CI:** `npm run test` and `npm run build`
 - **Ziel:** Lokalen MCP-Stack sichtbar und steuerbar machen

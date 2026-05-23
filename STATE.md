@@ -6,7 +6,7 @@
 - TypeScript-MCP-Grundgerüst vorhanden
 - Erste Discovery- und Profiltools implementiert
 - Tests für Kernlogik vorhanden
-- Version `0.1.0-alpha.1` für GitHub/npm-Release vorbereitet
+- Version `0.1.0-alpha.2` für GitHub/npm-Release vorbereitet
 
 ## Was der MVP schon kann
 
