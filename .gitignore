@@ -3,4 +3,4 @@ dist/
 coverage/
 *.log
 data/server-catalog.json
-
+_drafts/
