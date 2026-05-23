@@ -4,102 +4,119 @@
   <img src="assets/controlcenter-logo.jpg" alt="ellmos ControlCenter MCP logo" width="420">
 </p>
 
-> Ein MCP-Server als Steuerzentrale für den lokalen MCP-Stack: Server entdecken, Profile lesen, passende Profile empfehlen und Kataloge erzeugen.
+**🇩🇪 [Deutsche Version](README_de.md)**
 
 *Part of the [ellmos-ai](https://github.com/ellmos-ai) family.*
 
-`ellmos-controlcenter-mcp` ist als Infrastruktur-Schicht über euren bestehenden MCP-Servern gedacht. Der erste Alpha-Release konzentriert sich bewusst auf **Discovery, Profilsicht, Dashboard, Capability-Bundles und erste Policy-Audits**. Gateway, echtes Policy-Enforcement, Auth und Tool-Level-Rechte sind geplant, aber noch nicht als Sicherheitsgrenze umgesetzt.
+[![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org/)
 
-> **Alpha-Hinweis:** Diese Version ist nützlich für lokale Verwaltung und Preview-Tests. Sie ist noch kein abgesicherter MCP-Gateway und sollte nicht als Schutzschicht für untrusted Tools oder fremde Nutzer verwendet werden.
+An alpha-stage **Model Context Protocol (MCP) control plane** for local MCP stacks. ControlCenter discovers local MCP servers, reads Claude profile files, groups servers into capability bundles, recommends profiles for a task, builds catalogs, and provides an optional local dashboard.
+
+The first alpha release focuses on **discovery, profile visibility, dashboard workflows, capability bundles, and initial policy audits**. Gateway mode, enforced tool-level permissions, authentication, and hard security boundaries are planned, but are not implemented yet.
+
+> **Alpha note:** This version is useful for local administration and preview testing. It is not a hardened MCP gateway and should not be used as a security layer for untrusted tools or other users.
 
 ## Status
 
 - **Phase:** Alpha
 - **Version:** `0.1.0-alpha.2`
-- **Repository:** `ellmos-ai/ellmos-controlcenter-mcp`
-- **CI:** `npm run test` and `npm run build`
-- **Ziel:** Lokalen MCP-Stack sichtbar und steuerbar machen
-- **Schwerpunkt:** Katalogisierung, Profilübersicht, Profilempfehlung
+- **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
+- **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
+- **CI checks:** `npm run test` and `npm run build`
+- **Goal:** Make local MCP stacks visible, inspectable, and easier to control
+- **Focus:** Catalogs, profile overview, profile recommendation, bundle recommendation, and early audits
 
-## Erste Tools im MVP
+## Tools
 
-| Tool | Zweck |
+| Tool | Purpose |
 |---|---|
-| `controlcenter_status` | Überblick über Stack, Profile und erkannte Server |
-| `controlcenter_list_local_servers` | Lokale MCP-Repos im MCP-Root scannen |
-| `controlcenter_list_bundles` | Lokale Server nach Capability-Bundles gruppieren |
-| `controlcenter_suggest_bundles` | Passende Bundles für eine Aufgabe empfehlen |
-| `controlcenter_list_profiles` | Claude-Profile aus `~/.claude/profiles` auflisten |
-| `controlcenter_suggest_profile` | Zu einer Aufgabe ein passendes Profil empfehlen |
-| `controlcenter_resolve_profile` | Ein Profil inklusive `extends` auflösen |
-| `controlcenter_switch_profile` | Eine startbare `--mcp-config`-Datei vorbereiten |
-| `controlcenter_audit_profile` | Ein Profil auf erste Policy-Hinweise prüfen |
-| `controlcenter_build_catalog` | Einen JSON-Katalog der lokalen Server erzeugen |
+| `controlcenter_status` | Show stack, profile, and detected-server status |
+| `controlcenter_list_local_servers` | Scan local MCP repositories below the MCP root |
+| `controlcenter_list_bundles` | Group local servers by capability bundle |
+| `controlcenter_suggest_bundles` | Recommend bundles for a task |
+| `controlcenter_list_profiles` | List Claude profiles from the profile root |
+| `controlcenter_suggest_profile` | Recommend a profile for a task |
+| `controlcenter_resolve_profile` | Resolve a profile including `extends` chains |
+| `controlcenter_switch_profile` | Prepare a generated `--mcp-config` file |
+| `controlcenter_audit_profile` | Run initial policy checks against a profile |
+| `controlcenter_build_catalog` | Build a JSON catalog of local MCP servers |
 
-## Browser-GUI
+## Dashboard
 
-Das lokale Dashboard startet nach dem Build mit:
+After building the project, start the local dashboard with:
 
 ```bash
 npm run dashboard
 ```
 
-Standardadresse:
+Default address:
 
 ```text
 http://127.0.0.1:3737
 ```
 
-Die GUI kann aktuell lokale Server anzeigen, Profile anzeigen, Server pro Profil aktivieren/deaktivieren, Profil-Audits zusammenfassen und eine generierte `--mcp-config` schreiben. Schreibaktionen verlangen eine Bestätigung und legen vor dem Überschreiben ein Backup an.
+The dashboard can currently show local servers and profiles, enable or disable servers per profile, summarize profile audits, and write a generated `--mcp-config` file. Write actions ask for confirmation and create a backup before overwriting an existing file.
 
-## ellmos Ecosystem Entry
+## Installation
 
-**ellmos ControlCenter MCP** verwaltet lokale MCP-Server, Claude-Profile, Capability-Bundles und erste Policy-Audits. Es ist der geplante Control-Plane- und Gateway-Baustein für Tool-Bloat-Management, Profilwechsel und spätere Tool-Level-Rechte im ellmos-Ökosystem.
-
-## Aktuelle Grenzen
-
-- Tool-Level-Rechte sind sichtbar geplant, aber noch nicht technisch durchgesetzt.
-- Ein aktivierter Backend-MCP-Server stellt weiterhin alle eigenen Tools bereit, solange kein Gateway davor geschaltet ist.
-- Das Dashboard ist ein lokales Admin-Werkzeug ohne Benutzerlogin.
-- Die i18n-Schicht ist noch nicht implementiert; die Alpha-Oberfläche ist deutschsprachig.
-
-## Installation via npm
+### Option 1: Install from npm
 
 ```bash
-npm install -g ellmos-controlcenter-mcp@alpha
+npm install -g ellmos-controlcenter-mcp
 ```
 
-MCP-Server starten:
+Start the MCP server:
 
 ```bash
 ellmos-controlcenter
 ```
 
-Dashboard starten:
+Start the dashboard:
 
 ```bash
 ellmos-controlcenter-dashboard
 ```
 
-## Installation
+### Option 2: Install from source
 
 ```bash
-cd C:\Users\User\OneDrive\.TOPICS\.AI\.MCP\ellmos-controlcenter-mcp
+git clone https://github.com/ellmos-ai/ellmos-controlcenter-mcp.git
+cd ellmos-controlcenter-mcp
 npm install
 npm run build
 ```
 
-## Quick Start
+Run the server from source:
 
 ```bash
-cd C:\Users\User\OneDrive\.TOPICS\.AI\.MCP\ellmos-controlcenter-mcp
-npm run build
 node dist/index.js
 ```
 
-## Konfiguration
+Run the dashboard from source:
+
+```bash
+node dist/dashboard.js
+```
+
+## Configuration
 
 ### Claude Desktop / Claude Code
+
+If installed globally from npm:
+
+```json
+{
+  "mcpServers": {
+    "controlcenter": {
+      "command": "ellmos-controlcenter"
+    }
+  }
+}
+```
+
+If installed from source:
 
 ```json
 {
@@ -107,31 +124,31 @@ node dist/index.js
     "controlcenter": {
       "command": "node",
       "args": [
-        "C:/Users/User/OneDrive/.TOPICS/.AI/.MCP/ellmos-controlcenter-mcp/dist/index.js"
+        "/absolute/path/to/ellmos-controlcenter-mcp/dist/index.js"
       ]
     }
   }
 }
 ```
 
-Optional:
+Optional environment variables:
 
-- `ELLMOS_MCP_ROOT` überschreibt den Standard-MCP-Root
-- `ELLMOS_PROFILE_ROOT` überschreibt den Claude-Profilordner
+- `ELLMOS_MCP_ROOT` overrides the default MCP repository root
+- `ELLMOS_PROFILE_ROOT` overrides the Claude profile directory
 
-## Profilwechsel
+## Profile Switching
 
-`controlcenter_switch_profile` verändert keine laufende Claude-Session. Das Tool erzeugt eine aufgelöste MCP-Konfiguration und gibt den passenden Startbefehl zurück:
+`controlcenter_switch_profile` does not change a running Claude session. It creates a resolved MCP configuration and returns a launch command:
 
 ```bash
-claude --mcp-config C:\Users\User\.claude\profiles\_generated\software.mcp.json
+claude --mcp-config ~/.claude/profiles/_generated/software.mcp.json
 ```
 
-Mit `write: false` läuft der Wechsel als Vorschau. Mit `write: true` wird die generierte Datei geschrieben.
+With `write: false`, the switch runs as a preview. With `write: true`, ControlCenter writes the generated file.
 
-## Capability-Bundles
+## Capability Bundles
 
-ControlCenter gruppiert lokale Server aktuell in diese Bundles:
+ControlCenter currently groups local servers into these bundles:
 
 - `core-local`
 - `software`
@@ -139,20 +156,20 @@ ControlCenter gruppiert lokale Server aktuell in diese Bundles:
 - `automation`
 - `control-plane`
 
-Das ist die Grundlage für späteres Tool-Bloat-Management: statt viele Einzeltools direkt sichtbar zu machen, kann ein Agent zuerst ein passendes Aufgaben-Bundle wählen.
+This is the basis for future tool-bloat management: instead of exposing many individual tools immediately, an agent can first choose the capability bundle that fits the task.
 
-## Profil-Audit
+## Profile Audit
 
-`controlcenter_audit_profile` ist die erste kleine Policy-Schicht. Sie markiert aktuell:
+`controlcenter_audit_profile` is the first small policy layer. It currently flags:
 
-- `npx`-Starts
-- Environment-Variablen in Server-Konfigurationen
-- fehlende oder ungültige Server-Kommandos
-- sensitive Namensbestandteile in Args
+- `npx` starts
+- environment variables in server configurations
+- missing or invalid server commands
+- sensitive name fragments in arguments
 
-Environment-Werte werden dabei nicht ausgegeben.
+Environment values are never printed.
 
-## Projekt-Struktur
+## Project Structure
 
 ```text
 ellmos-controlcenter-mcp/
@@ -160,6 +177,7 @@ ellmos-controlcenter-mcp/
 ├── test/
 ├── data/
 ├── README.md
+├── README_de.md
 ├── START.md
 ├── ARCHITECTURE.md
 ├── STATE.md
@@ -167,14 +185,41 @@ ellmos-controlcenter-mcp/
 └── TODO.md
 ```
 
-## Dokumentation
+## Documentation
 
-| Für... | lies... |
+| For... | Read... |
 |---|---|
-| Schnellstart | [START.md](./START.md) |
-| Aktuellen Stand | [STATE.md](./STATE.md) |
-| Architektur | [ARCHITECTURE.md](./ARCHITECTURE.md) |
+| Quick start | [START.md](./START.md) |
+| Current state | [STATE.md](./STATE.md) |
+| Architecture | [ARCHITECTURE.md](./ARCHITECTURE.md) |
 | Roadmap | [ROADMAP.md](./ROADMAP.md) |
-| Entscheidungen | [DECISIONS.md](./DECISIONS.md) |
-| Offene Aufgaben | [TODO.md](./TODO.md) |
-| Änderungen | [CHANGELOG.md](./CHANGELOG.md) |
+| Decisions | [DECISIONS.md](./DECISIONS.md) |
+| Open tasks | [TODO.md](./TODO.md) |
+| Changes | [CHANGELOG.md](./CHANGELOG.md) |
+
+## ellmos-ai Ecosystem
+
+This MCP server is part of the **[ellmos-ai](https://github.com/ellmos-ai)** ecosystem: AI infrastructure, MCP servers, and intelligent tools.
+
+### MCP Server Family
+
+| Server | Tools | Focus | npm |
+|--------|-------|-------|-----|
+| [FileCommander](https://github.com/ellmos-ai/ellmos-filecommander-mcp) | 43 | Filesystem, process management, interactive sessions | [`ellmos-filecommander-mcp`](https://www.npmjs.com/package/ellmos-filecommander-mcp) |
+| [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 17 | Code analysis, AST parsing, import management | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
+| [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | File repair, format conversion, batch operations | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
+| [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n workflow management via AI assistants | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **10** | **MCP stack discovery, profile management, control plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+
+### AI Infrastructure
+
+| Project | Description |
+|---------|-------------|
+| [BACH](https://github.com/ellmos-ai/bach) | Text-based OS for LLMs: handlers, tools, and skills |
+| [clutch](https://github.com/ellmos-ai/clutch) | Provider-neutral LLM orchestration with auto-routing and budget tracking |
+| [rinnsal](https://github.com/ellmos-ai/rinnsal) | Lightweight agent memory, connectors, and automation infrastructure |
+| [ellmos-stack](https://github.com/ellmos-ai/ellmos-stack) | Self-hosted AI research stack |
+
+## License
+
+[MIT](LICENSE) - Lukas Geiger ([ellmos-ai](https://github.com/ellmos-ai))
