@@ -45,7 +45,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ellmos-ai/ellmos-controlcenter-mcp.git"
+    "url": "git+https://github.com/ellmos-ai/ellmos-controlcenter-mcp.git"
   },
   "bugs": {
     "url": "https://github.com/ellmos-ai/ellmos-controlcenter-mcp/issues"
