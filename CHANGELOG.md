@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Profilauflösung robuster gemacht: einfache und mehrfache `extends`-Vererbung, `remove`/`disabled`/`disabledServers` für geerbte Server und deduplizierte Profilquellen.
+- Nutzerfreundlichere Profilfehler für fehlende Profile, ungültige Profilnamen, ungültiges JSON, falsche JSON-Top-Level-Typen und Vererbungszyklen ergänzt.
+- Tests für Profilvererbung, geerbte Serverentfernung und Profilfehler ausgebaut.
+
 ## 0.1.0-alpha.2 - 2026-05-23
 
 - CI-Lockfile-Reproduzierbarkeit auf Linux verbessert

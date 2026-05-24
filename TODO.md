@@ -2,9 +2,9 @@
 
 ## P0
 
-- Profilschema robuster lesen
+- [x] Profilschema robuster lesen
 - Katalogformat stabilisieren
-- Fehlerausgaben für fehlende Profile nutzerfreundlicher machen
+- [x] Fehlerausgaben für fehlende Profile nutzerfreundlicher machen
 - Capability-Bundles konfigurierbar machen statt nur heuristisch
 - Policy-Regeln konfigurierbar machen
 

@@ -1,0 +1,5 @@
+2026-05-24 07:10:34 +02:00
+- Repo: ellmos-controlcenter-mcp
+- GitHub-Push: nicht ausgeführt; kein Versionsrelease nötig, da nur ein begrenzter Alpha-Ausbau umgesetzt wurde.
+- npm-Publish: nicht ausgeführt; keine Versionsnummer erhöht und kein dringender Sicherheitsfix.
+- Hinweis: Bei nächstem Release zuerst Version erhöhen, dann GitHub pushen und anschließend npm publish ausführen.

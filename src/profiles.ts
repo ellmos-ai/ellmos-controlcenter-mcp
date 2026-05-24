@@ -9,6 +9,7 @@ export interface ClaudeProfileSummary {
   name: string;
   filePath: string;
   extendsProfile: string | null;
+  extendsProfiles: string[];
   serverCount: number;
   servers: string[];
 }
@@ -43,8 +44,22 @@ type ProfileJsonShape = {
   mcpServers?: unknown;
   add?: unknown;
   servers?: unknown;
+  remove?: unknown;
+  disabled?: unknown;
+  disabledServers?: unknown;
   [key: string]: unknown;
 };
+
+export class ProfileConfigError extends Error {
+  constructor(
+    message: string,
+    readonly code: string,
+    readonly details: Record<string, unknown> = {}
+  ) {
+    super(message);
+    this.name = "ProfileConfigError";
+  }
+}
 
 const PROFILE_HINTS: Record<string, string[]> = {
   "ai-lab": ["mcp", "agent", "llm", "prompt", "ollama", "automation", "n8n", "anthropic", "openai", "gemini"],
@@ -60,15 +75,58 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function assertValidProfileName(profileName: string): void {
   if (!/^[a-zA-Z0-9_-]+$/.test(profileName)) {
-    throw new Error(`Invalid profile name: ${profileName}`);
+    throw new ProfileConfigError(
+      `Invalid profile name '${profileName}'. Use only letters, numbers, underscores, and hyphens.`,
+      "invalid-profile-name",
+      { profileName }
+    );
   }
 }
 
 async function readProfileJson(profileRoot: string, profileName: string): Promise<{ filePath: string; profile: ProfileJsonShape }> {
   assertValidProfileName(profileName);
   const filePath = path.join(profileRoot, `${profileName}.json`);
-  const raw = await fs.readFile(filePath, "utf-8");
-  return { filePath, profile: JSON.parse(raw) as ProfileJsonShape };
+  let raw: string;
+  try {
+    raw = await fs.readFile(filePath, "utf-8");
+  } catch (error) {
+    const code = typeof (error as NodeJS.ErrnoException).code === "string"
+      ? (error as NodeJS.ErrnoException).code
+      : "read-error";
+    if (code === "ENOENT") {
+      throw new ProfileConfigError(
+        `Claude profile '${profileName}' was not found. Expected file: ${filePath}`,
+        "profile-not-found",
+        { profileName, filePath, profileRoot }
+      );
+    }
+    throw new ProfileConfigError(
+      `Claude profile '${profileName}' could not be read from ${filePath}: ${error instanceof Error ? error.message : String(error)}`,
+      "profile-read-failed",
+      { profileName, filePath, profileRoot, code }
+    );
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    throw new ProfileConfigError(
+      `Claude profile '${profileName}' contains invalid JSON at ${filePath}: ${error instanceof Error ? error.message : String(error)}`,
+      "profile-json-invalid",
+      { profileName, filePath }
+    );
+  }
+
+  if (!isRecord(parsed) || Array.isArray(parsed)) {
+    throw new ProfileConfigError(
+      `Claude profile '${profileName}' must be a JSON object at ${filePath}.`,
+      "profile-schema-invalid",
+      { profileName, filePath, actualType: Array.isArray(parsed) ? "array" : typeof parsed }
+    );
+  }
+
+  return { filePath, profile: parsed as ProfileJsonShape };
 }
 
 async function pathExists(targetPath: string): Promise<boolean> {
@@ -127,16 +185,48 @@ function extractServerMap(profile: ProfileJsonShape): Record<string, unknown> {
   return result;
 }
 
+function extractStringList(value: unknown): string[] {
+  if (typeof value === "string") {
+    return [value];
+  }
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((item): item is string => typeof item === "string");
+}
+
+function uniqueSorted(values: string[]): string[] {
+  return [...new Set(values)].sort((a, b) => a.localeCompare(b));
+}
+
+function uniqueInOrder(values: string[]): string[] {
+  return values.filter((value, index) => values.indexOf(value) === index);
+}
+
+export function extractExtendsProfiles(profile: ProfileJsonShape): string[] {
+  return uniqueInOrder(extractStringList(profile.extends));
+}
+
+export function extractRemovedServerNames(profile: ProfileJsonShape): string[] {
+  return uniqueSorted([
+    ...extractStringList(profile.remove),
+    ...extractStringList(profile.disabled),
+    ...extractStringList(profile.disabledServers)
+  ]);
+}
+
 export function extractServerNames(profile: ProfileJsonShape): string[] {
   return Object.keys(extractServerMap(profile)).sort((a, b) => a.localeCompare(b));
 }
 
 export function summarizeProfile(name: string, filePath: string, profile: ProfileJsonShape): ClaudeProfileSummary {
   const servers = extractServerNames(profile);
+  const extendsProfiles = extractExtendsProfiles(profile);
   return {
     name,
     filePath,
-    extendsProfile: typeof profile.extends === "string" ? profile.extends : null,
+    extendsProfile: extendsProfiles[0] ?? null,
+    extendsProfiles,
     serverCount: servers.length,
     servers
   };
@@ -170,27 +260,49 @@ export async function listClaudeProfiles(profileRoot: string = DEFAULT_PROFILE_R
 }
 
 export async function resolveClaudeProfile(profileName: string, profileRoot: string = DEFAULT_PROFILE_ROOT): Promise<ResolvedProfile> {
-  const seen = new Set<string>();
+  const resolvedCache = new Map<string, Record<string, unknown>>();
+  const sourceFileSet = new Set<string>();
   const sourceFiles: string[] = [];
 
-  async function resolveRecursive(name: string): Promise<Record<string, unknown>> {
-    if (seen.has(name)) {
-      throw new Error(`Profile inheritance cycle detected at '${name}'`);
+  function addSourceFile(filePath: string): void {
+    if (!sourceFileSet.has(filePath)) {
+      sourceFileSet.add(filePath);
+      sourceFiles.push(filePath);
     }
-    seen.add(name);
-
-    const { filePath, profile } = await readProfileJson(profileRoot, name);
-    sourceFiles.push(filePath);
-
-    const baseServers =
-      typeof profile.extends === "string"
-        ? await resolveRecursive(profile.extends)
-        : {};
-    const ownServers = extractServerMap(profile);
-    return { ...baseServers, ...ownServers };
   }
 
-  const mcpServers = await resolveRecursive(profileName);
+  async function resolveRecursive(name: string, stack: string[]): Promise<Record<string, unknown>> {
+    if (stack.includes(name)) {
+      throw new ProfileConfigError(
+        `Profile inheritance cycle detected: ${[...stack, name].join(" -> ")}`,
+        "profile-inheritance-cycle",
+        { profileName: name, chain: [...stack, name] }
+      );
+    }
+    const cached = resolvedCache.get(name);
+    if (cached) {
+      return cached;
+    }
+
+    const { filePath, profile } = await readProfileJson(profileRoot, name);
+    addSourceFile(filePath);
+
+    const baseServers: Record<string, unknown> = {};
+    for (const baseProfile of extractExtendsProfiles(profile)) {
+      Object.assign(baseServers, await resolveRecursive(baseProfile, [...stack, name]));
+    }
+
+    for (const serverName of extractRemovedServerNames(profile)) {
+      delete baseServers[serverName];
+    }
+
+    const ownServers = extractServerMap(profile);
+    const resolved = { ...baseServers, ...ownServers };
+    resolvedCache.set(name, resolved);
+    return resolved;
+  }
+
+  const mcpServers = await resolveRecursive(profileName, []);
   const servers = Object.keys(mcpServers).sort((a, b) => a.localeCompare(b));
 
   return {

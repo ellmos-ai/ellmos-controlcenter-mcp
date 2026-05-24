@@ -146,6 +146,8 @@ claude --mcp-config ~/.claude/profiles/_generated/software.mcp.json
 
 With `write: false`, the switch runs as a preview. With `write: true`, ControlCenter writes the generated file.
 
+Profile resolution supports single inheritance (`"extends": "base"`), multiple inheritance (`"extends": ["base", "shared"]`), and inherited-server removal via `"remove"`, `"disabled"`, or `"disabledServers"`. Missing profiles, invalid JSON, invalid profile names, and inheritance cycles now return explicit profile errors with the affected file path or chain.
+
 ## Capability Bundles
 
 ControlCenter currently groups local servers into these bundles:

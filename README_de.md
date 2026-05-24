@@ -146,6 +146,8 @@ claude --mcp-config ~/.claude/profiles/_generated/software.mcp.json
 
 Mit `write: false` läuft der Wechsel als Vorschau. Mit `write: true` schreibt ControlCenter die generierte Datei.
 
+Die Profilauflösung unterstützt einfache Vererbung (`"extends": "base"`), Mehrfachvererbung (`"extends": ["base", "shared"]`) und das Entfernen geerbter Server über `"remove"`, `"disabled"` oder `"disabledServers"`. Fehlende Profile, ungültiges JSON, ungültige Profilnamen und Vererbungszyklen liefern jetzt explizite Profilfehler mit betroffenem Dateipfad oder betroffener Kette.
+
 ## Capability-Bundles
 
 ControlCenter gruppiert lokale Server aktuell in diese Bundles:

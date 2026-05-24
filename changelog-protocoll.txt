@@ -1,0 +1,4 @@
+2026-05-24 07:10:34 +02:00
+- ControlCenter-Profilauflösung erweitert: einfache und mehrfache Vererbung, Entfernung geerbter Server und deduplizierte Quellen.
+- Profilfehler nutzerfreundlicher gemacht: fehlende Profile, ungültige Namen, kaputtes JSON, falscher JSON-Typ und Vererbungszyklen.
+- Tests ergänzt und Stack-Checks durchgeführt: ControlCenter, CodeCommander, FileCommander, Clatcher und n8n-manager bestehen Test und Build; npm audit meldet keine moderaten oder höheren Schwachstellen.

@@ -2,7 +2,7 @@
 
 ## Überblick
 
-Der Server ist absichtlich klein gestartet und in zwei Kernmodule geteilt:
+Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
 
 - `catalog.ts`
   - scannt den lokalen MCP-Root
@@ -12,7 +12,9 @@ Der Server ist absichtlich klein gestartet und in zwei Kernmodule geteilt:
   - liest Claude-Profile aus `~/.claude/profiles`
   - extrahiert Servernamen und Profilbeziehungen
   - berechnet eine einfache Profilempfehlung per Heuristik
-  - löst Profile inklusive `extends` auf
+  - löst Profile inklusive einfacher und mehrfacher `extends`-Vererbung auf
+  - entfernt geerbte Server über `remove`, `disabled` oder `disabledServers`
+  - meldet fehlende, ungültige oder zyklische Profile mit expliziten Fehlern
   - schreibt generierte `--mcp-config`-Dateien
 - `bundles.ts`
   - definiert Capability-Bundles

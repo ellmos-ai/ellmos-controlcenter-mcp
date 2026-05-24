@@ -10,9 +10,12 @@ import {
   scanLocalServers
 } from "../src/catalog.js";
 import {
+  extractExtendsProfiles,
+  extractRemovedServerNames,
   extractServerNames,
   listClaudeProfiles,
   prepareProfileSwitch,
+  ProfileConfigError,
   readEditableProfile,
   resolveClaudeProfile,
   suggestProfile,
@@ -102,12 +105,28 @@ describe("profile helpers", () => {
     ).toEqual(["context7", "github", "gmail"]);
   });
 
+  it("extracts profile inheritance and removal lists from compact schema variants", () => {
+    expect(
+      extractExtendsProfiles({
+        extends: ["base", "shared", "base"]
+      })
+    ).toEqual(["base", "shared"]);
+    expect(
+      extractRemovedServerNames({
+        remove: "github",
+        disabled: ["context7"],
+        disabledServers: ["gmail", "github"]
+      })
+    ).toEqual(["context7", "github", "gmail"]);
+  });
+
   it("summarizes a profile", () => {
     const summary = summarizeProfile("software", "C:/tmp/software.json", {
       extends: "base",
       mcpServers: { github: {}, context7: {} }
     });
     expect(summary.extendsProfile).toBe("base");
+    expect(summary.extendsProfiles).toEqual(["base"]);
     expect(summary.serverCount).toBe(2);
   });
 
@@ -156,6 +175,86 @@ describe("profile helpers", () => {
     expect(resolved.servers).toEqual(["context7", "github", "shared"]);
     expect(resolved.config.mcpServers.shared).toEqual({ command: "child" });
     expect(resolved.sourceFiles.map((file) => path.basename(file))).toEqual(["software.json", "base.json"]);
+  });
+
+  it("resolves multiple inherited profiles and can remove inherited servers", async () => {
+    const root = await createTempDirectory("controlcenter-profile-root-");
+    await fs.writeFile(
+      path.join(root, "base.json"),
+      JSON.stringify({
+        mcpServers: {
+          github: { command: "npx" },
+          shared: { command: "base" }
+        }
+      }),
+      "utf-8"
+    );
+    await fs.writeFile(
+      path.join(root, "automation.json"),
+      JSON.stringify({
+        mcpServers: {
+          n8n: { command: "node" }
+        }
+      }),
+      "utf-8"
+    );
+    await fs.writeFile(
+      path.join(root, "ai-lab.json"),
+      JSON.stringify({
+        extends: ["base", "automation"],
+        remove: ["github"],
+        mcpServers: {
+          ollama: { command: "node" }
+        }
+      }),
+      "utf-8"
+    );
+
+    const resolved = await resolveClaudeProfile("ai-lab", root);
+
+    expect(resolved.servers).toEqual(["n8n", "ollama", "shared"]);
+    expect(resolved.config.mcpServers.github).toBeUndefined();
+    expect(resolved.sourceFiles.map((file) => path.basename(file))).toEqual(["ai-lab.json", "base.json", "automation.json"]);
+  });
+
+  it("reports missing profiles with a user-facing path", async () => {
+    const root = await createTempDirectory("controlcenter-profile-root-");
+
+    await expect(resolveClaudeProfile("missing", root)).rejects.toMatchObject({
+      name: "ProfileConfigError",
+      code: "profile-not-found",
+      details: {
+        profileName: "missing",
+        profileRoot: root
+      }
+    } satisfies Partial<ProfileConfigError>);
+  });
+
+  it("reports invalid profile json without hiding the profile name", async () => {
+    const root = await createTempDirectory("controlcenter-profile-root-");
+    await fs.writeFile(path.join(root, "broken.json"), "{", "utf-8");
+
+    await expect(resolveClaudeProfile("broken", root)).rejects.toMatchObject({
+      name: "ProfileConfigError",
+      code: "profile-json-invalid",
+      details: {
+        profileName: "broken"
+      }
+    } satisfies Partial<ProfileConfigError>);
+  });
+
+  it("detects inheritance cycles with the full chain", async () => {
+    const root = await createTempDirectory("controlcenter-profile-root-");
+    await fs.writeFile(path.join(root, "a.json"), JSON.stringify({ extends: "b" }), "utf-8");
+    await fs.writeFile(path.join(root, "b.json"), JSON.stringify({ extends: "a" }), "utf-8");
+
+    await expect(resolveClaudeProfile("a", root)).rejects.toMatchObject({
+      name: "ProfileConfigError",
+      code: "profile-inheritance-cycle",
+      details: {
+        chain: ["a", "b", "a"]
+      }
+    } satisfies Partial<ProfileConfigError>);
   });
 
   it("prepares and writes generated mcp config files", async () => {

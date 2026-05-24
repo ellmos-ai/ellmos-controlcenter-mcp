@@ -54,8 +54,9 @@ function formatProfileTable(profileRows: Awaited<ReturnType<typeof listClaudePro
   ];
 
   for (const row of profileRows) {
+    const extendsLabel = row.extendsProfiles.length > 0 ? row.extendsProfiles.join(", ") : "-";
     lines.push(
-      `| ${row.name} | ${row.extendsProfile ?? "-"} | ${row.serverCount} | ${row.filePath} |`
+      `| ${row.name} | ${extendsLabel} | ${row.serverCount} | ${row.filePath} |`
     );
   }
 
