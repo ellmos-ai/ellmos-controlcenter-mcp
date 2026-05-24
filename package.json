@@ -12,6 +12,7 @@
   "files": [
     "dist/",
     "assets/",
+    "data/capability-bundles.json",
     "README.md",
     "README_de.md",
     "SECURITY.md",

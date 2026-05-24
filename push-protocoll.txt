@@ -3,3 +3,9 @@
 - GitHub-Push: nicht ausgeführt; kein Versionsrelease nötig, da nur ein begrenzter Alpha-Ausbau umgesetzt wurde.
 - npm-Publish: nicht ausgeführt; keine Versionsnummer erhöht und kein dringender Sicherheitsfix.
 - Hinweis: Bei nächstem Release zuerst Version erhöhen, dann GitHub pushen und anschließend npm publish ausführen.
+
+2026-05-24 16:10:15 +02:00
+- Repo: ellmos-controlcenter-mcp
+- GitHub-Push: nicht ausgeführt; Funktionsausbau ist lokal committed, aber keine neue Version vorbereitet.
+- npm-Publish: nicht ausgeführt; Version blieb `0.1.0-alpha.2`, kein Sicherheitsfix und keine dringende Release-Notwendigkeit.
+- Paketcheck: `npm pack --dry-run` erfolgreich, `data/capability-bundles.json` wäre im Paket enthalten.

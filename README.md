@@ -135,6 +135,7 @@ Optional environment variables:
 
 - `ELLMOS_MCP_ROOT` overrides the default MCP repository root
 - `ELLMOS_PROFILE_ROOT` overrides the Claude profile directory
+- `ELLMOS_BUNDLE_CONFIG` overrides the capability bundle definition file
 
 ## Profile Switching
 
@@ -150,13 +151,15 @@ Profile resolution supports single inheritance (`"extends": "base"`), multiple i
 
 ## Capability Bundles
 
-ControlCenter currently groups local servers into these bundles:
+ControlCenter loads capability bundle definitions from `data/capability-bundles.json`. The default file groups local servers into these bundles:
 
 - `core-local`
 - `software`
 - `filesystem`
 - `automation`
 - `control-plane`
+
+Custom bundle files can be supplied with `ELLMOS_BUNDLE_CONFIG` or with the optional `bundleConfigPath` input on bundle tools. A bundle file is a JSON object with `schemaVersion` and a `bundles` array. Each bundle needs `id`, `title`, `description`, and `keywords`.
 
 This is the basis for future tool-bloat management: instead of exposing many individual tools immediately, an agent can first choose the capability bundle that fits the task.
 

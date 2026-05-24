@@ -2,7 +2,13 @@ import * as fs from "fs/promises";
 import * as os from "os";
 import * as path from "path";
 import { afterEach, describe, expect, it } from "vitest";
-import { buildCapabilityBundles, suggestCapabilityBundles } from "../src/bundles.js";
+import {
+  buildCapabilityBundles,
+  BundleConfigError,
+  loadBundleDefinitions,
+  loadCapabilityBundles,
+  suggestCapabilityBundles
+} from "../src/bundles.js";
 import {
   discoverLocalServerDirectories,
   extractToolCountFromDescription,
@@ -414,6 +420,74 @@ describe("bundle helpers", () => {
     const controlPlane = bundles.find((bundle) => bundle.id === "control-plane");
     expect(filesystem?.servers).not.toContain("ellmos-controlcenter-mcp");
     expect(controlPlane?.servers).toContain("ellmos-controlcenter-mcp");
+  });
+
+  it("loads capability bundles from a JSON config file", async () => {
+    const root = await createTempDirectory("controlcenter-bundle-config-");
+    const configPath = path.join(root, "bundles.json");
+    await fs.writeFile(
+      configPath,
+      JSON.stringify({
+        schemaVersion: 1,
+        bundles: [
+          {
+            id: "research",
+            title: "Research Tools",
+            description: "Literatur, Paper und Quellenarbeit.",
+            keywords: ["research", "paper", "zenodo"]
+          }
+        ]
+      }),
+      "utf-8"
+    );
+
+    const definitions = await loadBundleDefinitions(configPath);
+    expect(definitions).toHaveLength(1);
+    expect(definitions[0].id).toBe("research");
+
+    const bundles = await loadCapabilityBundles([
+      {
+        directoryName: "paper-helper-mcp",
+        packageName: "paper-helper-mcp",
+        mcpName: "io.github.demo/paper-helper-mcp",
+        version: "1.0.0",
+        description: "Research and paper workflow helper",
+        absolutePath: "C:/tmp/paper-helper-mcp",
+        binName: "paper-helper",
+        entryPoint: "dist/index.js",
+        toolCount: 5,
+        hasServerJson: true,
+        keywords: ["zenodo"]
+      }
+    ], configPath);
+
+    expect(bundles).toHaveLength(1);
+    expect(bundles[0].servers).toEqual(["paper-helper-mcp"]);
+    expect(suggestCapabilityBundles("Bitte Paper und Zenodo vorbereiten", bundles)[0].bundle.id).toBe("research");
+  });
+
+  it("reports duplicate capability bundle ids", async () => {
+    const root = await createTempDirectory("controlcenter-bundle-config-");
+    const configPath = path.join(root, "bundles.json");
+    const duplicateBundle = {
+      id: "dup",
+      title: "Duplicate",
+      description: "Duplicate bundle.",
+      keywords: ["duplicate"]
+    };
+    await fs.writeFile(
+      configPath,
+      JSON.stringify({ bundles: [duplicateBundle, duplicateBundle] }),
+      "utf-8"
+    );
+
+    await expect(loadBundleDefinitions(configPath)).rejects.toMatchObject({
+      name: "BundleConfigError",
+      code: "bundle-id-duplicate",
+      details: {
+        bundleId: "dup"
+      }
+    } satisfies Partial<BundleConfigError>);
   });
 });
 

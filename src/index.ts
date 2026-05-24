@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { buildCapabilityBundles, suggestCapabilityBundles } from "./bundles.js";
+import { loadCapabilityBundles, suggestCapabilityBundles, type CapabilityBundle } from "./bundles.js";
 import { DEFAULT_MCP_ROOT, scanLocalServers } from "./catalog.js";
 import { auditResolvedProfile, summarizePolicyFindings } from "./policy.js";
 import {
@@ -63,7 +63,7 @@ function formatProfileTable(profileRows: Awaited<ReturnType<typeof listClaudePro
   return lines.join("\n");
 }
 
-function formatBundleTable(bundleRows: ReturnType<typeof buildCapabilityBundles>): string {
+function formatBundleTable(bundleRows: CapabilityBundle[]): string {
   if (bundleRows.length === 0) {
     return "Keine Capability-Bundles verfügbar.";
   }
@@ -95,6 +95,7 @@ server.registerTool(
       scanLocalServers(DEFAULT_MCP_ROOT),
       listClaudeProfiles(DEFAULT_PROFILE_ROOT)
     ]);
+    const bundles = await loadCapabilityBundles(servers);
 
     const output = [
       "# ellmos ControlCenter Status",
@@ -111,7 +112,7 @@ server.registerTool(
       formatProfileTable(profiles),
       "",
       "## Capability-Bundles",
-      formatBundleTable(buildCapabilityBundles(servers))
+      formatBundleTable(bundles)
     ].join("\n");
 
     return { content: [{ type: "text", text: output }] };
@@ -148,13 +149,14 @@ server.registerTool(
     title: "List Capability Bundles",
     description: "Gruppiert lokale MCP-Server in Aufgaben-Bundles wie Software, Filesystem, Automation und Control Plane.",
     inputSchema: {
-      mcpRoot: z.string().optional().describe("Optionaler MCP-Root. Standard ist der lokale ellmos-MCP-Ordner.")
+      mcpRoot: z.string().optional().describe("Optionaler MCP-Root. Standard ist der lokale ellmos-MCP-Ordner."),
+      bundleConfigPath: z.string().optional().describe("Optionaler Pfad zu einer Capability-Bundle-Konfiguration.")
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
   },
-  async ({ mcpRoot }) => {
+  async ({ mcpRoot, bundleConfigPath }) => {
     const resolvedRoot = mcpRoot ?? DEFAULT_MCP_ROOT;
-    const bundles = buildCapabilityBundles(await scanLocalServers(resolvedRoot));
+    const bundles = await loadCapabilityBundles(await scanLocalServers(resolvedRoot), bundleConfigPath);
     const output = [
       `# Capability-Bundles in ${resolvedRoot}`,
       "",
@@ -183,13 +185,14 @@ server.registerTool(
     description: "Empfiehlt passende Capability-Bundles für eine Aufgabenbeschreibung.",
     inputSchema: {
       task: z.string().min(3).describe("Aufgabenbeschreibung oder Ziel der Session"),
-      mcpRoot: z.string().optional().describe("Optionaler MCP-Root. Standard ist der lokale ellmos-MCP-Ordner.")
+      mcpRoot: z.string().optional().describe("Optionaler MCP-Root. Standard ist der lokale ellmos-MCP-Ordner."),
+      bundleConfigPath: z.string().optional().describe("Optionaler Pfad zu einer Capability-Bundle-Konfiguration.")
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
   },
-  async ({ task, mcpRoot }) => {
+  async ({ task, mcpRoot, bundleConfigPath }) => {
     const resolvedRoot = mcpRoot ?? DEFAULT_MCP_ROOT;
-    const bundles = buildCapabilityBundles(await scanLocalServers(resolvedRoot));
+    const bundles = await loadCapabilityBundles(await scanLocalServers(resolvedRoot), bundleConfigPath);
     const suggestions = suggestCapabilityBundles(task, bundles);
     const output = [
       "# Bundle-Empfehlung",

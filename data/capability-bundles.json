@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "bundles": [
+    {
+      "id": "core-local",
+      "title": "Core Local Stack",
+      "description": "Lokale ellmos-Basistools für Dateien, Code, Automatisierung und Steuerung.",
+      "keywords": ["ellmos", "bach", "local", "control", "commander", "mcp"]
+    },
+    {
+      "id": "software",
+      "title": "Software Development",
+      "description": "Codeanalyse, Build-Hilfen, Developer Tools und Repository-Arbeit.",
+      "keywords": ["code", "developer", "typescript", "python", "analysis", "json", "diff", "regex", "build"]
+    },
+    {
+      "id": "filesystem",
+      "title": "Filesystem Operations",
+      "description": "Dateiverwaltung, Suche, Prozesse, Archive und lokale Arbeitsordner.",
+      "keywords": ["file", "filesystem", "directory", "process", "zip", "archive", "ocr", "markdown"]
+    },
+    {
+      "id": "automation",
+      "title": "Automation",
+      "description": "n8n, Workflows, Automatisierung und wiederkehrende Abläufe.",
+      "keywords": ["n8n", "automation", "workflow", "workflows", "schedule", "trigger"]
+    },
+    {
+      "id": "control-plane",
+      "title": "Control Plane",
+      "description": "Profilverwaltung, Kataloge, Server-Discovery und spätere Policy-Schicht.",
+      "keywords": ["control", "profile", "catalog", "registry", "policy", "gateway", "discovery"]
+    }
+  ]
+}

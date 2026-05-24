@@ -2,7 +2,7 @@
 
 import * as http from "http";
 import { URL } from "url";
-import { buildCapabilityBundles } from "./bundles.js";
+import { loadCapabilityBundles } from "./bundles.js";
 import {
   createLocalServerMcpConfig,
   DEFAULT_MCP_ROOT,
@@ -68,7 +68,7 @@ async function getOverview() {
     profileRoot: DEFAULT_PROFILE_ROOT,
     servers,
     profiles,
-    bundles: buildCapabilityBundles(servers)
+    bundles: await loadCapabilityBundles(servers)
   };
 }
 

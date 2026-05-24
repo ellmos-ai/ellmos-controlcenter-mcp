@@ -18,6 +18,8 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
   - schreibt generierte `--mcp-config`-Dateien
 - `bundles.ts`
   - definiert Capability-Bundles
+  - lädt Bundle-Definitionen aus `data/capability-bundles.json` oder `ELLMOS_BUNDLE_CONFIG`
+  - validiert Bundle-Konfigurationen und meldet doppelte IDs oder Schemafehler explizit
   - gruppiert lokale Server nach Beschreibung, Name und Keywords
   - empfiehlt Bundles anhand von Aufgaben-Keywords
 - `policy.ts`

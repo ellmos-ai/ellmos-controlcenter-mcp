@@ -2,3 +2,9 @@
 - ControlCenter-Profilauflösung erweitert: einfache und mehrfache Vererbung, Entfernung geerbter Server und deduplizierte Quellen.
 - Profilfehler nutzerfreundlicher gemacht: fehlende Profile, ungültige Namen, kaputtes JSON, falscher JSON-Typ und Vererbungszyklen.
 - Tests ergänzt und Stack-Checks durchgeführt: ControlCenter, CodeCommander, FileCommander, Clatcher und n8n-manager bestehen Test und Build; npm audit meldet keine moderaten oder höheren Schwachstellen.
+
+2026-05-24 16:10:15 +02:00
+- ControlCenter-Capability-Bundles konfigurierbar gemacht: Standarddefinitionen liegen jetzt in `data/capability-bundles.json`.
+- `ELLMOS_BUNDLE_CONFIG` und optionaler `bundleConfigPath` erlauben eigene Bundle-Dateien für Bundle-Tools und Dashboard-Übersicht.
+- Bundle-Konfigurationen validieren JSON, Pflichtfelder und doppelte Bundle-IDs mit expliziten `BundleConfigError`-Fehlern.
+- Tests ergänzt: 24 ControlCenter-Tests bestanden; Build, npm audit für alle aktiven MCP-Repos und `npm pack --dry-run` bestanden.
