@@ -9,3 +9,13 @@
 - GitHub-Push: nicht ausgeführt; Funktionsausbau ist lokal committed, aber keine neue Version vorbereitet.
 - npm-Publish: nicht ausgeführt; Version blieb `0.1.0-alpha.2`, kein Sicherheitsfix und keine dringende Release-Notwendigkeit.
 - Paketcheck: `npm pack --dry-run` erfolgreich, `data/capability-bundles.json` wäre im Paket enthalten.
+
+2026-05-26 16:26:13 +02:00
+- Repo: ellmos-controlcenter-mcp
+- Release: `0.1.0-alpha.3`
+- GitHub-Push: erfolgreich; `main` von `6fab330` auf `5f78f7a` gepusht.
+- GitHub-Tag-Push: erfolgreich; `v0.1.0-alpha.3` neu auf origin gepusht.
+- npm-Publish-Versuch 1: fehlgeschlagen; npm verlangte für Prerelease-Versionen einen expliziten `--tag`.
+- npm-Publish-Versuch 2: erfolgreich mit `npm publish --access public --tag alpha`.
+- npm-Dist-Tags: erfolgreich; `alpha` und `latest` zeigen auf `0.1.0-alpha.3`.
+- Verifikation: `npm view ellmos-controlcenter-mcp version dist-tags --json` meldet `0.1.0-alpha.3` für `version`, `latest` und `alpha`.
