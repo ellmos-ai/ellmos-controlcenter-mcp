@@ -28,6 +28,9 @@
 ## Was noch fehlt
 
 - Tool-Level-Erkennung per echter MCP-`list_tools`-Abfrage
+- Automatische Erkennung von Skills, Modulen, APIs, lokalen Programmen, EXE-Dateien, CLI-Apps und Systemressourcen
+- Thematische Cluster, die automatisch vorgeschlagen und manuell gepflegt werden können
+- Virtuelle MCP-Server, die aus kuratierten Clustern entstehen
 - Tool-Level-Aktivierung über Gateway
 - Tool-Gruppen dauerhaft konfigurieren
 - Durchsetzende Policy-/Gateway-Schicht

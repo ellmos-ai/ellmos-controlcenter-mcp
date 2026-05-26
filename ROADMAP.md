@@ -2,7 +2,7 @@
 
 ## Zielbild
 
-`ellmos-controlcenter-mcp` soll zur lokalen Steuerzentrale für MCP-Server werden. Langfristig verwaltet es Profile, Server, Tools, Rechte, Audits und einen virtuellen Gateway-MCP, über den ausgewählte Tools als ein kontrollierter Server bereitgestellt werden.
+`ellmos-controlcenter-mcp` soll zur lokalen Steuerzentrale für MCP-Server und das gesamte lokale Agenten-Werkzeugökosystem werden. Langfristig verwaltet es Profile, Server, Tools, Skills, Module, APIs, lokale Programme, EXE-Dateien, CLI-Apps, Rechte, Audits und virtuelle Gateway-MCPs, über die ausgewählte Fähigkeiten als kontrollierte Server bereitgestellt werden.
 
 ## Phase 1: ControlCenter Dashboard
 
@@ -23,6 +23,17 @@ Status: geplant
 - Toolnamen, Beschreibungen und Schemas speichern
 - Tools Capability-Bundles zuordnen
 
+## Phase 2.5: Ressourcen-, Skill- und API-Inventar
+
+Status: geplant
+
+- Automatische Scans für Skills, Module, MCP-Server, Tool-Definitionen und lokale Konfigurationsquellen
+- Systemressourcen erkennen: Pfade, installierte Software, ausführbare Dateien, EXE-Dateien, CLI-Apps und Software mit CLI-Schnittstelle
+- Nutzungsmöglichkeiten erkannter Software erfassen, zum Beispiel unterstützte Dateitypen, typische Befehle, lokale APIs und Automatisierungswege
+- Verwendete APIs aus Code, Konfigurationen, Profilen und Tool-Schemas erkennen
+- Zu erkannten APIs aktuelle Dokumentation referenzieren oder vorhalten, bevorzugt über Context7 oder vergleichbare Dokumentationsquellen
+- BACH-Partnerprogramm und BACH-interne Tool-/Skill-Strukturen als Impulsquelle auswerten
+
 ## Phase 3: Rechte und Policies
 
 Status: geplant
@@ -31,6 +42,18 @@ Status: geplant
 - Rechte: `allow`, `deny`, `ask`, `readonly`
 - Secret-Werte maskieren
 - Audit-Log für Profil- und Rechteänderungen
+
+## Phase 3.5: Thematische Cluster und virtuelle Server
+
+Status: geplant
+
+- Erkannte Tools, MCPs, Skills, Module, APIs, Programme, EXE-Dateien und CLIs automatisch thematisch clustern
+- Globale Cluster aktivieren und deaktivieren können
+- Manuelle Cluster anlegen
+- Automatisch angelegte Cluster manuell ändern, umbenennen, zusammenführen oder aufteilen
+- Cluster stabil benennen und mit Beschreibungen, Tags und Einsatzbeispielen versehen
+- Cluster zu virtuellen MCP-Servern verbinden, sodass Agenten statt vieler Einzelquellen kuratierte Fähigkeitsserver laden können
+- Cluster als Grundlage für Profile, Gateway-Regeln, Dokumentationskontext und Dashboard-Ansichten nutzen
 
 ## Phase 4: Virtueller MCP-Gateway
 
