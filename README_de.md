@@ -21,7 +21,7 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.1.0-alpha.2`
+- **Version:** `0.1.0-alpha.3`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI-Checks:** `npm run test` und `npm run build`
@@ -136,6 +136,7 @@ Optionale Umgebungsvariablen:
 - `ELLMOS_MCP_ROOT` überschreibt den Standard-MCP-Root
 - `ELLMOS_PROFILE_ROOT` überschreibt den Claude-Profilordner
 - `ELLMOS_BUNDLE_CONFIG` überschreibt die Datei mit Capability-Bundle-Definitionen
+- `ELLMOS_POLICY_CONFIG` überschreibt die Datei mit Profil-Audit-Regeln
 
 ## Profilwechsel
 
@@ -173,6 +174,8 @@ Das ist die Grundlage für späteres Tool-Bloat-Management: statt viele Einzelto
 - sensitive Namensbestandteile in Argumenten
 
 Environment-Werte werden dabei nie ausgegeben.
+
+Policy-Regeln werden standardmäßig aus `data/policy-rules.json` geladen. Die Datei kann einzelne Regeln deaktivieren oder deren Severity überschreiben; `controlcenter_audit_profile` akzeptiert zusätzlich einen `policyConfigPath`-Input für einzelne Audits.
 
 ## Projektstruktur
 

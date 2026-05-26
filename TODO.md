@@ -6,7 +6,7 @@
 - Katalogformat stabilisieren
 - [x] Fehlerausgaben für fehlende Profile nutzerfreundlicher machen
 - Capability-Bundles konfigurierbar machen statt nur heuristisch
-- Policy-Regeln konfigurierbar machen
+- [x] Policy-Regeln konfigurierbar machen
 
 ## P1
 

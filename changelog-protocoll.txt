@@ -8,3 +8,10 @@
 - `ELLMOS_BUNDLE_CONFIG` und optionaler `bundleConfigPath` erlauben eigene Bundle-Dateien für Bundle-Tools und Dashboard-Übersicht.
 - Bundle-Konfigurationen validieren JSON, Pflichtfelder und doppelte Bundle-IDs mit expliziten `BundleConfigError`-Fehlern.
 - Tests ergänzt: 24 ControlCenter-Tests bestanden; Build, npm audit für alle aktiven MCP-Repos und `npm pack --dry-run` bestanden.
+
+2026-05-26 16:21:53 +02:00
+- ControlCenter-Policy-Regeln konfigurierbar gemacht: Standarddefinitionen liegen jetzt in `data/policy-rules.json`.
+- `ELLMOS_POLICY_CONFIG` und optionaler `policyConfigPath` erlauben eigene Audit-Regeln, deaktivierte Regeln und Severity-Overrides.
+- Policy-Konfigurationen validieren JSON, Pflichtfelder, doppelte IDs, unbekannte Regel-IDs und Severity-Werte mit expliziten `PolicyConfigError`-Fehlern.
+- Release vorbereitet: Version auf `0.1.0-alpha.3` erhöht, README/STATE/server.json aktualisiert und Changelog geschnitten.
+- Tests ergänzt: 26 ControlCenter-Tests bestanden; Build, `npm audit --omit=dev --audit-level=moderate` und `npm pack --dry-run` bestanden.

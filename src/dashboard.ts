@@ -8,7 +8,7 @@ import {
   DEFAULT_MCP_ROOT,
   scanLocalServers
 } from "./catalog.js";
-import { auditResolvedProfile, summarizePolicyFindings } from "./policy.js";
+import { auditResolvedProfile, loadPolicyRules, summarizePolicyFindings } from "./policy.js";
 import {
   DEFAULT_PROFILE_ROOT,
   listClaudeProfiles,
@@ -382,9 +382,11 @@ async function handleApi(request: http.IncomingMessage, response: http.ServerRes
   if (request.method === "GET" && profileMatch) {
     const profileName = decodeURIComponent(profileMatch[1]);
     const resolved = await resolveClaudeProfile(profileName, DEFAULT_PROFILE_ROOT);
-    const findings = auditResolvedProfile(resolved);
+    const policyRules = await loadPolicyRules();
+    const findings = auditResolvedProfile(resolved, policyRules);
     sendJson(response, 200, {
       resolved,
+      policyRules,
       auditSummary: summarizePolicyFindings(findings),
       findings
     });

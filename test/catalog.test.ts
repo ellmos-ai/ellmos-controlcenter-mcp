@@ -28,7 +28,12 @@ import {
   summarizeProfile,
   writeEditableProfile
 } from "../src/profiles.js";
-import { auditResolvedProfile, summarizePolicyFindings } from "../src/policy.js";
+import {
+  auditResolvedProfile,
+  loadPolicyRules,
+  PolicyConfigError,
+  summarizePolicyFindings
+} from "../src/policy.js";
 
 const tempDirectories: string[] = [];
 
@@ -528,5 +533,70 @@ describe("policy helpers", () => {
     expect(summary.warning).toBe(1);
     expect(summary.high).toBe(1);
     expect(summary.info).toBe(0);
+  });
+
+  it("loads policy rule overrides and applies them during audit", async () => {
+    const root = await createTempDirectory("controlcenter-policy-config-");
+    const configPath = path.join(root, "policy.json");
+    await fs.writeFile(
+      configPath,
+      JSON.stringify({
+        schemaVersion: 1,
+        rules: [
+          { id: "npx-runtime-fetch", enabled: false },
+          { id: "env-secrets-present", severity: "high" }
+        ]
+      }),
+      "utf-8"
+    );
+
+    const policyRules = await loadPolicyRules(configPath);
+    const findings = auditResolvedProfile({
+      name: "software",
+      profileRoot: "C:/tmp/profiles",
+      sourceFiles: ["C:/tmp/profiles/software.json"],
+      serverCount: 1,
+      servers: ["github"],
+      config: {
+        mcpServers: {
+          github: {
+            command: "npx",
+            args: ["-y", "@modelcontextprotocol/server-github"],
+            env: {
+              EXAMPLE_CREDENTIAL: "credential-value"
+            }
+          }
+        }
+      }
+    }, policyRules);
+
+    expect(findings.map((finding) => finding.ruleId)).not.toContain("npx-runtime-fetch");
+    expect(findings).toContainEqual(expect.objectContaining({
+      ruleId: "env-secrets-present",
+      severity: "high"
+    }));
+  });
+
+  it("reports duplicate policy rule ids", async () => {
+    const root = await createTempDirectory("controlcenter-policy-config-");
+    const configPath = path.join(root, "policy.json");
+    await fs.writeFile(
+      configPath,
+      JSON.stringify({
+        rules: [
+          { id: "npx-runtime-fetch", enabled: true },
+          { id: "npx-runtime-fetch", enabled: false }
+        ]
+      }),
+      "utf-8"
+    );
+
+    await expect(loadPolicyRules(configPath)).rejects.toMatchObject({
+      name: "PolicyConfigError",
+      code: "policy-rule-duplicate",
+      details: {
+        ruleId: "npx-runtime-fetch"
+      }
+    } satisfies Partial<PolicyConfigError>);
   });
 });

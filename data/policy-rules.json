@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "invalid-server-config",
+      "enabled": true,
+      "severity": "high"
+    },
+    {
+      "id": "missing-command",
+      "enabled": true,
+      "severity": "high"
+    },
+    {
+      "id": "npx-runtime-fetch",
+      "enabled": true,
+      "severity": "warning"
+    },
+    {
+      "id": "env-secrets-present",
+      "enabled": true,
+      "severity": "warning"
+    },
+    {
+      "id": "sensitive-arg-name",
+      "enabled": true,
+      "severity": "warning"
+    },
+    {
+      "id": "no-policy-findings",
+      "enabled": true,
+      "severity": "info"
+    }
+  ]
+}

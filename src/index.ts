@@ -8,7 +8,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { loadCapabilityBundles, suggestCapabilityBundles, type CapabilityBundle } from "./bundles.js";
 import { DEFAULT_MCP_ROOT, scanLocalServers } from "./catalog.js";
-import { auditResolvedProfile, summarizePolicyFindings } from "./policy.js";
+import { auditResolvedProfile, loadPolicyRules, summarizePolicyFindings } from "./policy.js";
 import {
   DEFAULT_PROFILE_ROOT,
   listClaudeProfiles,
@@ -19,7 +19,7 @@ import {
 
 const server = new McpServer({
   name: "ellmos-controlcenter-mcp",
-  version: "0.1.0"
+  version: "0.1.0-alpha.3"
 });
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -333,19 +333,22 @@ server.registerTool(
     description: "Prüft ein aufgelöstes Claude-Profil auf erste Policy-Hinweise wie npx-Starts, Env-Secrets und ungültige Server-Konfigurationen.",
     inputSchema: {
       profileName: z.string().min(1).describe("Profilname ohne .json, zum Beispiel software oder ai-lab"),
-      profileRoot: z.string().optional().describe("Optionaler Profilordner. Standard ist ~/.claude/profiles.")
+      profileRoot: z.string().optional().describe("Optionaler Profilordner. Standard ist ~/.claude/profiles."),
+      policyConfigPath: z.string().optional().describe("Optionaler Pfad zu einer Policy-Regel-Konfiguration.")
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
   },
-  async ({ profileName, profileRoot }) => {
+  async ({ profileName, profileRoot, policyConfigPath }) => {
     const resolved = await resolveClaudeProfile(profileName, profileRoot ?? DEFAULT_PROFILE_ROOT);
-    const findings = auditResolvedProfile(resolved);
+    const policyRules = await loadPolicyRules(policyConfigPath);
+    const findings = auditResolvedProfile(resolved, policyRules);
     const summary = summarizePolicyFindings(findings);
     const output = [
       "# Profil-Audit",
       "",
       `- Profil: ${resolved.name}`,
       `- Server: ${resolved.serverCount}`,
+      `- Policy-Regeln: ${policyRules.filter((rule) => rule.enabled).length}/${policyRules.length} aktiv`,
       `- High: ${summary.high}`,
       `- Warning: ${summary.warning}`,
       `- Info: ${summary.info}`,
