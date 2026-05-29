@@ -59,6 +59,16 @@ http://127.0.0.1:3737
 
 The dashboard can currently show local servers and profiles, enable or disable servers per profile, summarize profile audits, and write a generated `--mcp-config` file. Write actions ask for confirmation and create a backup before overwriting an existing file.
 
+## Discovery and Registry Metadata
+
+ControlCenter ships MCP registry metadata for crawlers and catalog tools:
+
+- `server.json` uses the official MCP server metadata shape with the package name, repository, and stdio transport.
+- `llms.txt` gives LLM crawlers a compact project summary, canonical links, and tool overview.
+- `package.json` includes both files in the npm package so registry indexers can read the same metadata from GitHub or npm.
+
+The public npm package is the canonical install target. The GitHub repository remains the canonical source for development, issues, and release notes.
+
 ## Installation
 
 ### Option 1: Install from npm
@@ -204,6 +214,7 @@ ellmos-controlcenter-mcp/
 | Decisions | [DECISIONS.md](./DECISIONS.md) |
 | Open tasks | [TODO.md](./TODO.md) |
 | Changes | [CHANGELOG.md](./CHANGELOG.md) |
+| LLM crawler summary | [llms.txt](./llms.txt) |
 
 ## ellmos-ai Ecosystem
 

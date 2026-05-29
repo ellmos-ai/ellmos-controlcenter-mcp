@@ -1,0 +1,55 @@
+# ellmos ControlCenter MCP
+
+> MCP control plane for local MCP stack discovery, Claude profile inspection, capability bundle recommendation, policy audits, and a local dashboard.
+
+Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
+npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
+MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
+License: MIT
+Language: TypeScript
+Runtime: Node.js >=18
+
+## Summary
+
+ellmos ControlCenter MCP is an alpha-stage Model Context Protocol server for local MCP administration. It discovers local MCP repositories, reads Claude profile files, resolves inherited profile configurations, recommends profiles and capability bundles for tasks, runs initial profile policy audits, builds local server catalogs, and can start a local dashboard.
+
+It is useful for local MCP stack visibility and profile management. It is not a hardened security gateway. Gateway mode, enforced tool-level permissions, authentication, and hard isolation are planned but not implemented.
+
+## Tools
+
+- `controlcenter_status`: show stack, profile, and detected-server status.
+- `controlcenter_list_local_servers`: scan local MCP repositories below the configured MCP root.
+- `controlcenter_list_bundles`: group local servers by capability bundle.
+- `controlcenter_suggest_bundles`: recommend capability bundles for a task.
+- `controlcenter_list_profiles`: list Claude profile files.
+- `controlcenter_suggest_profile`: recommend a Claude profile for a task.
+- `controlcenter_resolve_profile`: resolve profile inheritance, removals, and disabled servers.
+- `controlcenter_switch_profile`: generate a resolved `--mcp-config` file and launch command.
+- `controlcenter_audit_profile`: run initial profile policy checks.
+- `controlcenter_build_catalog`: build a JSON catalog of local MCP servers.
+
+## Install
+
+```bash
+npm install -g ellmos-controlcenter-mcp
+ellmos-controlcenter
+```
+
+Dashboard:
+
+```bash
+ellmos-controlcenter-dashboard
+```
+
+Default dashboard URL: http://127.0.0.1:3737
+
+## Important Files
+
+- `README.md`: full English documentation.
+- `README_de.md`: German documentation.
+- `server.json`: MCP registry metadata.
+- `data/capability-bundles.json`: default capability bundle definitions.
+- `data/policy-rules.json`: default profile audit policy rules.
+- `src/index.ts`: MCP server entrypoint and tool definitions.
+- `src/dashboard.ts`: local dashboard server.
+- `test/catalog.test.ts`: unit coverage for catalog, profiles, bundles, and policy rules.

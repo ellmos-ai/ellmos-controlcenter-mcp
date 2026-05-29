@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `server.json` und neues `llms.txt` ins npm-Paket aufgenommen, damit MCP-Registry- und LLM-Crawler die ControlCenter-Metadaten über GitHub oder npm lesen können.
+- Operative `*-protocoll.txt`-Botprotokolle aus dem veröffentlichten Repo entfernt und künftig ignoriert.
+- README und README_de um Discovery-/Registry-Metadaten ergänzt.
+
 ## 0.1.0-alpha.3 - 2026-05-26
 
 - Capability-Bundles aus `data/capability-bundles.json` ladbar gemacht, inklusive `ELLMOS_BUNDLE_CONFIG` und optionalem `bundleConfigPath` für Bundle-Tools.
