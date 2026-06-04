@@ -13,6 +13,7 @@ import {
   discoverLocalServerDirectories,
   extractToolCountFromDescription,
   createLocalServerMcpConfig,
+  getDefaultMcpRoot,
   scanLocalServers
 } from "../src/catalog.js";
 import {
@@ -53,6 +54,24 @@ async function createTempDirectory(prefix: string): Promise<string> {
 }
 
 describe("catalog helpers", () => {
+  it("derives the default MCP root from OneDrive or the current home directory", () => {
+    const oneDriveRoot = path.join(os.tmpdir(), "controlcenter-onedrive-root");
+    const homeDirectory = path.join(os.tmpdir(), "controlcenter-home-root");
+
+    expect(getDefaultMcpRoot({ OneDrive: oneDriveRoot }, homeDirectory)).toBe(
+      path.join(oneDriveRoot, ".TOPICS", ".AI", ".MCP")
+    );
+    expect(getDefaultMcpRoot({ ONEDRIVE: oneDriveRoot }, homeDirectory)).toBe(
+      path.join(oneDriveRoot, ".TOPICS", ".AI", ".MCP")
+    );
+    expect(getDefaultMcpRoot({ OneDrive: "   " }, homeDirectory)).toBe(
+      path.join(homeDirectory, "OneDrive", ".TOPICS", ".AI", ".MCP")
+    );
+    expect(getDefaultMcpRoot({}, homeDirectory)).toBe(
+      path.join(homeDirectory, "OneDrive", ".TOPICS", ".AI", ".MCP")
+    );
+  });
+
   it("extracts tool count from descriptions", () => {
     expect(extractToolCountFromDescription("providing 17 tools for code analysis")).toBe(17);
     expect(extractToolCountFromDescription("no explicit count here")).toBeNull();

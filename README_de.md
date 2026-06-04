@@ -148,6 +148,8 @@ Optionale Umgebungsvariablen:
 - `ELLMOS_BUNDLE_CONFIG` überschreibt die Datei mit Capability-Bundle-Definitionen
 - `ELLMOS_POLICY_CONFIG` überschreibt die Datei mit Profil-Audit-Regeln
 
+Standardmäßig wird der MCP-Root aus der Umgebungsvariable `OneDrive`/`ONEDRIVE` abgeleitet und fällt sonst auf `~/OneDrive/.TOPICS/.AI/.MCP` zurück.
+
 ## Profilwechsel
 
 `controlcenter_switch_profile` verändert keine laufende Claude-Session. Das Tool erzeugt eine aufgelöste MCP-Konfiguration und gibt den passenden Startbefehl zurück:

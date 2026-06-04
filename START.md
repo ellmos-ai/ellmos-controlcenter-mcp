@@ -11,8 +11,8 @@
 
 ## Lokaler Schnelltest
 
-```bash
-cd C:\Users\User\OneDrive\.TOPICS\.AI\.MCP\ellmos-controlcenter-mcp
+```powershell
+cd "$env:USERPROFILE\OneDrive\.TOPICS\.AI\.MCP\ellmos-controlcenter-mcp"
 npm install
 npm run test
 npm run build
@@ -32,8 +32,8 @@ Nach dem MVP sollten diese Schichten ergänzt werden:
 
 Der MVP kann Profile auflösen und eine startbare MCP-Config schreiben:
 
-```bash
-claude --mcp-config C:\Users\User\.claude\profiles\_generated\software.mcp.json
+```powershell
+claude --mcp-config "$env:USERPROFILE\.claude\profiles\_generated\software.mcp.json"
 ```
 
 Der Wechsel wird dadurch explizit und nachvollziehbar. Eine laufende Claude-Session wird nicht automatisch beendet.

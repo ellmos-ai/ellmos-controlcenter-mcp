@@ -5,6 +5,7 @@
 - `server.json` und neues `llms.txt` ins npm-Paket aufgenommen, damit MCP-Registry- und LLM-Crawler die ControlCenter-Metadaten über GitHub oder npm lesen können.
 - Operative `*-protocoll.txt`-Botprotokolle aus dem veröffentlichten Repo entfernt und künftig ignoriert.
 - README und README_de um Discovery-/Registry-Metadaten ergänzt.
+- Der Standard-MCP-Root wird jetzt aus OneDrive- oder Home-Umgebung abgeleitet, statt einen lokalen Nutzerpfad im Release-Code zu tragen.
 
 ## 0.1.0-alpha.3 - 2026-05-26
 

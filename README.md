@@ -148,6 +148,8 @@ Optional environment variables:
 - `ELLMOS_BUNDLE_CONFIG` overrides the capability bundle definition file
 - `ELLMOS_POLICY_CONFIG` overrides the profile audit policy rule file
 
+By default, the MCP repository root is derived from the `OneDrive`/`ONEDRIVE` environment variable and falls back to `~/OneDrive/.TOPICS/.AI/.MCP`.
+
 ## Profile Switching
 
 `controlcenter_switch_profile` does not change a running Claude session. It creates a resolved MCP configuration and returns a launch command:

@@ -1,8 +1,28 @@
 import * as fs from "fs/promises";
+import * as os from "os";
 import * as path from "path";
 
 export const DEFAULT_MCP_ROOT =
-  process.env.ELLMOS_MCP_ROOT ?? "C:\\Users\\User\\OneDrive\\.TOPICS\\.AI\\.MCP";
+  process.env.ELLMOS_MCP_ROOT ?? getDefaultMcpRoot();
+
+export function getDefaultMcpRoot(
+  env: NodeJS.ProcessEnv = process.env,
+  homeDirectory: string = os.homedir()
+): string {
+  const oneDriveRoot =
+    firstNonEmptyPath(env.OneDrive, env.ONEDRIVE) ??
+    path.join(homeDirectory, "OneDrive");
+  return path.join(oneDriveRoot, ".TOPICS", ".AI", ".MCP");
+}
+
+function firstNonEmptyPath(...values: Array<string | undefined>): string | null {
+  for (const value of values) {
+    if (value && value.trim().length > 0) {
+      return value;
+    }
+  }
+  return null;
+}
 
 const IGNORED_DIRECTORIES = new Set([
   ".git",
