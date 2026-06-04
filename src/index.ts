@@ -37,7 +37,7 @@ import {
 
 const server = new McpServer({
   name: "ellmos-controlcenter-mcp",
-  version: "0.1.0-alpha.5"
+  version: "0.1.0-alpha.6"
 });
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -220,7 +220,7 @@ function formatLanguageReport(): string {
     "",
     `- ${labels.language.current(getLanguageName(current), current)}`,
     `- ${labels.language.supported(describeSupportedLanguages())}`,
-    `- ${labels.common.hint}: ${labels.language.fallbackNote}`
+    `- ${labels.common.hint}: ${labels.language.note}`
   ].join("\n");
 }
 
@@ -253,7 +253,7 @@ server.registerTool(
       "",
       `- ${labels.language.changed(getLanguageName(current), current)}`,
       `- ${labels.language.supported(getSupportedLanguages().map((lang) => `${lang}=${getLanguageName(lang)}`).join(", "))}`,
-      `- ${labels.common.hint}: ${labels.language.fallbackNote}`
+      `- ${labels.common.hint}: ${labels.language.note}`
     ].join("\n");
     return { content: [{ type: "text", text: output }] };
   }

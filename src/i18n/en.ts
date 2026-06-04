@@ -6,7 +6,7 @@ export const en: Translations = {
     current: (langName, lang) => `Current language: ${langName} (${lang})`,
     changed: (langName, lang) => `Language set to ${langName} (${lang}).`,
     supported: (languages) => `Supported languages: ${languages}`,
-    fallbackNote: "German and English are fully maintained; es, zh, ja, and ru currently fall back to English text."
+    note: "All supported languages have maintained text sets; custom bundle titles and descriptions are shown as authored."
   },
   common: {
     yes: "yes",

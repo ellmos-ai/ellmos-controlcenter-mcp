@@ -79,12 +79,43 @@ describe("i18n helpers", () => {
     expect(suggestProfile("debug a TypeScript repository").rationale).toContain("Recommended because");
   });
 
-  it("keeps stub languages registered with explicit fallback text", () => {
-    setLanguage("es");
+  it("provides maintained text sets for every registered language", () => {
+    const localizedLanguages = [
+      {
+        lang: "es",
+        name: "Español",
+        noProfiles: "No se encontraron perfiles de Claude.",
+        rationaleFragment: "Recomendado porque"
+      },
+      {
+        lang: "zh",
+        name: "中文",
+        noProfiles: "未找到 Claude 配置文件。",
+        rationaleFragment: "推荐原因"
+      },
+      {
+        lang: "ja",
+        name: "日本語",
+        noProfiles: "Claude プロファイルが見つかりません。",
+        rationaleFragment: "推奨"
+      },
+      {
+        lang: "ru",
+        name: "Русский",
+        noProfiles: "Профили Claude не найдены.",
+        rationaleFragment: "Рекомендуется"
+      }
+    ] as const;
 
-    expect(getLanguageName("es")).toBe("Español");
-    expect(t().language.fallbackNote).toContain("fallback language");
-    expect(t().common.noProfiles).toBe("No Claude profiles found.");
+    for (const language of localizedLanguages) {
+      setLanguage(language.lang);
+
+      expect(getLanguageName(language.lang)).toBe(language.name);
+      expect(t().language.note).not.toMatch(/fallback|English text set/i);
+      expect(t().common.noProfiles).toBe(language.noProfiles);
+      expect(t().common.noProfiles).not.toBe("No Claude profiles found.");
+      expect(suggestProfile("debug a TypeScript repository").rationale).toContain(language.rationaleFragment);
+    }
   });
 });
 

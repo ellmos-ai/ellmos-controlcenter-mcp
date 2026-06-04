@@ -15,7 +15,7 @@
 - [x] Tool-Capability-Zuordnung für Bundles bauen
 - [x] Dashboard-Ansicht der Tool-Zuordnung ergänzen
 - [x] i18n-Grundlage für MCP-Ausgaben und Dashboard mit Deutsch/Englisch ergänzen
-- Stub-Sprachen `es`, `zh`, `ja` und `ru` mit echten Übersetzungen füllen
+- [x] Stub-Sprachen `es`, `zh`, `ja` und `ru` mit echten Übersetzungen füllen
 - Remote-Auth und Header-Handling für Legacy-SSE ergänzen
 - Capability-Tags in `server.json` oder separatem Catalog persistieren
 - Automatischen Scan für Skills, Module, MCP-Server, Tool-Definitionen und lokale Konfigurationsquellen entwerfen

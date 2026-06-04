@@ -13,7 +13,7 @@ export interface Translations {
     current: (langName: string, lang: Lang) => string;
     changed: (langName: string, lang: Lang) => string;
     supported: (languages: string) => string;
-    fallbackNote: string;
+    note: string;
   };
   common: {
     yes: string;

@@ -25,6 +25,7 @@ Status: begonnen
 - [x] Tools Capability-Bundles zuordnen
 - [x] Dashboard-Visualisierung für Tool-Katalog und Tool-Bundle-Zuordnung nachziehen
 - [x] i18n-Basis für MCP-Ausgaben und Dashboard mit Deutsch/Englisch umsetzen
+- [x] Textsets für `es`, `zh`, `ja` und `ru` ergänzen
 - Remote-Authentifizierung und Header-Sonderfälle nachziehen
 
 ## Phase 2.5: Ressourcen-, Skill- und API-Inventar
@@ -72,7 +73,7 @@ Status: geplant
 
 Status: geplant
 
-- echte Übersetzungen für `es`, `zh`, `ja` und `ru`
+- Übersetzungsqualität und Terminologie laufend prüfen
 - stabiler Katalogstandard
 - Sicherheitsdokumentation
 - Paketierung für npm und GitHub

@@ -37,7 +37,7 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
 - `i18n/`
   - hält zentrale Textsets für MCP-Ausgaben und Dashboard bereit
   - unterstützt `de`, `en`, `es`, `zh`, `ja` und `ru`
-  - pflegt Deutsch und Englisch vollständig; die übrigen Sprachcodes fallen aktuell explizit auf Englisch zurück
+  - pflegt vollständige Textsets für Deutsch, Englisch, Spanisch, Chinesisch, Japanisch und Russisch
   - liest die initiale Sprache aus `CONTROLCENTER_LANGUAGE`, `ELLMOS_CONTROLCENTER_LANGUAGE` oder `LANG`
 - `dashboard.ts`
   - stellt eine lokale Browser-GUI bereit

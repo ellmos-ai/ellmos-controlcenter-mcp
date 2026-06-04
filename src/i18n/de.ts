@@ -6,7 +6,7 @@ export const de: Translations = {
     current: (langName, lang) => `Aktuelle Sprache: ${langName} (${lang})`,
     changed: (langName, lang) => `Sprache gesetzt auf ${langName} (${lang}).`,
     supported: (languages) => `Unterstützte Sprachen: ${languages}`,
-    fallbackNote: "Deutsch und Englisch sind vollständig gepflegt; es, zh, ja und ru fallen aktuell auf englische Texte zurück."
+    note: "Alle unterstützten Sprachen haben gepflegte Textsets; eigene Bundle-Titel und -Beschreibungen werden wie gepflegt angezeigt."
   },
   common: {
     yes: "ja",
@@ -35,7 +35,7 @@ export const de: Translations = {
     error: "Fehler",
     active: "aktiv",
     id: "ID",
-    keywords: "Keywords",
+    keywords: "Schlüsselwörter",
     server: "Server",
     servers: "Server",
     profile: "Profil",
@@ -44,11 +44,11 @@ export const de: Translations = {
     written: "Geschrieben",
     command: "Startbefehl",
     details: "Details",
-    findings: "Findings",
-    severity: "Severity",
+    findings: "Befunde",
+    severity: "Schweregrad",
     hint: "Hinweis",
-    high: "High",
-    warning: "Warning",
+    high: "Hoch",
+    warning: "Warnung",
     info: "Info"
   },
   tables: {

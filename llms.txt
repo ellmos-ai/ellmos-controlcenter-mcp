@@ -11,7 +11,7 @@ Runtime: Node.js >=18
 
 ## Summary
 
-ellmos ControlCenter MCP is an alpha-stage Model Context Protocol server for local MCP administration. It discovers local MCP repositories, reads Claude profile files, resolves inherited profile configurations, recommends profiles and capability bundles for tasks, runs initial profile policy audits, builds local server catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, supports German/English output text with registered fallback languages, and can start a local dashboard.
+ellmos ControlCenter MCP is an alpha-stage Model Context Protocol server for local MCP administration. It discovers local MCP repositories, reads Claude profile files, resolves inherited profile configurations, recommends profiles and capability bundles for tasks, runs initial profile policy audits, builds local server catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, supports maintained output text sets for `de`, `en`, `es`, `zh`, `ja`, and `ru`, and can start a local dashboard.
 
 It is useful for local MCP stack visibility and profile management. It is not a hardened security gateway. Gateway mode, enforced tool-level permissions, authentication, and hard isolation are planned but not implemented.
 

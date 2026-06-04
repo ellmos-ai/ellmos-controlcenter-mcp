@@ -6,7 +6,7 @@
 - TypeScript-MCP-Grundgerüst vorhanden
 - Erste Discovery- und Profiltools implementiert
 - Tests für Kernlogik vorhanden
-- Version `0.1.0-alpha.5` für GitHub/npm-Release vorbereitet
+- Version `0.1.0-alpha.6` für GitHub/npm-Release vorbereitet
 
 ## Was der MVP schon kann
 
@@ -29,7 +29,7 @@
 - Lokales Browser-Dashboard starten
 - Server pro Profil über das Dashboard aktivieren/deaktivieren
 - Tool-Katalog und Tool-Bundle-Zuordnung im Dashboard anzeigen
-- MCP-Ausgaben und Dashboard zwischen Deutsch und Englisch umschalten; `es`, `zh`, `ja` und `ru` sind als Fallback-Sprachen registriert
+- MCP-Ausgaben und Dashboard zwischen Deutsch, Englisch, Spanisch, Chinesisch, Japanisch und Russisch umschalten
 - Schreibaktionen mit Bestätigung und Backup absichern
 
 ## Was noch fehlt
@@ -42,6 +42,5 @@
 - Tool-Gruppen dauerhaft konfigurieren
 - Durchsetzende Policy-/Gateway-Schicht
 - Remote-Registry-Unterstützung
-- Echte Übersetzungen für `es`, `zh`, `ja` und `ru`
 - Observability mit Traces und Replay
 - Laufende Claude-Sessions automatisch neu starten

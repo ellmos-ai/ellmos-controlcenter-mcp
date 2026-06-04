@@ -21,7 +21,7 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.1.0-alpha.5`
+- **Version:** `0.1.0-alpha.6`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI checks:** `npm run test` and `npm run build`
@@ -157,7 +157,7 @@ By default, the MCP repository root is derived from the `OneDrive`/`ONEDRIVE` en
 
 ## Internationalization
 
-ControlCenter supports the language codes `de`, `en`, `es`, `zh`, `ja`, and `ru`. German and English have complete maintained text sets. The other languages are registered as explicit fallback languages and currently use English output text until their translations are filled.
+ControlCenter supports the language codes `de`, `en`, `es`, `zh`, `ja`, and `ru`. All six languages now have maintained text sets for MCP tool output, dashboard labels, policy hints, profile recommendations, and tool descriptions.
 
 Use `controlcenter_get_language` to inspect the current language and `controlcenter_set_language` to switch MCP tool output at runtime. The dashboard also includes a language selector and accepts `/?lang=en` style links. Bundle titles and descriptions loaded from custom JSON config files are shown as authored.
 

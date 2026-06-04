@@ -339,7 +339,7 @@ export async function readToolCatalogTarget(
 
   let transport: Transport | null = null;
   const client = new Client(
-    { name: "ellmos-controlcenter-tool-catalog", version: "0.1.0-alpha.5" },
+    { name: "ellmos-controlcenter-tool-catalog", version: "0.1.0-alpha.6" },
     { capabilities: {} }
   );
 

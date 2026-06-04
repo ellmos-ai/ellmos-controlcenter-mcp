@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.1.0-alpha.6 - 2026-06-05
+
+- Vollständige ControlCenter-Textsets für Spanisch, Chinesisch, Japanisch und Russisch ergänzt.
+- Sprachhinweise von Fallback-Status auf gepflegte Textsets für alle unterstützten Sprachen umgestellt.
+- i18n-Tests erweitert, sodass registrierte Nicht-DE/EN-Sprachen echte lokalisierte Ausgaben und Profilempfehlungen liefern müssen.
+- README, README_de, State, Architektur, Roadmap, TODO und LLM-Crawler-Zusammenfassung an den neuen i18n-Stand angepasst.
+
 ## 0.1.0-alpha.5 - 2026-06-05
 
 - i18n-Infrastruktur für ControlCenter ergänzt: Sprachcodes `de`, `en`, `es`, `zh`, `ja` und `ru`, vollständige deutsche und englische Textsets sowie explizite Fallback-Sprachen.
