@@ -16,12 +16,14 @@ Status: begonnen
 
 ## Phase 2: Tool-Katalog
 
-Status: geplant
+Status: begonnen
 
-- Backend-MCP-Server starten
-- `list_tools` pro Server auslesen
-- Toolnamen, Beschreibungen und Schemas speichern
-- Tools Capability-Bundles zuordnen
+- [x] Lokale Backend-MCP-Server kontrolliert starten
+- [x] `list_tools` pro lokalem Stdio-Server auslesen
+- [x] Toolnamen, Beschreibungen und Schemas in Probe-Ergebnissen speichern
+- [x] Profilserver, Remote-Server und alternative Startformen anbinden
+- [x] Tools Capability-Bundles zuordnen
+- Remote-Authentifizierung, Header-Sonderfälle und Dashboard-Visualisierung nachziehen
 
 ## Phase 2.5: Ressourcen-, Skill- und API-Inventar
 

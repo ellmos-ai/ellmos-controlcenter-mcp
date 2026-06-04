@@ -22,6 +22,14 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
   - validiert Bundle-Konfigurationen und meldet doppelte IDs oder Schemafehler explizit
   - gruppiert lokale Server nach Beschreibung, Name und Keywords
   - empfiehlt Bundles anhand von Aufgaben-Keywords
+  - ordnet echte Tool-Metadaten den Capability-Bundles zu
+- `toolCatalog.ts`
+  - modelliert Toolscan-Ziele aus lokalen Repos und aufgelösten Claude-Profilen
+  - startet lokale und profildefinierte Stdio-MCP-Server kontrolliert über die SDK-Client-Transport-Schicht
+  - unterstützt Nicht-Node-Kommandos sowie URL-basierte Streamable-HTTP- und SSE-Konfigurationen
+  - ruft echte MCP-`list_tools`-Antworten ab
+  - normalisiert Toolnamen, Titel, Beschreibungen, Input-Schemas und Annotationen
+  - begrenzt Probe-Laufzeiten per Timeout und beendet gestartete Prozesse wieder
 - `policy.ts`
   - auditiert aufgelöste Profile
   - meldet erste Risiken wie `npx`-Starts, Env-Secrets und ungültige Server-Konfigurationen

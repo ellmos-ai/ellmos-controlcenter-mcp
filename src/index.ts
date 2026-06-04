@@ -6,9 +6,17 @@ import { fileURLToPath } from "url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { loadCapabilityBundles, suggestCapabilityBundles, type CapabilityBundle } from "./bundles.js";
+import {
+  buildBundleToolAssignments,
+  loadBundleDefinitions,
+  loadCapabilityBundles,
+  suggestCapabilityBundles,
+  type BundleToolAssignment,
+  type CapabilityBundle
+} from "./bundles.js";
 import { DEFAULT_MCP_ROOT, scanLocalServers } from "./catalog.js";
 import { auditResolvedProfile, loadPolicyRules, summarizePolicyFindings } from "./policy.js";
+import { buildToolCatalog, scanLocalServerTools, scanProfileServerTools, type ServerToolCatalog } from "./toolCatalog.js";
 import {
   DEFAULT_PROFILE_ROOT,
   listClaudeProfiles,
@@ -19,7 +27,7 @@ import {
 
 const server = new McpServer({
   name: "ellmos-controlcenter-mcp",
-  version: "0.1.0-alpha.3"
+  version: "0.1.0-alpha.4"
 });
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -82,6 +90,104 @@ function formatBundleTable(bundleRows: CapabilityBundle[]): string {
   return lines.join("\n");
 }
 
+function escapeMarkdownTableCell(value: string): string {
+  return value.replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+}
+
+function formatToolCatalog(toolCatalog: ServerToolCatalog[]): string {
+  if (toolCatalog.length === 0) {
+    return "Keine MCP-Server für den Tool-Scan gefunden.";
+  }
+
+  return toolCatalog
+    .map((entry) => {
+      const header = [
+        `## ${entry.packageName}`,
+        "",
+        `- Status: ${entry.status}`,
+        `- Quelle: ${entry.source}${entry.profileName ? ` (${entry.profileName})` : ""}`,
+        `- Transport: ${entry.transportKind}`,
+        `- Tools: ${entry.toolCount ?? "-"}`,
+        `- Dauer: ${entry.durationMs} ms`,
+        `- Start: ${entry.command ? `${entry.command} ${entry.args.join(" ")}`.trim() : entry.url ?? "-"}`
+      ];
+      if (entry.error) {
+        header.push(`- Fehler: ${entry.error}`);
+      }
+      if (entry.tools.length === 0) {
+        return [...header, "", "Keine Tools gemeldet."].join("\n");
+      }
+      return [
+        ...header,
+        "",
+        "| Tool | Titel | Beschreibung |",
+        "|---|---|---|",
+        ...entry.tools.map((tool) =>
+          `| ${escapeMarkdownTableCell(tool.name)} | ${escapeMarkdownTableCell(tool.title ?? "-")} | ${escapeMarkdownTableCell(tool.description || "-")} |`
+        )
+      ].join("\n");
+    })
+    .join("\n\n");
+}
+
+function formatBundleToolAssignments(assignments: BundleToolAssignment[]): string {
+  if (assignments.length === 0) {
+    return "Keine Bundle-Zuordnungen berechnet.";
+  }
+
+  return assignments
+    .map((assignment) => {
+      const header = [
+        `## ${assignment.title}`,
+        "",
+        `- ID: ${assignment.bundleId}`,
+        `- Tools: ${assignment.toolCount}`,
+        `- Keywords: ${assignment.keywords.join(", ")}`
+      ];
+      if (assignment.tools.length === 0) {
+        return [...header, "", "Keine passenden Tools."].join("\n");
+      }
+      return [
+        ...header,
+        "",
+        "| Server | Tool | Treffer | Beschreibung |",
+        "|---|---|---|---|",
+        ...assignment.tools.map((tool) =>
+          `| ${escapeMarkdownTableCell(tool.serverName)} | ${escapeMarkdownTableCell(tool.toolName)} | ${escapeMarkdownTableCell(tool.matchedKeywords.join(", "))} | ${escapeMarkdownTableCell(tool.description || "-")} |`
+        )
+      ].join("\n");
+    })
+    .join("\n\n");
+}
+
+async function readRequestedToolCatalog(options: {
+  mcpRoot?: string;
+  profileName?: string;
+  profileRoot?: string;
+  serverName?: string;
+  timeoutMs?: number;
+}): Promise<{ sourceLabel: string; toolCatalog: ServerToolCatalog[] }> {
+  if (options.profileName && options.profileName.trim().length > 0) {
+    const profileRoot = options.profileRoot ?? DEFAULT_PROFILE_ROOT;
+    return {
+      sourceLabel: `Profil ${options.profileName} in ${profileRoot}`,
+      toolCatalog: await scanProfileServerTools(options.profileName, profileRoot, {
+        serverName: options.serverName,
+        timeoutMs: options.timeoutMs
+      })
+    };
+  }
+
+  const mcpRoot = options.mcpRoot ?? DEFAULT_MCP_ROOT;
+  return {
+    sourceLabel: `Lokale MCP-Repos in ${mcpRoot}`,
+    toolCatalog: await scanLocalServerTools(mcpRoot, {
+      serverName: options.serverName,
+      timeoutMs: options.timeoutMs
+    })
+  };
+}
+
 server.registerTool(
   "controlcenter_status",
   {
@@ -138,6 +244,78 @@ server.registerTool(
       "",
       formatServerTable(servers)
     ].join("\n");
+
+    return { content: [{ type: "text", text: output }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_list_tools",
+  {
+    title: "List MCP Tools",
+    description: "Startet lokale oder profildefinierte MCP-Server kontrolliert und liest deren echte Tool-Liste per MCP list_tools aus.",
+    inputSchema: {
+      mcpRoot: z.string().optional().describe("Optionaler MCP-Root. Standard ist der lokale ellmos-MCP-Ordner."),
+      profileName: z.string().optional().describe("Optionaler Profilname. Wenn gesetzt, werden die aufgelösten Server dieses Claude-Profils gescannt."),
+      profileRoot: z.string().optional().describe("Optionaler Profilordner. Standard ist ~/.claude/profiles."),
+      serverName: z.string().optional().describe("Optionaler Servername, Paketname, mcpName oder Profilservername für einen gezielten Scan."),
+      timeoutMs: z.number().int().positive().max(60000).optional().describe("Timeout pro Connect- und list_tools-Anfrage in Millisekunden. Standard: 5000.")
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ mcpRoot, profileName, profileRoot, serverName, timeoutMs }) => {
+    const { sourceLabel, toolCatalog } = await readRequestedToolCatalog({ mcpRoot, profileName, profileRoot, serverName, timeoutMs });
+    const output = [
+      "# MCP-Tool-Katalog",
+      "",
+      `Quelle: ${sourceLabel}`,
+      serverName ? `Filter: ${serverName}` : profileName ? "Filter: alle Profilserver" : "Filter: alle lokalen MCP-Server",
+      "",
+      formatToolCatalog(toolCatalog)
+    ].join("\n");
+
+    return { content: [{ type: "text", text: output }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_assign_tool_bundles",
+  {
+    title: "Assign Tools To Capability Bundles",
+    description: "Ordnet echte MCP-Tools anhand ihrer Metadaten den ControlCenter-Capability-Bundles zu.",
+    inputSchema: {
+      mcpRoot: z.string().optional().describe("Optionaler MCP-Root. Standard ist der lokale ellmos-MCP-Ordner."),
+      profileName: z.string().optional().describe("Optionaler Profilname. Wenn gesetzt, werden die aufgelösten Server dieses Claude-Profils gescannt."),
+      profileRoot: z.string().optional().describe("Optionaler Profilordner. Standard ist ~/.claude/profiles."),
+      serverName: z.string().optional().describe("Optionaler Servername für einen gezielten Scan."),
+      bundleConfigPath: z.string().optional().describe("Optionaler Pfad zu einer Capability-Bundle-Konfiguration."),
+      timeoutMs: z.number().int().positive().max(60000).optional().describe("Timeout pro MCP-Tool-Scan in Millisekunden. Standard: 5000.")
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ mcpRoot, profileName, profileRoot, serverName, bundleConfigPath, timeoutMs }) => {
+    const [{ sourceLabel, toolCatalog }, definitions] = await Promise.all([
+      readRequestedToolCatalog({ mcpRoot, profileName, profileRoot, serverName, timeoutMs }),
+      loadBundleDefinitions(bundleConfigPath)
+    ]);
+    const assignments = buildBundleToolAssignments(toolCatalog, definitions);
+    const failedCatalogs = toolCatalog.filter((entry) => entry.status !== "ok");
+    const output = [
+      "# Tool-Bundle-Zuordnung",
+      "",
+      `Quelle: ${sourceLabel}`,
+      `Server-Probes: ${toolCatalog.length}`,
+      `Nicht erfolgreiche Probes: ${failedCatalogs.length}`,
+      "",
+      formatBundleToolAssignments(assignments),
+      failedCatalogs.length > 0
+        ? [
+          "",
+          "## Probe-Hinweise",
+          failedCatalogs.map((entry) => `- ${entry.packageName}: ${entry.status}${entry.error ? ` (${entry.error})` : ""}`).join("\n")
+        ].join("\n")
+        : ""
+    ].filter(Boolean).join("\n");
 
     return { content: [{ type: "text", text: output }] };
   }
@@ -377,19 +555,35 @@ server.registerTool(
     description: "Erzeugt einen JSON-Katalog der lokal gefundenen MCP-Server.",
     inputSchema: {
       mcpRoot: z.string().optional().describe("Optionaler MCP-Root für den Scan."),
-      outputPath: z.string().optional().describe("Optionaler Ausgabeort für den JSON-Katalog.")
+      outputPath: z.string().optional().describe("Optionaler Ausgabeort für den JSON-Katalog."),
+      profileName: z.string().optional().describe("Optionaler Profilname. Wenn gesetzt, werden bei includeTools zusätzlich die Profilserver gescannt."),
+      profileRoot: z.string().optional().describe("Optionaler Profilordner. Standard ist ~/.claude/profiles."),
+      bundleConfigPath: z.string().optional().describe("Optionaler Pfad zu einer Capability-Bundle-Konfiguration für Tool-Zuordnungen."),
+      includeTools: z.boolean().default(false).describe("Wenn true, werden lokale MCP-Server gestartet und echte list_tools-Ergebnisse in den Katalog aufgenommen."),
+      includeToolAssignments: z.boolean().default(false).describe("Wenn true, werden Tool-Bundle-Zuordnungen für gescannte Tools in den Katalog aufgenommen."),
+      timeoutMs: z.number().int().positive().max(60000).optional().describe("Timeout pro MCP-Tool-Scan in Millisekunden. Standard: 5000.")
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
   },
-  async ({ mcpRoot, outputPath }) => {
+  async ({ mcpRoot, outputPath, profileName, profileRoot, bundleConfigPath, includeTools, includeToolAssignments, timeoutMs }) => {
     const resolvedRoot = mcpRoot ?? DEFAULT_MCP_ROOT;
     const resolvedOutputPath = outputPath ?? path.join(PROJECT_ROOT, "data", "server-catalog.json");
     const servers = await scanLocalServers(resolvedRoot);
+    const shouldScanTools = includeTools || includeToolAssignments;
+    const toolCatalog = shouldScanTools ? await buildToolCatalog(servers, { timeoutMs }) : null;
+    const profileToolCatalog = shouldScanTools && profileName
+      ? await scanProfileServerTools(profileName, profileRoot ?? DEFAULT_PROFILE_ROOT, { timeoutMs })
+      : null;
+    const allToolCatalogs = [...(toolCatalog ?? []), ...(profileToolCatalog ?? [])];
+    const bundleDefinitions = includeToolAssignments ? await loadBundleDefinitions(bundleConfigPath) : null;
     const payload = {
       generatedAt: new Date().toISOString(),
       mcpRoot: resolvedRoot,
       serverCount: servers.length,
-      servers
+      servers,
+      ...(toolCatalog ? { toolCatalog } : {}),
+      ...(profileToolCatalog ? { profileName, profileToolCatalog } : {}),
+      ...(bundleDefinitions ? { toolBundleAssignments: buildBundleToolAssignments(allToolCatalogs, bundleDefinitions) } : {})
     };
 
     await fs.mkdir(path.dirname(resolvedOutputPath), { recursive: true });
@@ -399,7 +593,10 @@ server.registerTool(
       "# Katalog erstellt",
       "",
       `- Ausgabe: ${resolvedOutputPath}`,
-      `- Server: ${servers.length}`
+      `- Server: ${servers.length}`,
+      `- Tool-Scan: ${shouldScanTools ? "ja" : "nein"}`,
+      `- Profil-Tool-Scan: ${profileToolCatalog ? "ja" : "nein"}`,
+      `- Tool-Bundle-Zuordnung: ${includeToolAssignments ? "ja" : "nein"}`
     ].join("\n");
 
     return { content: [{ type: "text", text: output }] };

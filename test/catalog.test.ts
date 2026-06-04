@@ -4,6 +4,7 @@ import * as path from "path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   buildCapabilityBundles,
+  buildBundleToolAssignments,
   BundleConfigError,
   loadBundleDefinitions,
   loadCapabilityBundles,
@@ -35,6 +36,13 @@ import {
   PolicyConfigError,
   summarizePolicyFindings
 } from "../src/policy.js";
+import {
+  buildToolCatalog,
+  createProfileToolCatalogTargets,
+  filterServersForToolScan,
+  normalizeToolScanTimeout,
+  scanProfileServerTools
+} from "../src/toolCatalog.js";
 
 const tempDirectories: string[] = [];
 
@@ -51,6 +59,53 @@ async function createTempDirectory(prefix: string): Promise<string> {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
   tempDirectories.push(directory);
   return directory;
+}
+
+async function createFixtureMcpServer(serverDir: string): Promise<string> {
+  await fs.mkdir(serverDir, { recursive: true });
+  const serverPath = path.join(serverDir, "server.mjs");
+  await fs.writeFile(
+    serverPath,
+    [
+      "const tools = [{",
+      "  name: 'fixture_echo',",
+      "  title: 'Fixture Echo',",
+      "  description: 'Echoes fixture input.',",
+      "  inputSchema: { type: 'object', properties: { value: { type: 'string' } } },",
+      "  annotations: { readOnlyHint: true }",
+      "}];",
+      "let buffer = '';",
+      "function send(message) { process.stdout.write(JSON.stringify(message) + '\\n'); }",
+      "process.stdin.setEncoding('utf8');",
+      "process.stdin.on('data', (chunk) => {",
+      "  buffer += chunk;",
+      "  let newlineIndex;",
+      "  while ((newlineIndex = buffer.indexOf('\\n')) !== -1) {",
+      "    const line = buffer.slice(0, newlineIndex).trim();",
+      "    buffer = buffer.slice(newlineIndex + 1);",
+      "    if (!line) continue;",
+      "    const message = JSON.parse(line);",
+      "    if (message.method === 'initialize') {",
+      "      send({",
+      "        jsonrpc: '2.0',",
+      "        id: message.id,",
+      "        result: {",
+      "          protocolVersion: '2025-06-18',",
+      "          capabilities: { tools: { listChanged: false } },",
+      "          serverInfo: { name: 'tool-fixture-mcp', version: '0.0.1' }",
+      "        }",
+      "      });",
+      "    } else if (message.method === 'tools/list') {",
+      "      send({ jsonrpc: '2.0', id: message.id, result: { tools } });",
+      "    } else if (message.id) {",
+      "      send({ jsonrpc: '2.0', id: message.id, result: {} });",
+      "    }",
+      "  }",
+      "});"
+    ].join("\n"),
+    "utf-8"
+  );
+  return serverPath;
 }
 
 describe("catalog helpers", () => {
@@ -121,6 +176,131 @@ describe("catalog helpers", () => {
 
     expect(config.command).toBe("node");
     expect(config.args[0]).toContain("dist");
+  });
+});
+
+describe("tool catalog helpers", () => {
+  it("normalizes timeout limits for MCP tool probes", () => {
+    expect(normalizeToolScanTimeout(undefined)).toBe(5000);
+    expect(normalizeToolScanTimeout(100)).toBe(500);
+    expect(normalizeToolScanTimeout(90000)).toBe(60000);
+    expect(normalizeToolScanTimeout(2500.9)).toBe(2500);
+  });
+
+  it("filters servers by package, directory, mcpName, or bin name", () => {
+    const servers = [
+      {
+        directoryName: "demo-server-mcp",
+        packageName: "demo-server-mcp",
+        mcpName: "io.github.demo/demo-server-mcp",
+        version: "0.0.1",
+        description: "Demo",
+        absolutePath: "C:/tmp/demo-server-mcp",
+        binName: "demo-server",
+        entryPoint: "dist/index.js",
+        toolCount: null,
+        hasServerJson: true,
+        keywords: []
+      }
+    ];
+
+    expect(filterServersForToolScan(servers, "demo-server-mcp")).toHaveLength(1);
+    expect(filterServersForToolScan(servers, "io.github.demo/demo-server-mcp")).toHaveLength(1);
+    expect(filterServersForToolScan(servers, "demo-server")).toHaveLength(1);
+    expect(filterServersForToolScan(servers, "missing")).toHaveLength(0);
+  });
+
+  it("reads real MCP tools through stdio list_tools", async () => {
+    const root = await createTempDirectory("controlcenter-tool-root-");
+    const serverDir = path.join(root, "tool-fixture-mcp");
+    await createFixtureMcpServer(serverDir);
+    await fs.writeFile(
+      path.join(serverDir, "package.json"),
+      JSON.stringify({
+        name: "tool-fixture-mcp",
+        version: "0.0.1",
+        description: "A fixture MCP server",
+        mcpName: "io.github.demo/tool-fixture-mcp",
+        bin: {
+          "tool-fixture": "server.mjs"
+        }
+      }),
+      "utf-8"
+    );
+
+    const servers = await scanLocalServers(root);
+    const toolCatalog = await buildToolCatalog(servers, { timeoutMs: 2000 });
+
+    expect(toolCatalog).toHaveLength(1);
+    expect(toolCatalog[0]).toMatchObject({
+      packageName: "tool-fixture-mcp",
+      status: "ok",
+      toolCount: 1,
+      error: null
+    });
+    expect(toolCatalog[0].tools[0]).toMatchObject({
+      name: "fixture_echo",
+      title: "Fixture Echo",
+      description: "Echoes fixture input."
+    });
+  });
+
+  it("reads profile-defined stdio tools without assuming a node repo layout", async () => {
+    const root = await createTempDirectory("controlcenter-profile-tools-");
+    const serverDir = path.join(root, "standalone-fixture");
+    const serverPath = await createFixtureMcpServer(serverDir);
+    const profileRoot = path.join(root, "profiles");
+    await fs.mkdir(profileRoot, { recursive: true });
+    await fs.writeFile(
+      path.join(profileRoot, "base.json"),
+      JSON.stringify({
+        mcpServers: {
+          standalone: {
+            command: process.execPath,
+            args: [serverPath],
+            cwd: serverDir,
+            env: {
+              EXAMPLE_SECRET: "hidden"
+            }
+          }
+        }
+      }),
+      "utf-8"
+    );
+
+    const toolCatalog = await scanProfileServerTools("base", profileRoot, { timeoutMs: 2000 });
+
+    expect(toolCatalog).toHaveLength(1);
+    expect(toolCatalog[0]).toMatchObject({
+      source: "profile",
+      profileName: "base",
+      packageName: "standalone",
+      transportKind: "stdio",
+      status: "ok",
+      toolCount: 1
+    });
+    expect(JSON.stringify(toolCatalog)).not.toContain("hidden");
+  });
+
+  it("detects remote and unsupported profile start forms without leaking URL secrets", () => {
+    const targets = createProfileToolCatalogTargets({
+      name: "remote",
+      profileRoot: "C:/tmp/profiles",
+      sourceFiles: ["C:/tmp/profiles/remote.json"],
+      serverCount: 3,
+      servers: ["http", "legacy-sse", "broken"],
+      config: {
+        mcpServers: {
+          http: { url: "https://example.com/mcp?token=secret-value", transport: "streamable-http" },
+          "legacy-sse": { url: "https://example.com/sse", transport: "sse" },
+          broken: { args: ["--missing-command"] }
+        }
+      }
+    });
+
+    expect(targets.find((target) => target.packageName === "http")?.transportKind).toBe("streamable-http");
+    expect(targets.find((target) => target.packageName === "legacy-sse")?.transportKind).toBe("sse");
+    expect(targets.find((target) => target.packageName === "broken")?.transportKind).toBe("unsupported");
   });
 });
 
@@ -488,6 +668,47 @@ describe("bundle helpers", () => {
     expect(bundles).toHaveLength(1);
     expect(bundles[0].servers).toEqual(["paper-helper-mcp"]);
     expect(suggestCapabilityBundles("Bitte Paper und Zenodo vorbereiten", bundles)[0].bundle.id).toBe("research");
+  });
+
+  it("assigns real tool metadata to capability bundles", () => {
+    const assignments = buildBundleToolAssignments([
+      {
+        source: "profile",
+        profileName: "base",
+        directoryName: "base/files",
+        packageName: "files",
+        mcpName: null,
+        status: "ok",
+        transportKind: "stdio",
+        command: "node",
+        args: [],
+        url: null,
+        durationMs: 1,
+        toolCount: 2,
+        error: null,
+        tools: [
+          {
+            name: "read_file",
+            title: "Read File",
+            description: "Read a file from the local filesystem.",
+            inputSchema: { type: "object" },
+            annotations: null
+          },
+          {
+            name: "run_workflow",
+            title: "Run Workflow",
+            description: "Trigger an automation workflow.",
+            inputSchema: { type: "object" },
+            annotations: null
+          }
+        ]
+      }
+    ]);
+
+    const filesystem = assignments.find((assignment) => assignment.bundleId === "filesystem");
+    const automation = assignments.find((assignment) => assignment.bundleId === "automation");
+    expect(filesystem?.tools.map((tool) => tool.toolName)).toContain("read_file");
+    expect(automation?.tools.map((tool) => tool.toolName)).toContain("run_workflow");
   });
 
   it("reports duplicate capability bundle ids", async () => {

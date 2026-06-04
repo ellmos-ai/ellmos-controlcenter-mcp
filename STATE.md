@@ -22,13 +22,17 @@
 - Capability-Bundles anhand einer Aufgabe empfehlen
 - Profile auf erste Policy-Hinweise auditieren
 - Policy-Regeln aus `data/policy-rules.json` laden, deaktivieren und in ihrer Severity überschreiben
+- Lokale Stdio-MCP-Server starten und echte Toollisten per MCP-`list_tools` auslesen
+- Aufgelöste Claude-Profilserver scannen, inklusive beliebiger Stdio-Kommandos und URL-basierter Streamable-HTTP-/SSE-Configs
+- Tool-Probe-Ergebnisse optional in den lokalen Serverkatalog aufnehmen
+- Ausgelesene Tools anhand ihrer Metadaten Capability-Bundles zuordnen
 - Lokales Browser-Dashboard starten
 - Server pro Profil über das Dashboard aktivieren/deaktivieren
 - Schreibaktionen mit Bestätigung und Backup absichern
 
 ## Was noch fehlt
 
-- Tool-Level-Erkennung per echter MCP-`list_tools`-Abfrage
+- Remote-Auth, Header-Handling für Legacy-SSE und Dashboard-Anzeige der Tool-Bundle-Zuordnung
 - Automatische Erkennung von Skills, Modulen, APIs, lokalen Programmen, EXE-Dateien, CLI-Apps und Systemressourcen
 - Thematische Cluster, die automatisch vorgeschlagen und manuell gepflegt werden können
 - Virtuelle MCP-Server, die aus kuratierten Clustern entstehen

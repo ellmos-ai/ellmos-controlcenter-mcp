@@ -12,21 +12,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org/)
 
-An alpha-stage **Model Context Protocol (MCP) control plane** for local MCP stacks. ControlCenter discovers local MCP servers, reads Claude profile files, groups servers into capability bundles, recommends profiles for a task, builds catalogs, and provides an optional local dashboard.
+An alpha-stage **Model Context Protocol (MCP) control plane** for local MCP stacks. ControlCenter discovers local MCP servers, reads Claude profile files, groups servers into capability bundles, recommends profiles for a task, builds catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, and provides an optional local dashboard.
 
-The first alpha release focuses on **discovery, profile visibility, dashboard workflows, capability bundles, and initial policy audits**. Gateway mode, enforced tool-level permissions, authentication, and hard security boundaries are planned, but are not implemented yet.
+The first alpha release focuses on **discovery, profile visibility, dashboard workflows, capability bundles, profile-aware tool-list probes, tool-bundle assignments, and initial policy audits**. Gateway mode, enforced tool-level permissions, authentication, and hard security boundaries are planned, but are not implemented yet.
 
 > **Alpha note:** This version is useful for local administration and preview testing. It is not a hardened MCP gateway and should not be used as a security layer for untrusted tools or other users.
 
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.1.0-alpha.3`
+- **Version:** `0.1.0-alpha.4`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI checks:** `npm run test` and `npm run build`
 - **Goal:** Make local MCP stacks visible, inspectable, and easier to control
-- **Focus:** Catalogs, profile overview, profile recommendation, bundle recommendation, and early audits
+- **Focus:** Catalogs, profile overview, profile recommendation, bundle recommendation, profile-aware tool-list probes, tool-bundle assignments, and early audits
 
 ## Tools
 
@@ -34,6 +34,8 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 |---|---|
 | `controlcenter_status` | Show stack, profile, and detected-server status |
 | `controlcenter_list_local_servers` | Scan local MCP repositories below the MCP root |
+| `controlcenter_list_tools` | Start local or profile-defined MCP servers and read their real `list_tools` output |
+| `controlcenter_assign_tool_bundles` | Assign probed MCP tools to capability bundles |
 | `controlcenter_list_bundles` | Group local servers by capability bundle |
 | `controlcenter_suggest_bundles` | Recommend bundles for a task |
 | `controlcenter_list_profiles` | List Claude profiles from the profile root |
@@ -41,7 +43,7 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 | `controlcenter_resolve_profile` | Resolve a profile including `extends` chains |
 | `controlcenter_switch_profile` | Prepare a generated `--mcp-config` file |
 | `controlcenter_audit_profile` | Run initial policy checks against a profile |
-| `controlcenter_build_catalog` | Build a JSON catalog of local MCP servers |
+| `controlcenter_build_catalog` | Build a JSON catalog of local MCP servers, optionally including tool probes |
 
 ## Dashboard
 
@@ -176,6 +178,14 @@ Custom bundle files can be supplied with `ELLMOS_BUNDLE_CONFIG` or with the opti
 
 This is the basis for future tool-bloat management: instead of exposing many individual tools immediately, an agent can first choose the capability bundle that fits the task.
 
+## Tool Catalog
+
+`controlcenter_list_tools` can start local stdio MCP servers or resolved Claude profile servers and call the standard MCP `list_tools` request. Profile scans support arbitrary stdio commands, including non-Node launchers, and URL-based remote configs using Streamable HTTP or legacy SSE. The scan is explicit, uses a per-server timeout, does not call any reported tool, and closes each spawned local server after reading the tool list.
+
+`controlcenter_build_catalog` accepts `includeTools: true` to persist the same probe results alongside the local server catalog.
+
+`controlcenter_assign_tool_bundles` compares probed tool names, titles, descriptions, server names, source, and transport metadata with capability-bundle keywords, then reports which tools belong to bundles such as filesystem, software, automation, or control plane.
+
 ## Profile Audit
 
 `controlcenter_audit_profile` is the first small policy layer. It currently flags:
@@ -230,7 +240,7 @@ This MCP server is part of the **[ellmos-ai](https://github.com/ellmos-ai)** eco
 | [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 17 | Code analysis, AST parsing, import management | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
 | [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | File repair, format conversion, batch operations | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n workflow management via AI assistants | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **10** | **MCP stack discovery, profile management, control plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **12** | **MCP stack discovery, profile management, control plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 
 ### AI Infrastructure
 

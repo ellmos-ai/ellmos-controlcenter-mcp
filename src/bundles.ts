@@ -2,6 +2,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import type { LocalServerSummary } from "./catalog.js";
+import type { ServerToolCatalog } from "./toolCatalog.js";
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -22,6 +23,30 @@ export interface BundleSuggestion {
   bundle: CapabilityBundle;
   score: number;
   matchedKeywords: string[];
+}
+
+export interface ToolBundleAssignment {
+  serverName: string;
+  toolName: string;
+  title: string | null;
+  description: string;
+  bundleIds: string[];
+  matchedKeywords: Record<string, string[]>;
+}
+
+export interface BundleToolAssignment {
+  bundleId: string;
+  title: string;
+  description: string;
+  keywords: string[];
+  toolCount: number;
+  tools: Array<{
+    serverName: string;
+    toolName: string;
+    title: string | null;
+    description: string;
+    matchedKeywords: string[];
+  }>;
 }
 
 export interface BundleDefinition {
@@ -227,6 +252,10 @@ function matchesDefinition(server: LocalServerSummary, definition: BundleDefinit
   return definition.keywords.some((keyword) => matchesKeyword(haystackTokens, keyword));
 }
 
+function matchedDefinitionKeywords(haystackTokens: Set<string>, definition: BundleDefinition): string[] {
+  return definition.keywords.filter((keyword) => matchesKeyword(haystackTokens, keyword));
+}
+
 export function buildCapabilityBundles(
   servers: LocalServerSummary[],
   definitions: BundleDefinition[] = DEFAULT_BUNDLE_DEFINITIONS
@@ -268,4 +297,73 @@ export function suggestCapabilityBundles(task: string, bundles: CapabilityBundle
     })
     .filter((suggestion) => suggestion.score > 0)
     .sort((a, b) => b.score - a.score || a.bundle.id.localeCompare(b.bundle.id));
+}
+
+function buildToolHaystack(server: ServerToolCatalog, toolName: string, title: string | null, description: string): string {
+  return [
+    server.packageName,
+    server.mcpName ?? "",
+    server.profileName ?? "",
+    server.source,
+    server.transportKind,
+    toolName,
+    title ?? "",
+    description
+  ].join(" ");
+}
+
+export function assignToolsToCapabilityBundles(
+  toolCatalog: ServerToolCatalog[],
+  definitions: BundleDefinition[] = DEFAULT_BUNDLE_DEFINITIONS
+): ToolBundleAssignment[] {
+  const assignments: ToolBundleAssignment[] = [];
+  for (const server of toolCatalog) {
+    for (const tool of server.tools) {
+      const haystackTokens = tokenize(buildToolHaystack(server, tool.name, tool.title, tool.description));
+      const matchedKeywords: Record<string, string[]> = {};
+      for (const definition of definitions) {
+        const keywords = matchedDefinitionKeywords(haystackTokens, definition);
+        if (keywords.length > 0) {
+          matchedKeywords[definition.id] = keywords;
+        }
+      }
+
+      assignments.push({
+        serverName: server.packageName,
+        toolName: tool.name,
+        title: tool.title,
+        description: tool.description,
+        bundleIds: Object.keys(matchedKeywords).sort((a, b) => a.localeCompare(b)),
+        matchedKeywords
+      });
+    }
+  }
+  return assignments.sort((a, b) => a.serverName.localeCompare(b.serverName) || a.toolName.localeCompare(b.toolName));
+}
+
+export function buildBundleToolAssignments(
+  toolCatalog: ServerToolCatalog[],
+  definitions: BundleDefinition[] = DEFAULT_BUNDLE_DEFINITIONS
+): BundleToolAssignment[] {
+  const toolAssignments = assignToolsToCapabilityBundles(toolCatalog, definitions);
+  return definitions.map((definition) => {
+    const tools = toolAssignments
+      .filter((assignment) => assignment.bundleIds.includes(definition.id))
+      .map((assignment) => ({
+        serverName: assignment.serverName,
+        toolName: assignment.toolName,
+        title: assignment.title,
+        description: assignment.description,
+        matchedKeywords: assignment.matchedKeywords[definition.id] ?? []
+      }));
+
+    return {
+      bundleId: definition.id,
+      title: definition.title,
+      description: definition.description,
+      keywords: definition.keywords,
+      toolCount: tools.length,
+      tools
+    };
+  });
 }

@@ -12,21 +12,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org/)
 
-Ein Alpha-**Model Context Protocol (MCP) Control-Plane-Server** für lokale MCP-Stacks. ControlCenter entdeckt lokale MCP-Server, liest Claude-Profile, gruppiert Server in Capability-Bundles, empfiehlt Profile für Aufgaben, erzeugt Kataloge und bietet optional ein lokales Dashboard.
+Ein Alpha-**Model Context Protocol (MCP) Control-Plane-Server** für lokale MCP-Stacks. ControlCenter entdeckt lokale MCP-Server, liest Claude-Profile, gruppiert Server in Capability-Bundles, empfiehlt Profile für Aufgaben, erzeugt Kataloge, fragt echte MCP-Toollisten aus lokalen Repos oder Profilen ab, ordnet Tools Capability-Bundles zu und bietet optional ein lokales Dashboard.
 
-Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboard-Workflows, Capability-Bundles und erste Policy-Audits**. Gateway-Modus, technisch erzwungene Tool-Level-Rechte, Authentifizierung und harte Sicherheitsgrenzen sind geplant, aber noch nicht implementiert.
+Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboard-Workflows, Capability-Bundles, profilfähige Toollisten-Probes, Tool-Bundle-Zuordnung und erste Policy-Audits**. Gateway-Modus, technisch erzwungene Tool-Level-Rechte, Authentifizierung und harte Sicherheitsgrenzen sind geplant, aber noch nicht implementiert.
 
 > **Alpha-Hinweis:** Diese Version ist nützlich für lokale Verwaltung und Preview-Tests. Sie ist kein abgesicherter MCP-Gateway und sollte nicht als Schutzschicht für nicht vertrauenswürdige Tools oder fremde Nutzer verwendet werden.
 
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.1.0-alpha.3`
+- **Version:** `0.1.0-alpha.4`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI-Checks:** `npm run test` und `npm run build`
 - **Ziel:** Lokale MCP-Stacks sichtbar, prüfbar und leichter steuerbar machen
-- **Schwerpunkt:** Kataloge, Profilübersicht, Profilempfehlung, Bundle-Empfehlung und erste Audits
+- **Schwerpunkt:** Kataloge, Profilübersicht, Profilempfehlung, Bundle-Empfehlung, profilfähige Toollisten-Probes, Tool-Bundle-Zuordnung und erste Audits
 
 ## Tools
 
@@ -34,6 +34,8 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 |---|---|
 | `controlcenter_status` | Stack-, Profil- und Serverstatus anzeigen |
 | `controlcenter_list_local_servers` | Lokale MCP-Repositories unterhalb des MCP-Roots scannen |
+| `controlcenter_list_tools` | Lokale oder profildefinierte MCP-Server starten und deren echte `list_tools`-Ausgabe lesen |
+| `controlcenter_assign_tool_bundles` | Ausgelesene MCP-Tools Capability-Bundles zuordnen |
 | `controlcenter_list_bundles` | Lokale Server nach Capability-Bundles gruppieren |
 | `controlcenter_suggest_bundles` | Passende Bundles für eine Aufgabe empfehlen |
 | `controlcenter_list_profiles` | Claude-Profile aus dem Profilordner auflisten |
@@ -41,7 +43,7 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 | `controlcenter_resolve_profile` | Profil inklusive `extends`-Ketten auflösen |
 | `controlcenter_switch_profile` | Generierte `--mcp-config`-Datei vorbereiten |
 | `controlcenter_audit_profile` | Erste Policy-Prüfungen gegen ein Profil ausführen |
-| `controlcenter_build_catalog` | JSON-Katalog der lokalen MCP-Server erzeugen |
+| `controlcenter_build_catalog` | JSON-Katalog der lokalen MCP-Server erzeugen, optional inklusive Tool-Probes |
 
 ## Dashboard
 
@@ -176,6 +178,14 @@ Eigene Bundle-Dateien können über `ELLMOS_BUNDLE_CONFIG` oder über den option
 
 Das ist die Grundlage für späteres Tool-Bloat-Management: statt viele Einzeltools sofort sichtbar zu machen, kann ein Agent zuerst das passende Aufgaben-Bundle wählen.
 
+## Tool-Katalog
+
+`controlcenter_list_tools` kann lokale Stdio-MCP-Server oder aufgelöste Claude-Profilserver starten und die standardisierte MCP-`list_tools`-Abfrage ausführen. Profilscans unterstützen beliebige Stdio-Kommandos inklusive Nicht-Node-Startern sowie URL-basierte Remote-Konfigurationen über Streamable HTTP oder Legacy-SSE. Der Scan ist explizit, nutzt ein Timeout pro Server, ruft keines der gemeldeten Tools auf und beendet jeden gestarteten lokalen Server nach dem Lesen der Toolliste.
+
+`controlcenter_build_catalog` akzeptiert `includeTools: true`, um dieselben Probe-Ergebnisse zusammen mit dem lokalen Serverkatalog zu speichern.
+
+`controlcenter_assign_tool_bundles` vergleicht ausgelesene Toolnamen, Titel, Beschreibungen, Servernamen, Quelle und Transport mit den Keywords der Capability-Bundles und meldet dann, welche Tools zu Bundles wie Filesystem, Software, Automation oder Control Plane gehören.
+
 ## Profil-Audit
 
 `controlcenter_audit_profile` ist die erste kleine Policy-Schicht. Sie markiert aktuell:
@@ -230,7 +240,7 @@ Dieser MCP-Server ist Teil des **[ellmos-ai](https://github.com/ellmos-ai)**-Ök
 | [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 17 | Code-Analyse, AST-Parsing, Import-Verwaltung | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
 | [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | Dateireparatur, Formatkonvertierung, Batch-Operationen | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n-Workflow-Verwaltung über KI-Assistenten | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **10** | **MCP-Stack-Discovery, Profilverwaltung, Control Plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **12** | **MCP-Stack-Discovery, Profilverwaltung, Control Plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 
 ### KI-Infrastruktur
 

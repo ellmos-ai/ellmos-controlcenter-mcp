@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.1.0-alpha.4 - 2026-06-05
+
+- `controlcenter_list_tools` ergänzt: lokale Stdio-MCP-Server können jetzt gestartet und per echter MCP-`list_tools`-Abfrage katalogisiert werden.
+- `controlcenter_list_tools` auf aufgelöste Claude-Profilserver erweitert, inklusive beliebiger Stdio-Kommandos, Streamable HTTP und Legacy-SSE.
+- `controlcenter_assign_tool_bundles` ergänzt: ausgelesene Tool-Metadaten werden Capability-Bundles zugeordnet.
+- `controlcenter_build_catalog` kann mit `includeTools: true` optional Tool-Probe-Ergebnisse in den JSON-Katalog aufnehmen.
+- `controlcenter_build_catalog` kann mit Profil-Toolscans und optionalen Tool-Bundle-Zuordnungen erweitert werden.
 - `server.json` und neues `llms.txt` ins npm-Paket aufgenommen, damit MCP-Registry- und LLM-Crawler die ControlCenter-Metadaten über GitHub oder npm lesen können.
 - Operative `*-protocoll.txt`-Botprotokolle aus dem veröffentlichten Repo entfernt und künftig ignoriert.
 - README und README_de um Discovery-/Registry-Metadaten ergänzt.
