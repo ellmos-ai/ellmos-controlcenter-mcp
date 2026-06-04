@@ -4,7 +4,7 @@
   <img src="assets/controlcenter-logo.jpg" alt="ellmos ControlCenter MCP Logo" width="420">
 </p>
 
-**🇬🇧 [English Version](README.md)**
+**EN [English Version](README.md)**
 
 *Teil der [ellmos-ai](https://github.com/ellmos-ai)-Familie.*
 
@@ -14,25 +14,27 @@
 
 Ein Alpha-**Model Context Protocol (MCP) Control-Plane-Server** für lokale MCP-Stacks. ControlCenter entdeckt lokale MCP-Server, liest Claude-Profile, gruppiert Server in Capability-Bundles, empfiehlt Profile für Aufgaben, erzeugt Kataloge, fragt echte MCP-Toollisten aus lokalen Repos oder Profilen ab, ordnet Tools Capability-Bundles zu und bietet optional ein lokales Dashboard.
 
-Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboard-Workflows, Capability-Bundles, profilfähige Toollisten-Probes, Tool-Bundle-Zuordnung und erste Policy-Audits**. Gateway-Modus, technisch erzwungene Tool-Level-Rechte, Authentifizierung und harte Sicherheitsgrenzen sind geplant, aber noch nicht implementiert.
+Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboard-Workflows, Capability-Bundles, profilfähige Toollisten-Probes, Tool-Bundle-Zuordnung, Internationalisierung und erste Policy-Audits**. Gateway-Modus, technisch erzwungene Tool-Level-Rechte, Authentifizierung und harte Sicherheitsgrenzen sind geplant, aber noch nicht implementiert.
 
 > **Alpha-Hinweis:** Diese Version ist nützlich für lokale Verwaltung und Preview-Tests. Sie ist kein abgesicherter MCP-Gateway und sollte nicht als Schutzschicht für nicht vertrauenswürdige Tools oder fremde Nutzer verwendet werden.
 
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.1.0-alpha.4`
+- **Version:** `0.1.0-alpha.5`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI-Checks:** `npm run test` und `npm run build`
 - **Ziel:** Lokale MCP-Stacks sichtbar, prüfbar und leichter steuerbar machen
-- **Schwerpunkt:** Kataloge, Profilübersicht, Profilempfehlung, Bundle-Empfehlung, profilfähige Toollisten-Probes, Tool-Bundle-Zuordnung und erste Audits
+- **Schwerpunkt:** Kataloge, Profilübersicht, Profilempfehlung, Bundle-Empfehlung, profilfähige Toollisten-Probes, Tool-Bundle-Zuordnung, i18n und erste Audits
 
 ## Tools
 
 | Tool | Zweck |
 |---|---|
 | `controlcenter_status` | Stack-, Profil- und Serverstatus anzeigen |
+| `controlcenter_get_language` | Aktuelle ControlCenter-Ausgabesprache anzeigen |
+| `controlcenter_set_language` | ControlCenter-Ausgabesprache für diese laufende Serverinstanz setzen |
 | `controlcenter_list_local_servers` | Lokale MCP-Repositories unterhalb des MCP-Roots scannen |
 | `controlcenter_list_tools` | Lokale oder profildefinierte MCP-Server starten und deren echte `list_tools`-Ausgabe lesen |
 | `controlcenter_assign_tool_bundles` | Ausgelesene MCP-Tools Capability-Bundles zuordnen |
@@ -59,7 +61,7 @@ Standardadresse:
 http://127.0.0.1:3737
 ```
 
-Das Dashboard kann aktuell lokale Server und Profile anzeigen, Server pro Profil aktivieren oder deaktivieren, Profil-Audits zusammenfassen und eine generierte `--mcp-config` schreiben. Schreibaktionen verlangen eine Bestätigung und legen vor dem Überschreiben ein Backup an.
+Das Dashboard kann aktuell lokale Server und Profile anzeigen, seine UI-Sprache wechseln, Server pro Profil aktivieren oder deaktivieren, Profil-Audits zusammenfassen, MCP-Tools für das gewählte Profil oder lokale Repositories scannen, Tool-Bundle-Zuordnungen anzeigen und eine generierte `--mcp-config` schreiben. Schreibaktionen verlangen eine Bestätigung und legen vor dem Überschreiben ein Backup an.
 
 ## Discovery- und Registry-Metadaten
 
@@ -149,8 +151,15 @@ Optionale Umgebungsvariablen:
 - `ELLMOS_PROFILE_ROOT` überschreibt den Claude-Profilordner
 - `ELLMOS_BUNDLE_CONFIG` überschreibt die Datei mit Capability-Bundle-Definitionen
 - `ELLMOS_POLICY_CONFIG` überschreibt die Datei mit Profil-Audit-Regeln
+- `CONTROLCENTER_LANGUAGE` oder `ELLMOS_CONTROLCENTER_LANGUAGE` setzt die initiale Ausgabesprache
 
 Standardmäßig wird der MCP-Root aus der Umgebungsvariable `OneDrive`/`ONEDRIVE` abgeleitet und fällt sonst auf `~/OneDrive/.TOPICS/.AI/.MCP` zurück.
+
+## Internationalisierung
+
+ControlCenter unterstützt die Sprachcodes `de`, `en`, `es`, `zh`, `ja` und `ru`. Deutsch und Englisch sind vollständig gepflegt. Die übrigen Sprachen sind bewusst registrierte Fallback-Sprachen und verwenden vorerst englische Ausgabetexte, bis ihre Übersetzungen gefüllt sind.
+
+Mit `controlcenter_get_language` lässt sich die aktuelle Sprache prüfen; `controlcenter_set_language` schaltet MCP-Toolausgaben zur Laufzeit um. Das Dashboard enthält ebenfalls einen Sprachwähler und akzeptiert Links wie `/?lang=en`. Bundle-Titel und -Beschreibungen aus eigenen JSON-Konfigurationsdateien werden so angezeigt, wie sie dort gepflegt sind.
 
 ## Profilwechsel
 
@@ -203,16 +212,16 @@ Policy-Regeln werden standardmäßig aus `data/policy-rules.json` geladen. Die D
 
 ```text
 ellmos-controlcenter-mcp/
-├── src/
-├── test/
-├── data/
-├── README.md
-├── README_de.md
-├── START.md
-├── ARCHITECTURE.md
-├── STATE.md
-├── DECISIONS.md
-└── TODO.md
+|-- src/
+|-- test/
+|-- data/
+|-- README.md
+|-- README_de.md
+|-- START.md
+|-- ARCHITECTURE.md
+|-- STATE.md
+|-- DECISIONS.md
+`-- TODO.md
 ```
 
 ## Dokumentation
@@ -240,7 +249,7 @@ Dieser MCP-Server ist Teil des **[ellmos-ai](https://github.com/ellmos-ai)**-Ök
 | [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 17 | Code-Analyse, AST-Parsing, Import-Verwaltung | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
 | [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | Dateireparatur, Formatkonvertierung, Batch-Operationen | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n-Workflow-Verwaltung über KI-Assistenten | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **12** | **MCP-Stack-Discovery, Profilverwaltung, Control Plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **14** | **MCP-Stack-Discovery, Profilverwaltung, Control Plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 
 ### KI-Infrastruktur
 

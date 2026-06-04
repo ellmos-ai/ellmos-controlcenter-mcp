@@ -1,6 +1,7 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import { fileURLToPath } from "url";
+import { t } from "./i18n/index.js";
 import type { ResolvedProfile } from "./profiles.js";
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -278,6 +279,7 @@ export function auditResolvedProfile(
   profile: ResolvedProfile,
   rules: PolicyRuleDefinition[] = DEFAULT_POLICY_RULES
 ): PolicyFinding[] {
+  const labels = t();
   const enabledRules = activeRuleMap(rules);
   const findings: PolicyFinding[] = [];
 
@@ -298,7 +300,7 @@ export function auditResolvedProfile(
       pushFinding(
         "invalid-server-config",
         serverName,
-        "Server-Konfiguration ist kein Objekt."
+        labels.policy.invalidServerConfig
       );
       continue;
     }
@@ -311,7 +313,7 @@ export function auditResolvedProfile(
       pushFinding(
         "missing-command",
         serverName,
-        "Server hat keinen ausführbaren command-Eintrag."
+        labels.policy.missingCommand
       );
     }
 
@@ -319,7 +321,7 @@ export function auditResolvedProfile(
       pushFinding(
         "npx-runtime-fetch",
         serverName,
-        "Server wird über npx gestartet. Das ist bequem, aber weniger reproduzierbar als ein gepinnter lokaler Pfad.",
+        labels.policy.npxRuntimeFetch,
         { args }
       );
     }
@@ -328,7 +330,7 @@ export function auditResolvedProfile(
       pushFinding(
         "env-secrets-present",
         serverName,
-        "Server-Konfiguration enthält Environment-Variablen. Werte werden absichtlich nicht ausgegeben.",
+        labels.policy.envSecretsPresent,
         { envKeys: Object.keys(env).sort((a, b) => a.localeCompare(b)) }
       );
     }
@@ -338,7 +340,7 @@ export function auditResolvedProfile(
       pushFinding(
         "sensitive-arg-name",
         serverName,
-        "Server-Argumente enthalten sensitive Namensbestandteile. Inhalte bitte separat prüfen.",
+        labels.policy.sensitiveArgName,
         { matchedArgs: sensitiveArgs }
       );
     }
@@ -348,7 +350,7 @@ export function auditResolvedProfile(
     pushFinding(
       "no-policy-findings",
       profile.name,
-      "Keine Policy-Hinweise im aufgelösten Profil gefunden.",
+      labels.policy.noFindings,
       { serverCount: profile.serverCount }
     );
   }

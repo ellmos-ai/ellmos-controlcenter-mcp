@@ -36,6 +36,14 @@ import {
   PolicyConfigError,
   summarizePolicyFindings
 } from "../src/policy.js";
+import { getToolBundleOverview } from "../src/dashboard.js";
+import {
+  getLanguage,
+  getLanguageName,
+  getSupportedLanguages,
+  setLanguage,
+  t
+} from "../src/i18n/index.js";
 import {
   buildToolCatalog,
   createProfileToolCatalogTargets,
@@ -47,12 +55,37 @@ import {
 const tempDirectories: string[] = [];
 
 afterEach(async () => {
+  setLanguage("de");
   while (tempDirectories.length > 0) {
     const directory = tempDirectories.pop();
     if (directory) {
       await fs.rm(directory, { recursive: true, force: true });
     }
   }
+});
+
+describe("i18n helpers", () => {
+  it("switches ControlCenter output text between German and English", () => {
+    setLanguage("de");
+
+    expect(getSupportedLanguages()).toEqual(["de", "en", "es", "zh", "ja", "ru"]);
+    expect(getLanguage()).toBe("de");
+    expect(t().common.noProfiles).toBe("Keine Claude-Profile gefunden.");
+
+    setLanguage("en");
+
+    expect(getLanguage()).toBe("en");
+    expect(t().common.noProfiles).toBe("No Claude profiles found.");
+    expect(suggestProfile("debug a TypeScript repository").rationale).toContain("Recommended because");
+  });
+
+  it("keeps stub languages registered with explicit fallback text", () => {
+    setLanguage("es");
+
+    expect(getLanguageName("es")).toBe("Español");
+    expect(t().language.fallbackNote).toContain("fallback language");
+    expect(t().common.noProfiles).toBe("No Claude profiles found.");
+  });
 });
 
 async function createTempDirectory(prefix: string): Promise<string> {
@@ -301,6 +334,42 @@ describe("tool catalog helpers", () => {
     expect(targets.find((target) => target.packageName === "http")?.transportKind).toBe("streamable-http");
     expect(targets.find((target) => target.packageName === "legacy-sse")?.transportKind).toBe("sse");
     expect(targets.find((target) => target.packageName === "broken")?.transportKind).toBe("unsupported");
+  });
+});
+
+describe("dashboard helpers", () => {
+  it("returns tool catalog and bundle assignments for a selected profile", async () => {
+    const root = await createTempDirectory("controlcenter-dashboard-tools-");
+    const serverDir = path.join(root, "standalone-fixture");
+    const serverPath = await createFixtureMcpServer(serverDir);
+    const profileRoot = path.join(root, "profiles");
+    await fs.mkdir(profileRoot, { recursive: true });
+    await fs.writeFile(
+      path.join(profileRoot, "base.json"),
+      JSON.stringify({
+        mcpServers: {
+          fixture: {
+            command: process.execPath,
+            args: [serverPath],
+            cwd: serverDir
+          }
+        }
+      }),
+      "utf-8"
+    );
+
+    const overview = await getToolBundleOverview({
+      scope: "profile",
+      profileName: "base",
+      profileRoot,
+      timeoutMs: 2000
+    });
+
+    expect(overview.scope).toBe("profile");
+    expect(overview.serverCount).toBe(1);
+    expect(overview.totalTools).toBe(1);
+    expect(overview.toolCatalog[0].tools[0].name).toBe("fixture_echo");
+    expect(overview.assignments.some((assignment) => assignment.toolCount > 0)).toBe(true);
   });
 });
 

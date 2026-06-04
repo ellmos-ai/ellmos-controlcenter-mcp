@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.1.0-alpha.5 - 2026-06-05
+
+- i18n-Infrastruktur für ControlCenter ergänzt: Sprachcodes `de`, `en`, `es`, `zh`, `ja` und `ru`, vollständige deutsche und englische Textsets sowie explizite Fallback-Sprachen.
+- `controlcenter_get_language` und `controlcenter_set_language` ergänzt, damit MCP-Ausgaben zur Laufzeit zwischen Sprachen wechseln können.
+- MCP-Ausgaben für Status, Tabellen, Tool-Katalog, Tool-Bundle-Zuordnung, Profiltools und Profil-Audit an die zentrale i18n-Schicht angebunden.
+- Dashboard um Sprachwähler, `/?lang=...`-Rendering und `/api/language` erweitert.
+- Dashboard um Tool-Katalog-Scan und Tool-Bundle-Zuordnung für Profilserver oder lokale Repositories erweitert.
+
 ## 0.1.0-alpha.4 - 2026-06-05
 
 - `controlcenter_list_tools` ergänzt: lokale Stdio-MCP-Server können jetzt gestartet und per echter MCP-`list_tools`-Abfrage katalogisiert werden.

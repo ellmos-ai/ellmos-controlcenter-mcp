@@ -1,6 +1,7 @@
 import * as fs from "fs/promises";
 import * as os from "os";
 import * as path from "path";
+import { t } from "./i18n/index.js";
 
 export const DEFAULT_PROFILE_ROOT =
   process.env.ELLMOS_PROFILE_ROOT ?? path.join(os.homedir(), ".claude", "profiles");
@@ -351,6 +352,7 @@ export async function prepareProfileSwitch(
 }
 
 export function suggestProfile(task: string): ProfileSuggestion {
+  const labels = t();
   const normalizedTask = task.toLowerCase();
   const priority = ["ai-lab", "software", "research", "umbruch", "base"];
 
@@ -358,7 +360,7 @@ export function suggestProfile(task: string): ProfileSuggestion {
     profile: "base",
     score: 0,
     matchedKeywords: [],
-    rationale: "Keine starken Keywords erkannt. Base-Profil als sichere Standardempfehlung."
+    rationale: labels.messages.noStrongProfileKeywords
   };
 
   for (const profile of priority) {
@@ -370,7 +372,7 @@ export function suggestProfile(task: string): ProfileSuggestion {
         profile,
         score,
         matchedKeywords,
-        rationale: `Empfohlen wegen ${matchedKeywords.length} passender Keywords: ${matchedKeywords.join(", ")}`
+        rationale: labels.messages.profileRationale(matchedKeywords.length, matchedKeywords.join(", "))
       };
     }
   }

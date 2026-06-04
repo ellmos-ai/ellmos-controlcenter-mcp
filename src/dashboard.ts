@@ -2,12 +2,21 @@
 
 import * as http from "http";
 import { URL } from "url";
-import { loadCapabilityBundles } from "./bundles.js";
+import { buildBundleToolAssignments, loadBundleDefinitions, loadCapabilityBundles } from "./bundles.js";
 import {
   createLocalServerMcpConfig,
   DEFAULT_MCP_ROOT,
   scanLocalServers
 } from "./catalog.js";
+import {
+  getLanguage,
+  getLanguageName,
+  getSupportedLanguages,
+  isSupportedLanguage,
+  setLanguage,
+  t,
+  type Lang
+} from "./i18n/index.js";
 import { auditResolvedProfile, loadPolicyRules, summarizePolicyFindings } from "./policy.js";
 import {
   DEFAULT_PROFILE_ROOT,
@@ -17,6 +26,7 @@ import {
   resolveClaudeProfile,
   writeEditableProfile
 } from "./profiles.js";
+import { scanLocalServerTools, scanProfileServerTools } from "./toolCatalog.js";
 
 const DEFAULT_HOST = process.env.ELLMOS_DASHBOARD_HOST ?? "127.0.0.1";
 const DEFAULT_PORT = Number.parseInt(process.env.ELLMOS_DASHBOARD_PORT ?? "3737", 10);
@@ -72,6 +82,45 @@ async function getOverview() {
   };
 }
 
+export async function getToolBundleOverview(options: {
+  scope?: "local" | "profile";
+  mcpRoot?: string;
+  profileName?: string;
+  profileRoot?: string;
+  serverName?: string;
+  timeoutMs?: number;
+} = {}) {
+  const labels = t();
+  const scope = options.scope === "local" ? "local" : "profile";
+  const timeoutMs = typeof options.timeoutMs === "number" ? options.timeoutMs : undefined;
+  const toolCatalog = scope === "local"
+    ? await scanLocalServerTools(options.mcpRoot ?? DEFAULT_MCP_ROOT, {
+      serverName: options.serverName,
+      timeoutMs
+    })
+    : await scanProfileServerTools(
+      options.profileName ?? "base",
+      options.profileRoot ?? DEFAULT_PROFILE_ROOT,
+      { serverName: options.serverName, timeoutMs }
+    );
+  const assignments = buildBundleToolAssignments(toolCatalog, await loadBundleDefinitions());
+  const okServerCount = toolCatalog.filter((entry) => entry.status === "ok").length;
+  const totalTools = toolCatalog.reduce((sum, entry) => sum + (entry.toolCount ?? 0), 0);
+
+  return {
+    scope,
+    sourceLabel: scope === "local"
+      ? labels.messages.sourceLocalRepos(options.mcpRoot ?? DEFAULT_MCP_ROOT)
+      : labels.messages.sourceProfile(options.profileName ?? "base", options.profileRoot ?? DEFAULT_PROFILE_ROOT),
+    serverCount: toolCatalog.length,
+    okServerCount,
+    issueServerCount: toolCatalog.length - okServerCount,
+    totalTools,
+    toolCatalog,
+    assignments
+  };
+}
+
 async function setServerEnabled(profileName: string, serverName: string, enabled: boolean) {
   const [servers, editable] = await Promise.all([
     scanLocalServers(DEFAULT_MCP_ROOT),
@@ -98,9 +147,14 @@ async function setServerEnabled(profileName: string, serverName: string, enabled
   return { ...writeResult, resolved };
 }
 
-function htmlPage(): string {
+function htmlPage(lang: Lang = getLanguage()): string {
+  const labels = t(lang).dashboard;
+  const dashboardLabels = JSON.stringify(labels);
+  const languageOptions = getSupportedLanguages()
+    .map((language) => `<option value="${language}"${language === lang ? " selected" : ""}>${language} - ${getLanguageName(language)}</option>`)
+    .join("");
   return `<!doctype html>
-<html lang="de">
+<html lang="${lang}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -153,6 +207,11 @@ function htmlPage(): string {
       cursor: pointer;
       font-weight: 650;
     }
+    label.language-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
     button.primary {
       background: var(--accent);
       border-color: var(--accent);
@@ -160,6 +219,15 @@ function htmlPage(): string {
     }
     button.danger {
       color: var(--accent-2);
+    }
+    input[type="number"] {
+      width: 96px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font: inherit;
+      background: var(--panel);
+      color: var(--ink);
     }
     main {
       display: grid;
@@ -199,6 +267,10 @@ function htmlPage(): string {
       border-radius: 6px;
       background: #fff;
     }
+    .row.compact {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
     .meta { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
     .badge {
       display: inline-flex;
@@ -232,45 +304,74 @@ function htmlPage(): string {
   <header>
     <div>
       <h1>ellmos ControlCenter</h1>
-      <div class="meta" id="roots">lädt...</div>
+      <div class="meta" id="roots">${labels.loading}</div>
     </div>
     <div class="toolbar">
-      <button id="refresh">Aktualisieren</button>
-      <button class="primary" id="write-config">MCP-Config erzeugen</button>
+      <label class="language-control"><span class="meta">${labels.language}</span><select id="language">${languageOptions}</select></label>
+      <button id="refresh">${labels.refresh}</button>
+      <button class="primary" id="write-config">${labels.writeConfig}</button>
     </div>
   </header>
   <main>
     <aside class="stack">
       <div class="panel stack">
-        <h2>Profil</h2>
+        <h2>${labels.profile}</h2>
         <select id="profile"></select>
         <div id="profile-meta" class="meta"></div>
       </div>
       <div class="panel stack">
-        <h2>Audit</h2>
+        <h2>${labels.audit}</h2>
         <div id="audit"></div>
       </div>
     </aside>
     <section class="stack">
       <div class="grid">
         <div class="panel">
-          <h2>Lokale Server</h2>
+          <h2>${labels.localServers}</h2>
           <div id="servers" class="list"></div>
         </div>
         <div class="panel">
-          <h2>Capability-Bundles</h2>
+          <h2>${labels.capabilityBundles}</h2>
           <div id="bundles" class="list"></div>
         </div>
       </div>
+      <div class="panel stack">
+        <div class="toolbar">
+          <h2>${labels.toolCatalog}</h2>
+          <select id="tool-scope">
+            <option value="profile">${labels.toolScopeProfile}</option>
+            <option value="local">${labels.toolScopeLocal}</option>
+          </select>
+          <input id="tool-timeout" type="number" min="500" max="60000" step="500" value="5000" aria-label="${labels.timeoutLabel}">
+          <button id="scan-tools">${labels.scan}</button>
+        </div>
+        <div id="tool-summary" class="meta">${labels.noToolScan}</div>
+        <div id="tool-catalog" class="list"></div>
+      </div>
       <div class="panel">
-        <h2>Generierte Konfiguration</h2>
-        <pre id="output">Noch keine Aktion ausgeführt.</pre>
+        <h2>${labels.toolBundleAssignment}</h2>
+        <div id="tool-assignments" class="list"></div>
+      </div>
+      <div class="panel">
+        <h2>${labels.generatedConfig}</h2>
+        <pre id="output">${labels.noAction}</pre>
       </div>
     </section>
   </main>
   <script>
     let overview = null;
     let selectedProfile = "";
+    const L = ${dashboardLabels};
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
 
     async function api(path, options = {}) {
       const response = await fetch(path, {
@@ -278,7 +379,7 @@ function htmlPage(): string {
         ...options
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "API-Fehler");
+      if (!response.ok) throw new Error(data.error || L.apiError);
       return data;
     }
 
@@ -296,19 +397,19 @@ function htmlPage(): string {
     }
 
     function render() {
-      document.getElementById("roots").textContent = overview.mcpRoot + " · " + overview.profileRoot;
+      document.getElementById("roots").textContent = overview.mcpRoot + " | " + overview.profileRoot;
       const profileSelect = document.getElementById("profile");
       profileSelect.innerHTML = overview.profiles.map((profile) => '<option value="' + profile.name + '">' + profile.name + '</option>').join("");
       profileSelect.value = selectedProfile;
       const profile = currentProfileSummary();
-      document.getElementById("profile-meta").textContent = profile ? profile.serverCount + " Server · " + profile.filePath : "";
+      document.getElementById("profile-meta").textContent = profile ? profile.serverCount + " " + L.localServers + " | " + profile.filePath : "";
 
       const profileServers = new Set(profile ? profile.servers : []);
       document.getElementById("servers").innerHTML = overview.servers.map((server) => {
         const checked = profileServers.has(server.packageName) ? "checked" : "";
         return '<div class="row"><div><strong>' + server.packageName + '</strong><div class="meta">' +
-          (server.description || "Keine Beschreibung") + '</div><div class="meta">' + server.absolutePath +
-          '</div></div><label><input type="checkbox" data-server="' + server.packageName + '" ' + checked + '> aktiv</label></div>';
+          (server.description || L.noDescription) + '</div><div class="meta">' + server.absolutePath +
+          '</div></div><label><input type="checkbox" data-server="' + server.packageName + '" ' + checked + '> ' + L.active + '</label></div>';
       }).join("");
 
       document.getElementById("bundles").innerHTML = overview.bundles.map((bundle) => {
@@ -320,8 +421,8 @@ function htmlPage(): string {
       document.querySelectorAll("[data-server]").forEach((input) => {
         input.addEventListener("change", async (event) => {
           const checkbox = event.target;
-          const verb = checkbox.checked ? "aktivieren" : "deaktivieren";
-          if (!confirm("Server '" + checkbox.dataset.server + "' im Profil '" + selectedProfile + "' " + verb + "? Vor dem Schreiben wird ein Backup erzeugt.")) {
+          const verb = checkbox.checked ? L.enableVerb : L.disableVerb;
+          if (!confirm(L.confirmServerPrefix + checkbox.dataset.server + L.confirmServerMiddle + selectedProfile + "': " + verb + L.confirmServerSuffix)) {
             checkbox.checked = !checkbox.checked;
             return;
           }
@@ -344,9 +445,37 @@ function htmlPage(): string {
       const details = await api("/api/profiles/" + selectedProfile);
       const summary = details.auditSummary;
       document.getElementById("audit").innerHTML =
-        '<div><span class="badge">' + summary.high + ' high</span> <span class="badge">' +
-        summary.warning + ' warning</span> <span class="badge">' + summary.info + ' info</span></div>' +
-        '<div class="meta">' + details.resolved.serverCount + ' aufgelöste Server</div>';
+        '<div><span class="badge">' + summary.high + ' ' + L.high + '</span> <span class="badge">' +
+        summary.warning + ' ' + L.warning + '</span> <span class="badge">' + summary.info + ' ' + L.info + '</span></div>' +
+        '<div class="meta">' + details.resolved.serverCount + ' ' + L.resolvedServers + '</div>';
+    }
+
+    function renderToolScan(data) {
+      document.getElementById("tool-summary").textContent =
+        data.sourceLabel + " | " + data.totalTools + " Tools | " +
+        data.okServerCount + "/" + data.serverCount + " " + L.serverOk;
+
+      document.getElementById("tool-catalog").innerHTML = data.toolCatalog.map((server) => {
+        const tools = server.tools.length > 0
+          ? '<div class="meta">' + server.tools.slice(0, 8).map((tool) => escapeHtml(tool.name)).join(", ") +
+            (server.tools.length > 8 ? " +" + (server.tools.length - 8) : "") + '</div>'
+          : '<div class="meta">' + escapeHtml(server.error || L.noToolsReported) + '</div>';
+        return '<div class="row"><div><strong>' + escapeHtml(server.packageName) +
+          '</strong><div class="meta">' + escapeHtml(server.source) + " | " + escapeHtml(server.transportKind) +
+          " | " + escapeHtml(server.status) + '</div>' + tools +
+          '</div><span class="badge">' + (server.toolCount ?? 0) + '</span></div>';
+      }).join("");
+
+      document.getElementById("tool-assignments").innerHTML = data.assignments.map((bundle) => {
+        const toolList = bundle.tools.length > 0
+          ? bundle.tools.slice(0, 10).map((tool) =>
+            '<div class="meta">' + escapeHtml(tool.serverName) + " | " + escapeHtml(tool.toolName) +
+            " (" + escapeHtml(tool.matchedKeywords.join(", ")) + ")</div>"
+          ).join("")
+          : '<div class="meta">' + L.noMatchingTools + '</div>';
+        return '<div class="row compact"><div><strong>' + escapeHtml(bundle.title) +
+          '</strong> <span class="badge">' + bundle.toolCount + '</span>' + toolList + '</div></div>';
+      }).join("");
     }
 
     document.getElementById("profile").addEventListener("change", async (event) => {
@@ -354,14 +483,40 @@ function htmlPage(): string {
       render();
       await loadProfileDetails();
     });
+    document.getElementById("language").addEventListener("change", async (event) => {
+      const language = event.target.value;
+      await api("/api/language", {
+        method: "POST",
+        body: JSON.stringify({ language })
+      });
+      window.location.search = "?lang=" + encodeURIComponent(language);
+    });
     document.getElementById("refresh").addEventListener("click", loadOverview);
     document.getElementById("write-config").addEventListener("click", async () => {
-      if (!confirm("Generierte MCP-Config für Profil '" + selectedProfile + "' schreiben? Eine vorhandene Datei wird vorher gesichert.")) return;
+      if (!confirm(L.confirmWritePrefix + selectedProfile + L.confirmWriteSuffix)) return;
       const result = await api("/api/profiles/" + selectedProfile + "/generated-config", {
         method: "POST",
         body: JSON.stringify({ write: true, confirm: true })
       });
       document.getElementById("output").textContent = JSON.stringify(result, null, 2);
+    });
+    document.getElementById("scan-tools").addEventListener("click", async () => {
+      const scope = document.getElementById("tool-scope").value;
+      const timeoutMs = Number.parseInt(document.getElementById("tool-timeout").value || "5000", 10);
+      document.getElementById("tool-summary").textContent = L.scanRunning;
+      document.getElementById("tool-catalog").innerHTML = "";
+      document.getElementById("tool-assignments").innerHTML = "";
+      const result = await api("/api/tool-bundles", {
+        method: "POST",
+        body: JSON.stringify({ scope, profileName: selectedProfile, timeoutMs })
+      });
+      renderToolScan(result);
+      document.getElementById("output").textContent = JSON.stringify({
+        sourceLabel: result.sourceLabel,
+        serverCount: result.serverCount,
+        totalTools: result.totalTools,
+        bundles: result.assignments.map((bundle) => ({ id: bundle.bundleId, tools: bundle.toolCount }))
+      }, null, 2);
     });
 
     loadOverview().catch((error) => {
@@ -373,6 +528,32 @@ function htmlPage(): string {
 }
 
 async function handleApi(request: http.IncomingMessage, response: http.ServerResponse, url: URL): Promise<void> {
+  if (request.method === "GET" && url.pathname === "/api/language") {
+    const language = getLanguage();
+    sendJson(response, 200, {
+      language,
+      languageName: getLanguageName(language),
+      supportedLanguages: getSupportedLanguages().map((item) => ({
+        code: item,
+        name: getLanguageName(item)
+      }))
+    });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/language") {
+    const body = await readBody(request);
+    if (typeof body.language !== "string" || !isSupportedLanguage(body.language)) {
+      throw new DashboardRequestError(`Unsupported language: ${String(body.language)}`);
+    }
+    const language = setLanguage(body.language);
+    sendJson(response, 200, {
+      language,
+      languageName: getLanguageName(language)
+    });
+    return;
+  }
+
   if (request.method === "GET" && url.pathname === "/api/overview") {
     sendJson(response, 200, await getOverview());
     return;
@@ -407,6 +588,17 @@ async function handleApi(request: http.IncomingMessage, response: http.ServerRes
     return;
   }
 
+  if (request.method === "POST" && url.pathname === "/api/tool-bundles") {
+    const body = await readBody(request);
+    sendJson(response, 200, await getToolBundleOverview({
+      scope: body.scope === "local" ? "local" : "profile",
+      profileName: typeof body.profileName === "string" ? body.profileName : undefined,
+      serverName: typeof body.serverName === "string" ? body.serverName : undefined,
+      timeoutMs: typeof body.timeoutMs === "number" ? body.timeoutMs : undefined
+    }));
+    return;
+  }
+
   const serverToggleMatch = url.pathname.match(/^\/api\/profiles\/([^/]+)\/servers\/([^/]+)$/);
   if (request.method === "POST" && serverToggleMatch) {
     const profileName = decodeURIComponent(serverToggleMatch[1]);
@@ -425,7 +617,9 @@ export function createDashboardServer(): http.Server {
     void (async () => {
       const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
       if (url.pathname === "/") {
-        sendHtml(response, htmlPage());
+        const requestedLanguage = url.searchParams.get("lang");
+        const pageLanguage = requestedLanguage && isSupportedLanguage(requestedLanguage) ? requestedLanguage : getLanguage();
+        sendHtml(response, htmlPage(pageLanguage));
         return;
       }
       if (url.pathname.startsWith("/api/")) {

@@ -1,6 +1,6 @@
 # ellmos ControlCenter MCP
 
-> MCP control plane for local MCP stack discovery, Claude profile inspection, capability bundle recommendation, policy audits, and a local dashboard.
+> MCP control plane for local MCP stack discovery, Claude profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, and a local dashboard.
 
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
@@ -11,13 +11,15 @@ Runtime: Node.js >=18
 
 ## Summary
 
-ellmos ControlCenter MCP is an alpha-stage Model Context Protocol server for local MCP administration. It discovers local MCP repositories, reads Claude profile files, resolves inherited profile configurations, recommends profiles and capability bundles for tasks, runs initial profile policy audits, builds local server catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, and can start a local dashboard.
+ellmos ControlCenter MCP is an alpha-stage Model Context Protocol server for local MCP administration. It discovers local MCP repositories, reads Claude profile files, resolves inherited profile configurations, recommends profiles and capability bundles for tasks, runs initial profile policy audits, builds local server catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, supports German/English output text with registered fallback languages, and can start a local dashboard.
 
 It is useful for local MCP stack visibility and profile management. It is not a hardened security gateway. Gateway mode, enforced tool-level permissions, authentication, and hard isolation are planned but not implemented.
 
 ## Tools
 
 - `controlcenter_status`: show stack, profile, and detected-server status.
+- `controlcenter_get_language`: show the current ControlCenter output language.
+- `controlcenter_set_language`: set the ControlCenter output language for this running server instance.
 - `controlcenter_list_local_servers`: scan local MCP repositories below the configured MCP root.
 - `controlcenter_list_tools`: start local or profile-defined MCP servers and read their real `list_tools` output.
 - `controlcenter_assign_tool_bundles`: assign probed MCP tools to capability bundles.
@@ -53,6 +55,7 @@ Default dashboard URL: http://127.0.0.1:3737
 - `data/capability-bundles.json`: default capability bundle definitions.
 - `data/policy-rules.json`: default profile audit policy rules.
 - `src/index.ts`: MCP server entrypoint and tool definitions.
+- `src/i18n/`: ControlCenter text sets and language switching.
 - `src/toolCatalog.ts`: MCP client probes for real server tool lists.
 - `src/bundles.ts`: capability bundle definitions, suggestions, and tool assignment helpers.
 - `src/dashboard.ts`: local dashboard server.

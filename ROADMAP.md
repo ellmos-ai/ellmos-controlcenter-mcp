@@ -23,7 +23,9 @@ Status: begonnen
 - [x] Toolnamen, Beschreibungen und Schemas in Probe-Ergebnissen speichern
 - [x] Profilserver, Remote-Server und alternative Startformen anbinden
 - [x] Tools Capability-Bundles zuordnen
-- Remote-Authentifizierung, Header-Sonderfälle und Dashboard-Visualisierung nachziehen
+- [x] Dashboard-Visualisierung für Tool-Katalog und Tool-Bundle-Zuordnung nachziehen
+- [x] i18n-Basis für MCP-Ausgaben und Dashboard mit Deutsch/Englisch umsetzen
+- Remote-Authentifizierung und Header-Sonderfälle nachziehen
 
 ## Phase 2.5: Ressourcen-, Skill- und API-Inventar
 
@@ -70,7 +72,7 @@ Status: geplant
 
 Status: geplant
 
-- i18n mit Deutsch und Englisch
+- echte Übersetzungen für `es`, `zh`, `ja` und `ru`
 - stabiler Katalogstandard
 - Sicherheitsdokumentation
 - Paketierung für npm und GitHub

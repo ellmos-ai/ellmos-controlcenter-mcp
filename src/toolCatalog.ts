@@ -8,6 +8,7 @@ import {
   scanLocalServers,
   type LocalServerSummary
 } from "./catalog.js";
+import { t } from "./i18n/index.js";
 import { resolveClaudeProfile, type ResolvedProfile } from "./profiles.js";
 
 export const DEFAULT_TOOL_SCAN_TIMEOUT_MS = 5000;
@@ -243,12 +244,12 @@ export function createProfileToolCatalogTargets(profile: ResolvedProfile): ToolC
   return Object.entries(profile.config.mcpServers)
     .map<ToolCatalogTarget>(([serverName, rawConfig]) => {
       if (!isRecord(rawConfig)) {
-        return createUnsupportedProfileTarget(profile.name, serverName, "Server-Konfiguration ist kein Objekt.");
+        return createUnsupportedProfileTarget(profile.name, serverName, t().common.serverConfigNotObject);
       }
 
       const transportKind = detectProfileTransportKind(rawConfig);
       if (transportKind === "unsupported") {
-        return createUnsupportedProfileTarget(profile.name, serverName, "Keine unterstützte MCP-Startform erkannt.");
+        return createUnsupportedProfileTarget(profile.name, serverName, t().common.noSupportedStartForm);
       }
 
       const url = typeof rawConfig.url === "string" && rawConfig.url.trim().length > 0 ? rawConfig.url.trim() : null;
@@ -333,19 +334,19 @@ export async function readToolCatalogTarget(
   const timeoutMs = normalizeToolScanTimeout(options.timeoutMs);
   const startedAt = Date.now();
   if (target.transportKind === "unsupported") {
-    return createBaseCatalogEntry(target, "unsupported", startedAt, target.error ?? "Nicht unterstützte MCP-Startform.");
+    return createBaseCatalogEntry(target, "unsupported", startedAt, target.error ?? t().common.unsupportedStartForm);
   }
 
   let transport: Transport | null = null;
   const client = new Client(
-    { name: "ellmos-controlcenter-tool-catalog", version: "0.1.0-alpha.4" },
+    { name: "ellmos-controlcenter-tool-catalog", version: "0.1.0-alpha.5" },
     { capabilities: {} }
   );
 
   try {
     transport = createTransport(target);
     if (!transport) {
-      return createBaseCatalogEntry(target, "unsupported", startedAt, target.error ?? "Nicht unterstützte MCP-Startform.");
+      return createBaseCatalogEntry(target, "unsupported", startedAt, target.error ?? t().common.unsupportedStartForm);
     }
     await client.connect(transport, { timeout: timeoutMs });
     const result = await client.listTools(undefined, { timeout: timeoutMs });

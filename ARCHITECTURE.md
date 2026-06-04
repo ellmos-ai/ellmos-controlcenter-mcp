@@ -34,12 +34,19 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
   - auditiert aufgelöste Profile
   - meldet erste Risiken wie `npx`-Starts, Env-Secrets und ungültige Server-Konfigurationen
   - gibt keine Secret-Werte aus
+- `i18n/`
+  - hält zentrale Textsets für MCP-Ausgaben und Dashboard bereit
+  - unterstützt `de`, `en`, `es`, `zh`, `ja` und `ru`
+  - pflegt Deutsch und Englisch vollständig; die übrigen Sprachcodes fallen aktuell explizit auf Englisch zurück
+  - liest die initiale Sprache aus `CONTROLCENTER_LANGUAGE`, `ELLMOS_CONTROLCENTER_LANGUAGE` oder `LANG`
 - `dashboard.ts`
   - stellt eine lokale Browser-GUI bereit
   - nutzt dieselbe Catalog-, Profile-, Bundle- und Policy-Logik
   - schreibt Profile nur nach explizitem Server-Toggle
+  - scannt Tools auf Knopfdruck und zeigt Tool-Bundle-Zuordnungen an
+  - bietet Sprachwechsel über UI und `/api/language`
 
-`index.ts` bildet darauf die MCP-Tools ab und kümmert sich um Formatierung und Ausgaben.
+`index.ts` bildet darauf die MCP-Tools ab, registriert die Sprach-Tools und kümmert sich um lokalisierte Formatierung und Ausgaben.
 
 ## Geplante Zielarchitektur
 
