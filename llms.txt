@@ -47,6 +47,26 @@ ellmos-controlcenter-dashboard
 
 Default dashboard URL: http://127.0.0.1:3737
 
+## Audience
+
+- Developers managing local Claude Code MCP stacks who want visibility without manual JSON editing
+- AI assistants (Claude, Codex, Gemini) that need to discover, catalog, or switch local MCP profiles programmatically
+- Teams maintaining multiple MCP server setups and Claude profiles across projects
+- Developers building on the ellmos-ai ecosystem or integrating FileCommander, CodeCommander, or n8n Manager
+- Power users who want profile-aware policy audits and capability-bundle recommendations for their local AI tooling
+
+## Search Phrases
+
+- ellmos ControlCenter MCP local stack discovery
+- MCP control plane Claude profile management
+- local MCP server catalog dashboard
+- capability bundle recommendation MCP
+- Claude profile switch mcp-config generator
+- MCP profile audit policy rules
+- ellmos-ai MCP server TypeScript
+- local MCP tool list probe
+- ellmos controlcenter npm
+
 ## Important Files
 
 - `README.md`: full English documentation.
@@ -60,3 +80,5 @@ Default dashboard URL: http://127.0.0.1:3737
 - `src/bundles.ts`: capability bundle definitions, suggestions, and tool assignment helpers.
 - `src/dashboard.ts`: local dashboard server.
 - `test/catalog.test.ts`: unit coverage for catalog, profiles, bundles, and policy rules.
+
+## Last-checked: 2026-06-10

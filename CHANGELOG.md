@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Documentation
+- Translated ROADMAP.md and STATE.md from German to English for consistency with the English-first project.
+- Added Audience, Search Phrases, and Last-checked sections to `llms.txt`.
+
 ## 0.1.0-alpha.6 - 2026-06-05
 
 - Vollständige ControlCenter-Textsets für Spanisch, Chinesisch, Japanisch und Russisch ergänzt.

@@ -1,79 +1,79 @@
 # Roadmap
 
-## Zielbild
+## Vision
 
-`ellmos-controlcenter-mcp` soll zur lokalen Steuerzentrale für MCP-Server und das gesamte lokale Agenten-Werkzeugökosystem werden. Langfristig verwaltet es Profile, Server, Tools, Skills, Module, APIs, lokale Programme, EXE-Dateien, CLI-Apps, Rechte, Audits und virtuelle Gateway-MCPs, über die ausgewählte Fähigkeiten als kontrollierte Server bereitgestellt werden.
+`ellmos-controlcenter-mcp` is intended to become the local control plane for MCP servers and the entire local agent-tooling ecosystem. Long-term it will manage profiles, servers, tools, skills, modules, APIs, local programs, executables, CLI apps, permissions, audits, and virtual gateway MCPs through which selected capabilities are exposed as controlled servers.
 
 ## Phase 1: ControlCenter Dashboard
 
-Status: begonnen
+Status: started
 
-- Lokale MCP-Server anzeigen
-- Claude-Profile anzeigen
-- Server pro Profil aktivieren und deaktivieren
-- Audit-Hinweise sichtbar machen
-- Generierte `--mcp-config`-Dateien schreiben
+- Display local MCP servers
+- Display Claude profiles
+- Enable and disable servers per profile
+- Surface audit hints
+- Write generated `--mcp-config` files
 
-## Phase 2: Tool-Katalog
+## Phase 2: Tool Catalog
 
-Status: begonnen
+Status: started
 
-- [x] Lokale Backend-MCP-Server kontrolliert starten
-- [x] `list_tools` pro lokalem Stdio-Server auslesen
-- [x] Toolnamen, Beschreibungen und Schemas in Probe-Ergebnissen speichern
-- [x] Profilserver, Remote-Server und alternative Startformen anbinden
-- [x] Tools Capability-Bundles zuordnen
-- [x] Dashboard-Visualisierung für Tool-Katalog und Tool-Bundle-Zuordnung nachziehen
-- [x] i18n-Basis für MCP-Ausgaben und Dashboard mit Deutsch/Englisch umsetzen
-- [x] Textsets für `es`, `zh`, `ja` und `ru` ergänzen
-- Remote-Authentifizierung und Header-Sonderfälle nachziehen
+- [x] Start local backend MCP servers in a controlled way
+- [x] Read `list_tools` output per local stdio server
+- [x] Store tool names, descriptions, and schemas in probe results
+- [x] Support profile servers, remote servers, and alternative launch forms
+- [x] Assign tools to capability bundles
+- [x] Add dashboard visualization for tool catalog and tool-bundle assignments
+- [x] Implement i18n base for MCP outputs and dashboard with German/English
+- [x] Add text sets for `es`, `zh`, `ja`, and `ru`
+- Remote authentication and header edge cases
 
-## Phase 2.5: Ressourcen-, Skill- und API-Inventar
+## Phase 2.5: Resource, Skill, and API Inventory
 
-Status: geplant
+Status: planned
 
-- Automatische Scans für Skills, Module, MCP-Server, Tool-Definitionen und lokale Konfigurationsquellen
-- Systemressourcen erkennen: Pfade, installierte Software, ausführbare Dateien, EXE-Dateien, CLI-Apps und Software mit CLI-Schnittstelle
-- Nutzungsmöglichkeiten erkannter Software erfassen, zum Beispiel unterstützte Dateitypen, typische Befehle, lokale APIs und Automatisierungswege
-- Verwendete APIs aus Code, Konfigurationen, Profilen und Tool-Schemas erkennen
-- Zu erkannten APIs aktuelle Dokumentation referenzieren oder vorhalten, bevorzugt über Context7 oder vergleichbare Dokumentationsquellen
-- BACH-Partnerprogramm und BACH-interne Tool-/Skill-Strukturen als Impulsquelle auswerten
+- Automatic scans for skills, modules, MCP servers, tool definitions, and local configuration sources
+- Detect system resources: paths, installed software, executables, CLI apps, and software with CLI interfaces
+- Capture usage possibilities for detected software: supported file types, typical commands, local APIs, and automation paths
+- Detect APIs in use from code, configurations, profiles, and tool schemas
+- Reference or maintain current documentation for detected APIs, preferably via Context7 or comparable sources
+- Evaluate the BACH partner program and BACH-internal tool/skill structures as an input source
 
-## Phase 3: Rechte und Policies
+## Phase 3: Permissions and Policies
 
-Status: geplant
+Status: planned
 
-- `policy.json` für Profile, Server und Tools
-- Rechte: `allow`, `deny`, `ask`, `readonly`
-- Secret-Werte maskieren
-- Audit-Log für Profil- und Rechteänderungen
+- `policy.json` for profiles, servers, and tools
+- Permissions: `allow`, `deny`, `ask`, `readonly`
+- Mask secret values
+- Audit log for profile and permission changes
 
-## Phase 3.5: Thematische Cluster und virtuelle Server
+## Phase 3.5: Thematic Clusters and Virtual Servers
 
-Status: geplant
+Status: planned
 
-- Erkannte Tools, MCPs, Skills, Module, APIs, Programme, EXE-Dateien und CLIs automatisch thematisch clustern
-- Globale Cluster aktivieren und deaktivieren können
-- Manuelle Cluster anlegen
-- Automatisch angelegte Cluster manuell ändern, umbenennen, zusammenführen oder aufteilen
-- Cluster stabil benennen und mit Beschreibungen, Tags und Einsatzbeispielen versehen
-- Cluster zu virtuellen MCP-Servern verbinden, sodass Agenten statt vieler Einzelquellen kuratierte Fähigkeitsserver laden können
-- Cluster als Grundlage für Profile, Gateway-Regeln, Dokumentationskontext und Dashboard-Ansichten nutzen
+- Automatically cluster detected tools, MCPs, skills, modules, APIs, programs, executables, and CLIs by topic
+- Enable and disable global clusters
+- Create manual clusters
+- Modify, rename, merge, or split automatically created clusters
+- Assign stable names with descriptions, tags, and usage examples to clusters
+- Connect clusters to virtual MCP servers so that agents can load curated capability servers instead of many individual sources
+- Use clusters as the basis for profiles, gateway rules, documentation context, and dashboard views
 
-## Phase 4: Virtueller MCP-Gateway
+## Phase 4: Virtual MCP Gateway
 
-Status: geplant
+Status: planned
 
-- Claude lädt nur noch den virtuellen `ellmos-controlcenter-gateway`
-- Gateway startet ausgewählte Backend-Server
-- Gateway veröffentlicht nur erlaubte Tools
-- Tool-Aufrufe werden geprüft, geloggt und weitergeleitet
+- Claude loads only the virtual `ellmos-controlcenter-gateway`
+- Gateway starts selected backend servers
+- Gateway exposes only allowed tools
+- Tool calls are checked, logged, and forwarded
 
-## Phase 5: Veröffentlichung
+## Phase 5: Publication
 
-Status: geplant
+Status: planned
 
-- Übersetzungsqualität und Terminologie laufend prüfen
-- stabiler Katalogstandard
-- Sicherheitsdokumentation
-- Paketierung für npm und GitHub
+- Continuously review translation quality and terminology
+- Stable catalog standard
+- Security documentation
+- Packaging for npm and GitHub
