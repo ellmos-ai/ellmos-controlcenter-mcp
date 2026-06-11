@@ -5,6 +5,10 @@
 ### Documentation
 - Translated ROADMAP.md and STATE.md from German to English for consistency with the English-first project.
 - Added Audience, Search Phrases, and Last-checked sections to `llms.txt`.
+- Added Homebase (44 tools) and ServerCommander (8 tools) to MCP Server Family table in README.md and README_de.md.
+- Updated FileCommander tool count 43→44 in MCP Server Family table.
+- Converted `llms.txt` Search Phrases section from bullet list to fenced code block for consistency.
+- Updated `llms.txt` Last-checked to 2026-06-11.
 
 ## 0.1.0-alpha.6 - 2026-06-05
 

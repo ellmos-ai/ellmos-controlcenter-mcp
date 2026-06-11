@@ -57,15 +57,17 @@ Default dashboard URL: http://127.0.0.1:3737
 
 ## Search Phrases
 
-- ellmos ControlCenter MCP local stack discovery
-- MCP control plane Claude profile management
-- local MCP server catalog dashboard
-- capability bundle recommendation MCP
-- Claude profile switch mcp-config generator
-- MCP profile audit policy rules
-- ellmos-ai MCP server TypeScript
-- local MCP tool list probe
-- ellmos controlcenter npm
+```
+ellmos ControlCenter MCP local stack discovery
+MCP control plane Claude profile management
+local MCP server catalog dashboard
+capability bundle recommendation MCP
+Claude profile switch mcp-config generator
+MCP profile audit policy rules
+ellmos-ai MCP server TypeScript
+local MCP tool list probe
+ellmos controlcenter npm
+```
 
 ## Important Files
 
@@ -81,4 +83,4 @@ Default dashboard URL: http://127.0.0.1:3737
 - `src/dashboard.ts`: local dashboard server.
 - `test/catalog.test.ts`: unit coverage for catalog, profiles, bundles, and policy rules.
 
-## Last-checked: 2026-06-10
+## Last-checked: 2026-06-11
