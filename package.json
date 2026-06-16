@@ -1,6 +1,6 @@
 {
   "name": "ellmos-controlcenter-mcp",
-  "version": "0.1.0-alpha.6",
+  "version": "0.1.0-alpha.7",
   "mcpName": "io.github.ellmos-ai/ellmos-controlcenter-mcp",
   "description": "An MCP control plane server for local MCP stack discovery, profile inspection, and profile recommendation",
   "type": "module",
@@ -63,6 +63,7 @@
   "homepage": "https://github.com/ellmos-ai/ellmos-controlcenter-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "update-notifier": "^7.3.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {

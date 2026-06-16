@@ -5,6 +5,9 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+// @ts-expect-error update-notifier (v7, ESM) liefert keine eigenen Typdeklarationen
+import updateNotifier from "update-notifier";
+import { createRequire } from "node:module";
 import { z } from "zod";
 import {
   buildBundleToolAssignments,
@@ -691,6 +694,12 @@ server.registerTool(
 );
 
 async function main(): Promise<void> {
+  // Update-Hinweis nur im interaktiven Terminal — niemals im stdio-/MCP-Betrieb (Protokoll-Schutz)
+  if (process.stdout.isTTY) {
+    try {
+      updateNotifier({ pkg: createRequire(import.meta.url)("../package.json") }).notify();
+    } catch { /* Update-Check darf den Start nie blockieren */ }
+  }
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }
