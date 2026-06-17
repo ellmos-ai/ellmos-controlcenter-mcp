@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.1.0-alpha.8 - 2026-06-17
+
+### Changed
+- Add a TTY-guarded `update-notifier` check for interactive CLI starts while keeping MCP stdio output unchanged.
+
+### Fixed
+- Align `package.json`, lockfile, MCP runtime version, tool-catalog probe client version, and `server.json` metadata after the update-notifier release.
+- Refresh npm dependency locks so the production audit finding for `hono` is resolved.
 
 ### Documentation
 - Translated ROADMAP.md and STATE.md from German to English for consistency with the English-first project.
