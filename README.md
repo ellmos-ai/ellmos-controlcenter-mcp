@@ -12,7 +12,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org/)
 
-An alpha-stage **Model Context Protocol (MCP) control plane** for local MCP stacks. ControlCenter discovers local MCP servers, reads Claude profile files, groups servers into capability bundles, recommends profiles for a task, builds catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, and provides an optional local dashboard.
+An alpha-stage **Model Context Protocol (MCP) control plane** for local MCP stacks. ControlCenter discovers local MCP servers, reads MCP profile files, groups servers into capability bundles, recommends profiles for a task, builds catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, and provides an optional local dashboard.
+
+> **Provider note:** ControlCenter works with any MCP-capable client (Claude Code, Codex, Gemini, or any stdio-based MCP host). The profile management tools default to Claude Code's profile directory (`~/.claude/profiles`) but accept any directory via `ELLMOS_PROFILE_ROOT`. The skill and plugin inventory tools are scoped to Claude Code conventions by default; see the environment variables below for override options.
 
 The first alpha release focuses on **discovery, profile visibility, dashboard workflows, capability bundles, profile-aware tool-list probes, tool-bundle assignments, internationalization, and initial policy audits**. Gateway mode, enforced tool-level permissions, authentication, and hard security boundaries are planned, but are not implemented yet.
 
@@ -40,14 +42,14 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 | `controlcenter_assign_tool_bundles` | Assign probed MCP tools to capability bundles |
 | `controlcenter_list_bundles` | Group local servers by capability bundle |
 | `controlcenter_suggest_bundles` | Recommend bundles for a task |
-| `controlcenter_list_profiles` | List Claude profiles from the profile root |
+| `controlcenter_list_profiles` | List MCP profiles from the profile root (defaults to `~/.claude/profiles`; override with `ELLMOS_PROFILE_ROOT`) |
 | `controlcenter_suggest_profile` | Recommend a profile for a task |
 | `controlcenter_resolve_profile` | Resolve a profile including `extends` chains |
-| `controlcenter_switch_profile` | Prepare a generated `--mcp-config` file |
+| `controlcenter_switch_profile` | Prepare a generated `--mcp-config` file (launch command is currently Claude Code-specific) |
 | `controlcenter_audit_profile` | Run initial policy checks against a profile |
 | `controlcenter_build_catalog` | Build a JSON catalog of local MCP servers, optionally including tool probes |
-| `controlcenter_list_skills` | Inventory deployed Claude Code skills (`~/.claude/skills`) and the source skills library (`.AI/.SKILLS/skills`) |
-| `controlcenter_list_plugins` | Inventory Claude Code plugins (`~/.claude/plugins`) and local ellmos modules (`.AI/.MODULES`) |
+| `controlcenter_list_skills` | Inventory deployed skills (`~/.claude/skills` by default; Claude Code convention, override with `ELLMOS_SKILLS_ROOT`) and the source skills library |
+| `controlcenter_list_plugins` | Inventory installed plugins (`~/.claude/plugins` by default; Claude Code convention, override with `ELLMOS_PLUGINS_ROOT`) and local ellmos modules |
 
 ## Dashboard
 
@@ -118,7 +120,9 @@ node dist/dashboard.js
 
 ## Configuration
 
-### Claude Desktop / Claude Code
+### MCP Client Configuration
+
+ControlCenter works with any MCP-capable client. The JSON snippet below uses the standard `mcpServers` format supported by Claude Code, Claude Desktop, Codex, Cursor, and other MCP hosts.
 
 If installed globally from npm:
 
@@ -150,7 +154,9 @@ If installed from source:
 Optional environment variables:
 
 - `ELLMOS_MCP_ROOT` overrides the default MCP repository root
-- `ELLMOS_PROFILE_ROOT` overrides the Claude profile directory
+- `ELLMOS_PROFILE_ROOT` overrides the profile directory (default: `~/.claude/profiles`)
+- `ELLMOS_SKILLS_ROOT` overrides the deployed skills directory (default: `~/.claude/skills`)
+- `ELLMOS_PLUGINS_ROOT` overrides the plugins directory (default: `~/.claude/plugins`)
 - `ELLMOS_BUNDLE_CONFIG` overrides the capability bundle definition file
 - `ELLMOS_POLICY_CONFIG` overrides the profile audit policy rule file
 - `CONTROLCENTER_LANGUAGE` or `ELLMOS_CONTROLCENTER_LANGUAGE` sets the initial output language
@@ -165,13 +171,13 @@ Use `controlcenter_get_language` to inspect the current language and `controlcen
 
 ## Profile Switching
 
-`controlcenter_switch_profile` does not change a running Claude session. It creates a resolved MCP configuration and returns a launch command:
+`controlcenter_switch_profile` does not change a running session. It creates a resolved MCP configuration and returns a launch command. The current default targets Claude Code:
 
 ```bash
 claude --mcp-config ~/.claude/profiles/_generated/software.mcp.json
 ```
 
-With `write: false`, the switch runs as a preview. With `write: true`, ControlCenter writes the generated file.
+With `write: false`, the switch runs as a preview. With `write: true`, ControlCenter writes the generated file. The generated `mcpServers` JSON is readable by any MCP-capable client; adapting the launch command to other clients is planned for a future release.
 
 Profile resolution supports single inheritance (`"extends": "base"`), multiple inheritance (`"extends": ["base", "shared"]`), and inherited-server removal via `"remove"`, `"disabled"`, or `"disabledServers"`. Missing profiles, invalid JSON, invalid profile names, and inheritance cycles now return explicit profile errors with the affected file path or chain.
 
@@ -253,7 +259,7 @@ This MCP server is part of the **[ellmos-ai](https://github.com/ellmos-ai)** eco
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n workflow management via AI assistants | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
 | [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 44 | LLM memory, knowledge, state, routing, and orchestration | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
 | [ServerCommander](https://github.com/ellmos-ai/ellmos-servercommander-mcp) | 8 | Server operations: deploy dry-runs, mail, log analysis, health checks | [`ellmos-servercommander-mcp`](https://www.npmjs.com/package/ellmos-servercommander-mcp) (alpha) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **14** | **MCP stack discovery, profile management, control plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **16** | **MCP stack discovery, profile management, control plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 
 ### AI Infrastructure
 
