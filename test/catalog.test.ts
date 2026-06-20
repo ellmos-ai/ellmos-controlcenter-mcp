@@ -36,6 +36,17 @@ import {
   PolicyConfigError,
   summarizePolicyFindings
 } from "../src/policy.js";
+import {
+  parseFrontmatter,
+  scanSkills,
+  getDefaultSourceSkillsRoot
+} from "../src/skills.js";
+import {
+  scanInstalledPlugins,
+  scanModules,
+  scanPluginsAndModules,
+  getDefaultModulesRoot
+} from "../src/plugins.js";
 import { getToolBundleOverview } from "../src/dashboard.js";
 import {
   getLanguage,
@@ -938,5 +949,274 @@ describe("policy helpers", () => {
         ruleId: "npx-runtime-fetch"
       }
     } satisfies Partial<PolicyConfigError>);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// skills helpers
+// ──────────────────────────────────────────────────────────────────────────────
+
+describe("skills helpers", () => {
+  it("parses simple key-value frontmatter", () => {
+    const md = `---
+name: brainstorm
+version: 1.2.0
+description: A brainstorming skill
+type: skill
+category: utilities
+status: active
+---
+# Content here
+`;
+    const fm = parseFrontmatter(md);
+    expect(fm["name"]).toBe("brainstorm");
+    expect(fm["version"]).toBe("1.2.0");
+    expect(fm["description"]).toBe("A brainstorming skill");
+    expect(fm["type"]).toBe("skill");
+    expect(fm["category"]).toBe("utilities");
+    expect(fm["status"]).toBe("active");
+  });
+
+  it("parses folded scalar (>) in frontmatter without crashing", () => {
+    const md = `---
+name: think
+version: 2.0.0
+description: >
+  Strukturierte Methoden fuer
+  kritisches Denken
+status: active
+---
+`;
+    const fm = parseFrontmatter(md);
+    expect(fm["name"]).toBe("think");
+    expect(fm["description"]).toContain("Strukturierte");
+    expect(fm["status"]).toBe("active");
+  });
+
+  it("returns empty record for content without frontmatter", () => {
+    const fm = parseFrontmatter("# Just a heading\nNo frontmatter here.");
+    expect(Object.keys(fm)).toHaveLength(0);
+  });
+
+  it("returns empty record for unclosed frontmatter", () => {
+    const fm = parseFrontmatter("---\nname: broken\n# no closing dashes");
+    expect(Object.keys(fm)).toHaveLength(0);
+  });
+
+  it("scans deployed skills and returns entries with deployed=true", async () => {
+    const root = await createTempDirectory("controlcenter-skills-deployed-");
+    // Create a skill directory with SKILL.md
+    const skillDir = path.join(root, "my-skill");
+    await fs.mkdir(skillDir, { recursive: true });
+    await fs.writeFile(
+      path.join(skillDir, "SKILL.md"),
+      `---\nname: my-skill\nversion: 1.0.0\ndescription: Test skill\nstatus: active\n---\n# My Skill\n`,
+      "utf-8"
+    );
+    // Create a directory WITHOUT SKILL.md
+    const noSkillMdDir = path.join(root, "content-only");
+    await fs.mkdir(noSkillMdDir, { recursive: true });
+    await fs.writeFile(path.join(noSkillMdDir, "CONTENT.md"), "content", "utf-8");
+
+    const skills = await scanSkills(root, "");
+    const found = skills.find((s) => s.name === "my-skill");
+    const noMd = skills.find((s) => s.name === "content-only");
+
+    expect(found).toBeDefined();
+    expect(found?.deployed).toBe(true);
+    expect(found?.version).toBe("1.0.0");
+    expect(found?.hasSkillMd).toBe(true);
+
+    expect(noMd).toBeDefined();
+    expect(noMd?.hasSkillMd).toBe(false);
+    expect(noMd?.deployed).toBe(true);
+  });
+
+  it("returns empty array when deployed skills root does not exist", async () => {
+    const root = await createTempDirectory("controlcenter-skills-empty-");
+    const missing = path.join(root, "nonexistent");
+    const skills = await scanSkills(missing, "");
+    expect(skills).toEqual([]);
+  });
+
+  it("merges deployed and source skills, deployed takes precedence", async () => {
+    const deployedRoot = await createTempDirectory("controlcenter-skills-dep-");
+    const sourceRoot = await createTempDirectory("controlcenter-skills-src-");
+
+    // Deployed skill
+    const depSkill = path.join(deployedRoot, "shared-skill");
+    await fs.mkdir(depSkill, { recursive: true });
+    await fs.writeFile(path.join(depSkill, "SKILL.md"), "---\nname: shared-skill\nversion: 2.0.0\n---\n", "utf-8");
+
+    // Source-only skill
+    const srcCategory = path.join(sourceRoot, "utilities");
+    await fs.mkdir(srcCategory, { recursive: true });
+    const srcSkill = path.join(srcCategory, "source-only-skill");
+    await fs.mkdir(srcSkill, { recursive: true });
+    await fs.writeFile(path.join(srcSkill, "SKILL.md"), "---\nname: source-only-skill\nversion: 1.0.0\n---\n", "utf-8");
+
+    // Source has same name as deployed (should NOT appear twice)
+    const srcDup = path.join(srcCategory, "shared-skill");
+    await fs.mkdir(srcDup, { recursive: true });
+    await fs.writeFile(path.join(srcDup, "SKILL.md"), "---\nname: shared-skill\nversion: 1.0.0\n---\n", "utf-8");
+
+    const skills = await scanSkills(deployedRoot, sourceRoot);
+    const sharedEntries = skills.filter((s) => s.name === "shared-skill");
+    const sourceOnly = skills.find((s) => s.name === "source-only-skill");
+
+    // Deployed wins — only one entry
+    expect(sharedEntries).toHaveLength(1);
+    expect(sharedEntries[0].deployed).toBe(true);
+
+    // Source-only is present with deployed=false
+    expect(sourceOnly).toBeDefined();
+    expect(sourceOnly?.deployed).toBe(false);
+  });
+
+  it("resolves default source skills root from OneDrive env", () => {
+    const fakeEnv = { OneDrive: "C:\\Users\\TestUser\\OneDrive" };
+    const result = getDefaultSourceSkillsRoot(fakeEnv, "C:\\Users\\TestUser");
+    expect(result).toContain(".AI");
+    expect(result).toContain(".SKILLS");
+    expect(result).toContain("skills");
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// plugins helpers
+// ──────────────────────────────────────────────────────────────────────────────
+
+describe("plugins helpers", () => {
+  it("returns empty array when installed_plugins.json is missing", async () => {
+    const root = await createTempDirectory("controlcenter-plugins-empty-");
+    const plugins = await scanInstalledPlugins(root);
+    expect(plugins).toEqual([]);
+  });
+
+  it("parses installed_plugins.json and returns plugin summaries", async () => {
+    const root = await createTempDirectory("controlcenter-plugins-registry-");
+    const cacheDir = path.join(root, "cache", "my-marketplace", "my-plugin", "1.0.0");
+    await fs.mkdir(cacheDir, { recursive: true });
+    // Add a skills subdirectory to signal hasSkills
+    await fs.mkdir(path.join(cacheDir, "skills"), { recursive: true });
+
+    const registry = {
+      version: 2,
+      plugins: {
+        "my-plugin@my-marketplace": [
+          {
+            scope: "user",
+            installPath: cacheDir,
+            version: "1.0.0",
+            installedAt: "2026-01-01T00:00:00.000Z",
+            lastUpdated: "2026-06-01T00:00:00.000Z"
+          }
+        ]
+      }
+    };
+    await fs.writeFile(path.join(root, "installed_plugins.json"), JSON.stringify(registry), "utf-8");
+
+    const plugins = await scanInstalledPlugins(root);
+    expect(plugins).toHaveLength(1);
+    expect(plugins[0].name).toBe("my-plugin");
+    expect(plugins[0].marketplace).toBe("my-marketplace");
+    expect(plugins[0].type).toBe("plugin");
+    expect(plugins[0].version).toBe("1.0.0");
+    expect(plugins[0].hasSkills).toBe(true);
+    expect(plugins[0].hasCommands).toBe(false);
+  });
+
+  it("handles plugin with unknown version gracefully", async () => {
+    const root = await createTempDirectory("controlcenter-plugins-unknown-");
+    const registry = {
+      version: 2,
+      plugins: {
+        "feature-dev@claude-plugins-official": [
+          {
+            scope: "user",
+            installPath: path.join(root, "cache", "claude-plugins-official", "feature-dev", "unknown"),
+            version: "unknown",
+            installedAt: "2026-04-23T22:48:18.418Z"
+          }
+        ]
+      }
+    };
+    await fs.writeFile(path.join(root, "installed_plugins.json"), JSON.stringify(registry), "utf-8");
+
+    const plugins = await scanInstalledPlugins(root);
+    expect(plugins[0].version).toBe("unknown");
+    expect(plugins[0].name).toBe("feature-dev");
+    expect(plugins[0].hasMcp).toBe(false);
+    expect(plugins[0].hasSkills).toBe(false);
+  });
+
+  it("scans local modules from modules root", async () => {
+    const root = await createTempDirectory("controlcenter-modules-");
+    // Module with ellmos-module.json
+    const modDir = path.join(root, "my-module");
+    await fs.mkdir(modDir, { recursive: true });
+    await fs.writeFile(
+      path.join(modDir, "ellmos-module.json"),
+      JSON.stringify({ name: "my-module", version: "3.1.0" }),
+      "utf-8"
+    );
+    // Add server.json to signal hasMcp
+    await fs.writeFile(path.join(modDir, "server.json"), "{}", "utf-8");
+
+    const modules = await scanModules(root);
+    expect(modules).toHaveLength(1);
+    expect(modules[0].name).toBe("my-module");
+    expect(modules[0].type).toBe("module");
+    expect(modules[0].version).toBe("3.1.0");
+    expect(modules[0].hasMcp).toBe(true);
+  });
+
+  it("falls back to package.json for module version", async () => {
+    const root = await createTempDirectory("controlcenter-modules-pkgjson-");
+    const modDir = path.join(root, "pkg-module");
+    await fs.mkdir(modDir, { recursive: true });
+    await fs.writeFile(
+      path.join(modDir, "package.json"),
+      JSON.stringify({ name: "pkg-module", version: "2.5.0" }),
+      "utf-8"
+    );
+
+    const modules = await scanModules(root);
+    expect(modules[0].version).toBe("2.5.0");
+  });
+
+  it("returns empty array when modules root does not exist", async () => {
+    const root = await createTempDirectory("controlcenter-modules-missing-");
+    const missing = path.join(root, "nonexistent");
+    const modules = await scanModules(missing);
+    expect(modules).toEqual([]);
+  });
+
+  it("combines plugins and modules in scanPluginsAndModules", async () => {
+    const pluginsRoot = await createTempDirectory("controlcenter-combined-plugins-");
+    const modulesRoot = await createTempDirectory("controlcenter-combined-modules-");
+
+    // Registry with one plugin
+    const registry = {
+      version: 2,
+      plugins: { "combo-plugin@official": [{ scope: "user", version: "1.0.0" }] }
+    };
+    await fs.writeFile(path.join(pluginsRoot, "installed_plugins.json"), JSON.stringify(registry), "utf-8");
+
+    // One module
+    const modDir = path.join(modulesRoot, "combo-module");
+    await fs.mkdir(modDir, { recursive: true });
+    await fs.writeFile(path.join(modDir, "ellmos-module.json"), JSON.stringify({ name: "combo-module", version: "1.0.0" }), "utf-8");
+
+    const all = await scanPluginsAndModules(pluginsRoot, modulesRoot);
+    expect(all.some((p) => p.type === "plugin" && p.name === "combo-plugin")).toBe(true);
+    expect(all.some((p) => p.type === "module" && p.name === "combo-module")).toBe(true);
+  });
+
+  it("resolves default modules root from OneDrive env", () => {
+    const fakeEnv = { OneDrive: "C:\\Users\\TestUser\\OneDrive" };
+    const result = getDefaultModulesRoot(fakeEnv, "C:\\Users\\TestUser");
+    expect(result).toContain(".AI");
+    expect(result).toContain(".MODULES");
   });
 });

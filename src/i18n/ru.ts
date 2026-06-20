@@ -81,6 +81,24 @@ export const ru: Translations = {
       tool: "Инструмент",
       matches: "Совпадения",
       description: "Описание"
+    },
+    skill: {
+      name: "Название",
+      description: "Описание",
+      version: "Версия",
+      deployed: "Развёрнут",
+      category: "Категория",
+      path: "Путь"
+    },
+    plugin: {
+      name: "Название",
+      type: "Тип",
+      version: "Версия",
+      marketplaceScope: "Маркет/Scope",
+      skills: "Skills",
+      commands: "Команды",
+      mcp: "MCP",
+      path: "Путь"
     }
   },
   headings: {
@@ -100,7 +118,11 @@ export const ru: Translations = {
     toolCatalog: "# Каталог MCP-инструментов",
     toolBundleAssignment: "# Назначение инструментов bundle",
     probeNotes: "## Заметки probe",
-    language: "# Язык ControlCenter"
+    language: "# Язык ControlCenter",
+    deployedSkills: (count) => `## Развёрнутые Skills (${count})`,
+    sourceOnlySkills: (count) => `## Только-исходные Skills (${count})`,
+    claudeCodePlugins: (count) => `## Плагины Claude Code (${count})`,
+    localModules: (count) => `## Локальные модули (${count})`
   },
   messages: {
     sourceLocalRepos: (root) => `Локальные MCP-репозитории в ${root}`,
@@ -123,7 +145,16 @@ export const ru: Translations = {
     toolScan: "Сканирование инструментов",
     profileToolScan: "Сканирование инструментов профиля",
     toolBundleAssignment: "Назначение инструментов bundle",
-    resolvedServers: "разрешенные серверы"
+    resolvedServers: "разрешенные серверы",
+    skillsRoot: "Корень Skills",
+    sourceSkillsRoot: "Корень исходных Skills",
+    skipped: "(пропущено)",
+    pluginsRoot: "Корень плагинов",
+    modulesRoot: "Корень модулей",
+    skillsTotal: (total, deployed, sourceOnly) => `Всего: ${total} (${deployed} развёрнуто, ${sourceOnly} только-исходные)`,
+    pluginsTotal: (total, plugins, modules) => `Всего: ${total} (${plugins} плагинов, ${modules} модулей)`,
+    noSkills: "Skills не найдены.",
+    noPlugins: "Плагины или модули не найдены."
   },
   policy: {
     invalidServerConfig: "Конфигурация сервера не является объектом.",
@@ -189,6 +220,14 @@ export const ru: Translations = {
     controlcenter_build_catalog: {
       title: "Создать каталог локальных серверов",
       description: "Создает JSON-каталог локально найденных MCP-серверов."
+    },
+    controlcenter_list_skills: {
+      title: "Список skills Claude Code",
+      description: "Инвентаризирует установленные skills Claude Code из папки развернутых skills и библиотеки исходных skills."
+    },
+    controlcenter_list_plugins: {
+      title: "Список плагинов и модулей",
+      description: "Инвентаризирует установленные плагины Claude Code и локальные модули ellmos с их возможностями."
     }
   },
   inputDescriptions: {
@@ -208,7 +247,14 @@ export const ru: Translations = {
     policyConfigPath: "Необязательный путь к конфигурации policy-правил.",
     catalogOutputPath: "Необязательное место вывода для JSON-каталога.",
     includeTools: "Если true, локальные MCP-серверы запускаются, а реальные результаты list_tools добавляются в каталог.",
-    includeToolAssignments: "Если true, для просканированных инструментов добавляются назначения tool bundle."
+    includeToolAssignments: "Если true, для просканированных инструментов добавляются назначения tool bundle.",
+    skillsRoot: "Необязательный путь к папке развернутых skills Claude Code. По умолчанию ~/.claude/skills.",
+    sourceSkillsRoot: "Необязательный путь к корню библиотеки исходных skills. По умолчанию локальная папка .AI/.SKILLS/skills.",
+    pluginsRoot: "Необязательный путь к папке плагинов Claude Code. По умолчанию ~/.claude/plugins.",
+    modulesRoot: "Необязательный путь к папке модулей ellmos. По умолчанию локальная папка .AI/.MODULES.",
+    deployedOnly: "Если true, возвращаются только развернутые skills, библиотека исходных skills не сканируется.",
+    pluginsOnly: "Если true, возвращаются только плагины Claude Code, локальные модули не сканируются.",
+    modulesOnly: "Если true, возвращаются только локальные модули, плагины Claude Code не сканируются."
   },
   dashboard: {
     loading: "загрузка...",

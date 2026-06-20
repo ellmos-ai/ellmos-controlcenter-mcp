@@ -18,7 +18,7 @@
 - [x] Stub-Sprachen `es`, `zh`, `ja` und `ru` mit echten Übersetzungen füllen
 - Remote-Auth und Header-Handling für Legacy-SSE ergänzen
 - Capability-Tags in `server.json` oder separatem Catalog persistieren
-- Automatischen Scan für Skills, Module, MCP-Server, Tool-Definitionen und lokale Konfigurationsquellen entwerfen
+- [x] Automatischen Scan für Skills und Plugins (mit Subkomponenten-Erkennung) implementieren
 - Ressourceninventar für Systempfade, installierte Software, ausführbare Dateien, EXE-Dateien, CLI-Apps und Software mit CLI-Schnittstelle planen
 - API-Erkennung aus Code, Profilen, Konfigurationen und Tool-Schemas spezifizieren
 - Dokumentationskontext für erkannte APIs vorhalten, bevorzugt über Context7

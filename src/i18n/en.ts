@@ -81,6 +81,24 @@ export const en: Translations = {
       tool: "Tool",
       matches: "Matches",
       description: "Description"
+    },
+    skill: {
+      name: "Name",
+      description: "Description",
+      version: "Version",
+      deployed: "Deployed",
+      category: "Category",
+      path: "Path"
+    },
+    plugin: {
+      name: "Name",
+      type: "Type",
+      version: "Version",
+      marketplaceScope: "Marketplace/Scope",
+      skills: "Skills",
+      commands: "Commands",
+      mcp: "MCP",
+      path: "Path"
     }
   },
   headings: {
@@ -100,7 +118,11 @@ export const en: Translations = {
     toolCatalog: "# MCP Tool Catalog",
     toolBundleAssignment: "# Tool Bundle Assignment",
     probeNotes: "## Probe Notes",
-    language: "# ControlCenter Language"
+    language: "# ControlCenter Language",
+    deployedSkills: (count) => `## Deployed Skills (${count})`,
+    sourceOnlySkills: (count) => `## Source-Only Skills (${count})`,
+    claudeCodePlugins: (count) => `## Claude Code Plugins (${count})`,
+    localModules: (count) => `## Local Modules (${count})`
   },
   messages: {
     sourceLocalRepos: (root) => `Local MCP repositories in ${root}`,
@@ -123,7 +145,16 @@ export const en: Translations = {
     toolScan: "Tool scan",
     profileToolScan: "Profile tool scan",
     toolBundleAssignment: "Tool bundle assignment",
-    resolvedServers: "resolved servers"
+    resolvedServers: "resolved servers",
+    skillsRoot: "Skills root",
+    sourceSkillsRoot: "Source skills root",
+    skipped: "(skipped)",
+    pluginsRoot: "Plugins root",
+    modulesRoot: "Modules root",
+    skillsTotal: (total, deployed, sourceOnly) => `Total: ${total} (${deployed} deployed, ${sourceOnly} source-only)`,
+    pluginsTotal: (total, plugins, modules) => `Total: ${total} (${plugins} plugins, ${modules} modules)`,
+    noSkills: "No skills found.",
+    noPlugins: "No plugins or modules found."
   },
   policy: {
     invalidServerConfig: "Server configuration is not an object.",
@@ -189,6 +220,14 @@ export const en: Translations = {
     controlcenter_build_catalog: {
       title: "Build Local Server Catalog",
       description: "Creates a JSON catalog of locally discovered MCP servers."
+    },
+    controlcenter_list_skills: {
+      title: "List Claude Code Skills",
+      description: "Inventorizes installed Claude Code skills from the deployed skills folder and the source skills library."
+    },
+    controlcenter_list_plugins: {
+      title: "List Plugins and Modules",
+      description: "Inventorizes installed Claude Code plugins and local ellmos modules with their capabilities."
     }
   },
   inputDescriptions: {
@@ -208,7 +247,14 @@ export const en: Translations = {
     policyConfigPath: "Optional path to a policy rule configuration.",
     catalogOutputPath: "Optional output location for the JSON catalog.",
     includeTools: "When true, local MCP servers are started and real list_tools results are added to the catalog.",
-    includeToolAssignments: "When true, tool bundle assignments are added for scanned tools."
+    includeToolAssignments: "When true, tool bundle assignments are added for scanned tools.",
+    skillsRoot: "Optional path to the deployed Claude Code skills folder. Defaults to ~/.claude/skills.",
+    sourceSkillsRoot: "Optional path to the source skills library root. Defaults to the local .AI/.SKILLS/skills folder.",
+    pluginsRoot: "Optional path to the Claude Code plugins folder. Defaults to ~/.claude/plugins.",
+    modulesRoot: "Optional path to the ellmos modules folder. Defaults to the local .AI/.MODULES folder.",
+    deployedOnly: "When true, only deployed skills are returned and the source skills library is not scanned.",
+    pluginsOnly: "When true, only Claude Code plugins are returned and local modules are not scanned.",
+    modulesOnly: "When true, only local modules are returned and Claude Code plugins are not scanned."
   },
   dashboard: {
     loading: "loading...",

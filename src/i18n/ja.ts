@@ -81,6 +81,24 @@ export const ja: Translations = {
       tool: "ツール",
       matches: "一致",
       description: "説明"
+    },
+    skill: {
+      name: "名前",
+      description: "説明",
+      version: "バージョン",
+      deployed: "デプロイ済み",
+      category: "カテゴリ",
+      path: "パス"
+    },
+    plugin: {
+      name: "名前",
+      type: "種別",
+      version: "バージョン",
+      marketplaceScope: "マーケット/スコープ",
+      skills: "Skills",
+      commands: "コマンド",
+      mcp: "MCP",
+      path: "パス"
     }
   },
   headings: {
@@ -100,7 +118,11 @@ export const ja: Translations = {
     toolCatalog: "# MCP ツールカタログ",
     toolBundleAssignment: "# ツール bundle 割り当て",
     probeNotes: "## プローブメモ",
-    language: "# ControlCenter 言語"
+    language: "# ControlCenter 言語",
+    deployedSkills: (count) => `## デプロイ済み Skills (${count})`,
+    sourceOnlySkills: (count) => `## ソースのみ Skills (${count})`,
+    claudeCodePlugins: (count) => `## Claude Code プラグイン (${count})`,
+    localModules: (count) => `## ローカルモジュール (${count})`
   },
   messages: {
     sourceLocalRepos: (root) => `${root} のローカル MCP リポジトリ`,
@@ -123,7 +145,16 @@ export const ja: Translations = {
     toolScan: "ツールスキャン",
     profileToolScan: "プロファイルツールスキャン",
     toolBundleAssignment: "ツール bundle 割り当て",
-    resolvedServers: "解決済みサーバー"
+    resolvedServers: "解決済みサーバー",
+    skillsRoot: "Skills ルート",
+    sourceSkillsRoot: "ソース Skills ルート",
+    skipped: "（スキップ）",
+    pluginsRoot: "プラグインルート",
+    modulesRoot: "モジュールルート",
+    skillsTotal: (total, deployed, sourceOnly) => `合計: ${total}（${deployed} デプロイ済み, ${sourceOnly} ソースのみ）`,
+    pluginsTotal: (total, plugins, modules) => `合計: ${total}（${plugins} プラグイン, ${modules} モジュール）`,
+    noSkills: "Skills が見つかりません。",
+    noPlugins: "プラグインまたはモジュールが見つかりません。"
   },
   policy: {
     invalidServerConfig: "サーバー設定がオブジェクトではありません。",
@@ -189,6 +220,14 @@ export const ja: Translations = {
     controlcenter_build_catalog: {
       title: "ローカルサーバーカタログを作成",
       description: "ローカルで検出された MCP サーバーの JSON カタログを作成します。"
+    },
+    controlcenter_list_skills: {
+      title: "Claude Code Skills を一覧表示",
+      description: "デプロイ済み skills フォルダーと skills ソースライブラリから、インストール済みの Claude Code skills を一覧表示します。"
+    },
+    controlcenter_list_plugins: {
+      title: "プラグインとモジュールを一覧表示",
+      description: "インストール済みの Claude Code プラグインとローカル ellmos モジュールをその機能と共に一覧表示します。"
     }
   },
   inputDescriptions: {
@@ -208,7 +247,14 @@ export const ja: Translations = {
     policyConfigPath: "Policy ルール設定への任意のパス。",
     catalogOutputPath: "JSON カタログの任意の出力先。",
     includeTools: "true の場合、ローカル MCP サーバーを起動し、実際の list_tools 結果をカタログに追加します。",
-    includeToolAssignments: "true の場合、スキャンされたツールの tool bundle 割り当てを追加します。"
+    includeToolAssignments: "true の場合、スキャンされたツールの tool bundle 割り当てを追加します。",
+    skillsRoot: "デプロイ済み Claude Code skills フォルダーへの任意のパス。既定は ~/.claude/skills です。",
+    sourceSkillsRoot: "skills ソースライブラリルートへの任意のパス。既定はローカルの .AI/.SKILLS/skills フォルダーです。",
+    pluginsRoot: "Claude Code プラグインフォルダーへの任意のパス。既定は ~/.claude/plugins です。",
+    modulesRoot: "ellmos モジュールフォルダーへの任意のパス。既定はローカルの .AI/.MODULES フォルダーです。",
+    deployedOnly: "true の場合、デプロイ済み skills のみを返し、skills ソースライブラリをスキャンしません。",
+    pluginsOnly: "true の場合、Claude Code プラグインのみを返し、ローカルモジュールをスキャンしません。",
+    modulesOnly: "true の場合、ローカルモジュールのみを返し、Claude Code プラグインをスキャンしません。"
   },
   dashboard: {
     loading: "読み込み中...",

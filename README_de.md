@@ -46,6 +46,8 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 | `controlcenter_switch_profile` | Generierte `--mcp-config`-Datei vorbereiten |
 | `controlcenter_audit_profile` | Erste Policy-Prüfungen gegen ein Profil ausführen |
 | `controlcenter_build_catalog` | JSON-Katalog der lokalen MCP-Server erzeugen, optional inklusive Tool-Probes |
+| `controlcenter_list_skills` | Inventar der deployten Claude-Code-Skills (`~/.claude/skills`) und der Quell-Skill-Bibliothek (`.AI/.SKILLS/skills`) |
+| `controlcenter_list_plugins` | Inventar der Claude-Code-Plugins (`~/.claude/plugins`) und lokaler ellmos-Module (`.AI/.MODULES`) |
 
 ## Dashboard
 

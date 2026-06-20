@@ -81,6 +81,24 @@ export const es: Translations = {
       tool: "Herramienta",
       matches: "Coincidencias",
       description: "Descripción"
+    },
+    skill: {
+      name: "Nombre",
+      description: "Descripción",
+      version: "Versión",
+      deployed: "Desplegado",
+      category: "Categoría",
+      path: "Ruta"
+    },
+    plugin: {
+      name: "Nombre",
+      type: "Tipo",
+      version: "Versión",
+      marketplaceScope: "Marketplace/Scope",
+      skills: "Skills",
+      commands: "Comandos",
+      mcp: "MCP",
+      path: "Ruta"
     }
   },
   headings: {
@@ -100,7 +118,11 @@ export const es: Translations = {
     toolCatalog: "# Catálogo de herramientas MCP",
     toolBundleAssignment: "# Asignación de herramientas a bundles",
     probeNotes: "## Notas de sondeo",
-    language: "# Idioma de ControlCenter"
+    language: "# Idioma de ControlCenter",
+    deployedSkills: (count) => `## Skills desplegados (${count})`,
+    sourceOnlySkills: (count) => `## Skills solo-fuente (${count})`,
+    claudeCodePlugins: (count) => `## Plugins de Claude Code (${count})`,
+    localModules: (count) => `## Módulos locales (${count})`
   },
   messages: {
     sourceLocalRepos: (root) => `Repositorios MCP locales en ${root}`,
@@ -123,7 +145,16 @@ export const es: Translations = {
     toolScan: "Escaneo de herramientas",
     profileToolScan: "Escaneo de herramientas del perfil",
     toolBundleAssignment: "Asignación de herramientas a bundles",
-    resolvedServers: "servidores resueltos"
+    resolvedServers: "servidores resueltos",
+    skillsRoot: "Raíz de skills",
+    sourceSkillsRoot: "Raíz de skills fuente",
+    skipped: "(omitido)",
+    pluginsRoot: "Raíz de plugins",
+    modulesRoot: "Raíz de módulos",
+    skillsTotal: (total, deployed, sourceOnly) => `Total: ${total} (${deployed} desplegados, ${sourceOnly} solo-fuente)`,
+    pluginsTotal: (total, plugins, modules) => `Total: ${total} (${plugins} plugins, ${modules} módulos)`,
+    noSkills: "No se encontraron skills.",
+    noPlugins: "No se encontraron plugins ni módulos."
   },
   policy: {
     invalidServerConfig: "La configuración del servidor no es un objeto.",
@@ -189,6 +220,14 @@ export const es: Translations = {
     controlcenter_build_catalog: {
       title: "Crear catálogo de servidores locales",
       description: "Crea un catálogo JSON de los servidores MCP descubiertos localmente."
+    },
+    controlcenter_list_skills: {
+      title: "Listar skills de Claude Code",
+      description: "Inventaría los skills de Claude Code instalados desde la carpeta de skills desplegados y la biblioteca de skills fuente."
+    },
+    controlcenter_list_plugins: {
+      title: "Listar plugins y módulos",
+      description: "Inventaría los plugins de Claude Code instalados y los módulos ellmos locales con sus capacidades."
     }
   },
   inputDescriptions: {
@@ -208,7 +247,14 @@ export const es: Translations = {
     policyConfigPath: "Ruta opcional a una configuración de reglas de policy.",
     catalogOutputPath: "Ubicación de salida opcional para el catálogo JSON.",
     includeTools: "Si es true, se inician servidores MCP locales y se añaden resultados reales de list_tools al catálogo.",
-    includeToolAssignments: "Si es true, se añaden asignaciones de herramientas a bundles para las herramientas escaneadas."
+    includeToolAssignments: "Si es true, se añaden asignaciones de herramientas a bundles para las herramientas escaneadas.",
+    skillsRoot: "Ruta opcional a la carpeta de skills desplegados de Claude Code. Por defecto es ~/.claude/skills.",
+    sourceSkillsRoot: "Ruta opcional al root de la biblioteca de skills fuente. Por defecto es la carpeta .AI/.SKILLS/skills local.",
+    pluginsRoot: "Ruta opcional a la carpeta de plugins de Claude Code. Por defecto es ~/.claude/plugins.",
+    modulesRoot: "Ruta opcional a la carpeta de módulos ellmos. Por defecto es la carpeta .AI/.MODULES local.",
+    deployedOnly: "Si es true, solo se devuelven los skills desplegados y no se escanea la biblioteca de skills fuente.",
+    pluginsOnly: "Si es true, solo se devuelven los plugins de Claude Code y no se escanean los módulos locales.",
+    modulesOnly: "Si es true, solo se devuelven los módulos locales y no se escanean los plugins de Claude Code."
   },
   dashboard: {
     loading: "cargando...",

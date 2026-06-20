@@ -18,6 +18,8 @@ import {
   type CapabilityBundle
 } from "./bundles.js";
 import { DEFAULT_MCP_ROOT, scanLocalServers } from "./catalog.js";
+import { DEFAULT_PLUGINS_ROOT, DEFAULT_MODULES_ROOT, scanInstalledPlugins, scanModules, scanPluginsAndModules, type PluginSummary } from "./plugins.js";
+import { DEFAULT_SKILLS_ROOT, DEFAULT_SOURCE_SKILLS_ROOT, scanSkills, type SkillSummary } from "./skills.js";
 import {
   describeSupportedLanguages,
   getLanguage,
@@ -687,6 +689,145 @@ server.registerTool(
       `- ${labels.messages.toolScan}: ${shouldScanTools ? labels.common.yes : labels.common.no}`,
       `- ${labels.messages.profileToolScan}: ${profileToolCatalog ? labels.common.yes : labels.common.no}`,
       `- ${labels.messages.toolBundleAssignment}: ${includeToolAssignments ? labels.common.yes : labels.common.no}`
+    ].join("\n");
+
+    return { content: [{ type: "text", text: output }] };
+  }
+);
+
+function formatSkillsTable(skills: SkillSummary[]): string {
+  const labels = t();
+  if (skills.length === 0) {
+    return labels.common.none;
+  }
+  const tbl = labels.tables.skill;
+  const lines = [
+    `| ${tbl.name} | ${tbl.description} | ${tbl.version} | ${tbl.deployed} | ${tbl.category} | ${tbl.path} |`,
+    `|---|---|---|---|---|---|`
+  ];
+  for (const s of skills) {
+    lines.push(
+      `| ${escapeMarkdownTableCell(s.name)} | ${escapeMarkdownTableCell(s.description || labels.common.notAvailable)} | ${s.version ?? labels.common.notAvailable} | ${s.deployed ? labels.common.yes : labels.common.no} | ${escapeMarkdownTableCell(s.category ?? labels.common.notAvailable)} | ${escapeMarkdownTableCell(s.absolutePath)} |`
+    );
+  }
+  return lines.join("\n");
+}
+
+function formatPluginsTable(plugins: PluginSummary[]): string {
+  const labels = t();
+  if (plugins.length === 0) {
+    return labels.common.none;
+  }
+  const tbl = labels.tables.plugin;
+  const lines = [
+    `| ${tbl.name} | ${tbl.type} | ${tbl.version} | ${tbl.marketplaceScope} | ${tbl.skills} | ${tbl.commands} | ${tbl.mcp} | ${tbl.path} |`,
+    `|---|---|---|---|---|---|---|---|`
+  ];
+  for (const p of plugins) {
+    const marketplaceScope = [p.marketplace, p.scope].filter(Boolean).join(" / ") || labels.common.notAvailable;
+    lines.push(
+      `| ${escapeMarkdownTableCell(p.name)} | ${p.type} | ${p.version ?? labels.common.notAvailable} | ${escapeMarkdownTableCell(marketplaceScope)} | ${p.hasSkills ? labels.common.yes : labels.common.no} | ${p.hasCommands ? labels.common.yes : labels.common.no} | ${p.hasMcp ? labels.common.yes : labels.common.no} | ${escapeMarkdownTableCell(p.absolutePath)} |`
+    );
+  }
+  return lines.join("\n");
+}
+
+server.registerTool(
+  "controlcenter_list_skills",
+  {
+    title: toolText("controlcenter_list_skills").title,
+    description: toolText("controlcenter_list_skills").description,
+    inputSchema: {
+      skillsRoot: z.string().optional().describe(inputText("skillsRoot")),
+      sourceSkillsRoot: z.string().optional().describe(inputText("sourceSkillsRoot")),
+      deployedOnly: z.boolean().default(false).describe(inputText("deployedOnly"))
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ skillsRoot, sourceSkillsRoot, deployedOnly }) => {
+    const labels = t();
+    const resolvedSkillsRoot = skillsRoot ?? DEFAULT_SKILLS_ROOT;
+    const resolvedSourceRoot = sourceSkillsRoot ?? DEFAULT_SOURCE_SKILLS_ROOT;
+
+    // When deployedOnly, pass an empty string for sourceRoot — scanSkills gracefully returns [] for missing dirs
+    const skills: SkillSummary[] = await scanSkills(
+      resolvedSkillsRoot,
+      deployedOnly ? "" : resolvedSourceRoot
+    );
+
+    const deployed = skills.filter((s) => s.deployed);
+    const sourceOnly = skills.filter((s) => !s.deployed);
+
+    const output = [
+      `# ${toolText("controlcenter_list_skills").title}`,
+      "",
+      `- ${labels.messages.skillsRoot}: ${resolvedSkillsRoot}`,
+      `- ${labels.messages.sourceSkillsRoot}: ${deployedOnly ? labels.messages.skipped : resolvedSourceRoot}`,
+      `- ${labels.messages.skillsTotal(skills.length, deployed.length, sourceOnly.length)}`,
+      "",
+      labels.headings.deployedSkills(deployed.length),
+      "",
+      formatSkillsTable(deployed),
+      ...(deployedOnly ? [] : [
+        "",
+        labels.headings.sourceOnlySkills(sourceOnly.length),
+        "",
+        formatSkillsTable(sourceOnly)
+      ])
+    ].join("\n");
+
+    return { content: [{ type: "text", text: output }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_list_plugins",
+  {
+    title: toolText("controlcenter_list_plugins").title,
+    description: toolText("controlcenter_list_plugins").description,
+    inputSchema: {
+      pluginsRoot: z.string().optional().describe(inputText("pluginsRoot")),
+      modulesRoot: z.string().optional().describe(inputText("modulesRoot")),
+      pluginsOnly: z.boolean().default(false).describe(inputText("pluginsOnly")),
+      modulesOnly: z.boolean().default(false).describe(inputText("modulesOnly"))
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ pluginsRoot, modulesRoot, pluginsOnly, modulesOnly }) => {
+    const labels = t();
+    const resolvedPluginsRoot = pluginsRoot ?? DEFAULT_PLUGINS_ROOT;
+    const resolvedModulesRoot = modulesRoot ?? DEFAULT_MODULES_ROOT;
+
+    let plugins: PluginSummary[];
+    if (pluginsOnly) {
+      plugins = await scanInstalledPlugins(resolvedPluginsRoot);
+    } else if (modulesOnly) {
+      plugins = await scanModules(resolvedModulesRoot);
+    } else {
+      plugins = await scanPluginsAndModules(resolvedPluginsRoot, resolvedModulesRoot);
+    }
+
+    const pluginEntries = plugins.filter((p) => p.type === "plugin");
+    const moduleEntries = plugins.filter((p) => p.type === "module");
+
+    const output = [
+      `# ${toolText("controlcenter_list_plugins").title}`,
+      "",
+      `- ${labels.messages.pluginsRoot}: ${modulesOnly ? labels.messages.skipped : resolvedPluginsRoot}`,
+      `- ${labels.messages.modulesRoot}: ${pluginsOnly ? labels.messages.skipped : resolvedModulesRoot}`,
+      `- ${labels.messages.pluginsTotal(plugins.length, pluginEntries.length, moduleEntries.length)}`,
+      ...(modulesOnly ? [] : [
+        "",
+        labels.headings.claudeCodePlugins(pluginEntries.length),
+        "",
+        formatPluginsTable(pluginEntries)
+      ]),
+      ...(pluginsOnly ? [] : [
+        "",
+        labels.headings.localModules(moduleEntries.length),
+        "",
+        formatPluginsTable(moduleEntries)
+      ])
     ].join("\n");
 
     return { content: [{ type: "text", text: output }] };

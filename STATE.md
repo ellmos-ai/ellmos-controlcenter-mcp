@@ -31,10 +31,12 @@
 - Display tool catalog and tool-bundle assignments in the dashboard
 - Switch MCP outputs and dashboard between German, English, Spanish, Chinese, Japanese, and Russian
 - Secure write actions with confirmation and backup
+- Scan local skills from source roots (category subdirectories) and deployed skill directories
+- Scan local plugins from a plugin root and report type, marketplace scope, and sub-component presence
+- List and filter skills and plugins via `controlcenter_list_tools`
 
 ## What Is Still Missing
 
 - Remote auth and header handling for legacy SSE
-- Automatic detection of skills, modules, APIs, local programs, executables, CLI apps, and system resources
 - Thematic clusters that can be automatically suggested and manually maintained
 - Virtual MCP servers built from curated clusters

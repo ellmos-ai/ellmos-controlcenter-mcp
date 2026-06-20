@@ -89,6 +89,24 @@ export interface Translations {
       matches: string;
       description: string;
     };
+    skill: {
+      name: string;
+      description: string;
+      version: string;
+      deployed: string;
+      category: string;
+      path: string;
+    };
+    plugin: {
+      name: string;
+      type: string;
+      version: string;
+      marketplaceScope: string;
+      skills: string;
+      commands: string;
+      mcp: string;
+      path: string;
+    };
   };
   headings: {
     statusTitle: string;
@@ -108,6 +126,10 @@ export interface Translations {
     toolBundleAssignment: string;
     probeNotes: string;
     language: string;
+    deployedSkills: (count: number) => string;
+    sourceOnlySkills: (count: number) => string;
+    claudeCodePlugins: (count: number) => string;
+    localModules: (count: number) => string;
   };
   messages: {
     sourceLocalRepos: (root: string) => string;
@@ -131,6 +153,15 @@ export interface Translations {
     profileToolScan: string;
     toolBundleAssignment: string;
     resolvedServers: string;
+    skillsRoot: string;
+    sourceSkillsRoot: string;
+    skipped: string;
+    pluginsRoot: string;
+    modulesRoot: string;
+    skillsTotal: (total: number, deployed: number, sourceOnly: number) => string;
+    pluginsTotal: (total: number, plugins: number, modules: number) => string;
+    noSkills: string;
+    noPlugins: string;
   };
   policy: {
     invalidServerConfig: string;

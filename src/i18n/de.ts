@@ -81,6 +81,24 @@ export const de: Translations = {
       tool: "Tool",
       matches: "Treffer",
       description: "Beschreibung"
+    },
+    skill: {
+      name: "Name",
+      description: "Beschreibung",
+      version: "Version",
+      deployed: "Deployt",
+      category: "Kategorie",
+      path: "Pfad"
+    },
+    plugin: {
+      name: "Name",
+      type: "Typ",
+      version: "Version",
+      marketplaceScope: "Marketplace/Scope",
+      skills: "Skills",
+      commands: "Commands",
+      mcp: "MCP",
+      path: "Pfad"
     }
   },
   headings: {
@@ -100,7 +118,11 @@ export const de: Translations = {
     toolCatalog: "# MCP-Tool-Katalog",
     toolBundleAssignment: "# Tool-Bundle-Zuordnung",
     probeNotes: "## Probe-Hinweise",
-    language: "# ControlCenter-Sprache"
+    language: "# ControlCenter-Sprache",
+    deployedSkills: (count) => `## Deployte Skills (${count})`,
+    sourceOnlySkills: (count) => `## Nur-Quell-Skills (${count})`,
+    claudeCodePlugins: (count) => `## Claude Code Plugins (${count})`,
+    localModules: (count) => `## Lokale Module (${count})`
   },
   messages: {
     sourceLocalRepos: (root) => `Lokale MCP-Repos in ${root}`,
@@ -123,7 +145,16 @@ export const de: Translations = {
     toolScan: "Tool-Scan",
     profileToolScan: "Profil-Tool-Scan",
     toolBundleAssignment: "Tool-Bundle-Zuordnung",
-    resolvedServers: "aufgelöste Server"
+    resolvedServers: "aufgelöste Server",
+    skillsRoot: "Skills-Root",
+    sourceSkillsRoot: "Quell-Skills-Root",
+    skipped: "(übersprungen)",
+    pluginsRoot: "Plugins-Root",
+    modulesRoot: "Module-Root",
+    skillsTotal: (total, deployed, sourceOnly) => `Gesamt: ${total} (${deployed} deployt, ${sourceOnly} nur-Quelle)`,
+    pluginsTotal: (total, plugins, modules) => `Gesamt: ${total} (${plugins} Plugins, ${modules} Module)`,
+    noSkills: "Keine Skills gefunden.",
+    noPlugins: "Keine Plugins oder Module gefunden."
   },
   policy: {
     invalidServerConfig: "Server-Konfiguration ist kein Objekt.",
@@ -189,6 +220,14 @@ export const de: Translations = {
     controlcenter_build_catalog: {
       title: "Lokalen Server-Katalog bauen",
       description: "Erzeugt einen JSON-Katalog der lokal gefundenen MCP-Server."
+    },
+    controlcenter_list_skills: {
+      title: "Claude Code Skills listen",
+      description: "Inventarisiert installierte Claude Code Skills aus dem deployte Skills-Ordner und der Quell-Skill-Bibliothek."
+    },
+    controlcenter_list_plugins: {
+      title: "Plugins und Module listen",
+      description: "Inventarisiert installierte Claude Code Plugins und lokale ellmos-Module mit ihren Fähigkeiten."
     }
   },
   inputDescriptions: {
@@ -208,7 +247,14 @@ export const de: Translations = {
     policyConfigPath: "Optionaler Pfad zu einer Policy-Regel-Konfiguration.",
     catalogOutputPath: "Optionaler Ausgabeort für den JSON-Katalog.",
     includeTools: "Wenn true, werden lokale MCP-Server gestartet und echte list_tools-Ergebnisse in den Katalog aufgenommen.",
-    includeToolAssignments: "Wenn true, werden Tool-Bundle-Zuordnungen für gescannte Tools in den Katalog aufgenommen."
+    includeToolAssignments: "Wenn true, werden Tool-Bundle-Zuordnungen für gescannte Tools in den Katalog aufgenommen.",
+    skillsRoot: "Optionaler Pfad zum deployte Skills-Ordner. Standard ist ~/.claude/skills.",
+    sourceSkillsRoot: "Optionaler Pfad zum Quell-Skill-Bibliotheks-Root. Standard ist der lokale .AI/.SKILLS/skills-Ordner.",
+    pluginsRoot: "Optionaler Pfad zum Claude Code Plugins-Ordner. Standard ist ~/.claude/plugins.",
+    modulesRoot: "Optionaler Pfad zum ellmos-Module-Ordner. Standard ist der lokale .AI/.MODULES-Ordner.",
+    deployedOnly: "Wenn true, werden nur deployte Skills zurückgegeben und die Quell-Skill-Bibliothek nicht gescannt.",
+    pluginsOnly: "Wenn true, werden nur Claude Code Plugins zurückgegeben und lokale Module nicht gescannt.",
+    modulesOnly: "Wenn true, werden nur lokale Module zurückgegeben und Claude Code Plugins nicht gescannt."
   },
   dashboard: {
     loading: "lädt...",

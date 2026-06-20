@@ -81,6 +81,24 @@ export const zh: Translations = {
       tool: "工具",
       matches: "匹配",
       description: "描述"
+    },
+    skill: {
+      name: "名称",
+      description: "描述",
+      version: "版本",
+      deployed: "已部署",
+      category: "分类",
+      path: "路径"
+    },
+    plugin: {
+      name: "名称",
+      type: "类型",
+      version: "版本",
+      marketplaceScope: "市场/范围",
+      skills: "Skills",
+      commands: "命令",
+      mcp: "MCP",
+      path: "路径"
     }
   },
   headings: {
@@ -100,7 +118,11 @@ export const zh: Translations = {
     toolCatalog: "# MCP 工具目录",
     toolBundleAssignment: "# 工具 bundle 分配",
     probeNotes: "## 探测说明",
-    language: "# ControlCenter 语言"
+    language: "# ControlCenter 语言",
+    deployedSkills: (count) => `## 已部署 Skills (${count})`,
+    sourceOnlySkills: (count) => `## 仅源码 Skills (${count})`,
+    claudeCodePlugins: (count) => `## Claude Code 插件 (${count})`,
+    localModules: (count) => `## 本地模块 (${count})`
   },
   messages: {
     sourceLocalRepos: (root) => `${root} 中的本地 MCP 仓库`,
@@ -123,7 +145,16 @@ export const zh: Translations = {
     toolScan: "工具扫描",
     profileToolScan: "配置文件工具扫描",
     toolBundleAssignment: "工具 bundle 分配",
-    resolvedServers: "已解析服务器"
+    resolvedServers: "已解析服务器",
+    skillsRoot: "Skills 根目录",
+    sourceSkillsRoot: "源码 Skills 根目录",
+    skipped: "（跳过）",
+    pluginsRoot: "插件根目录",
+    modulesRoot: "模块根目录",
+    skillsTotal: (total, deployed, sourceOnly) => `共计: ${total}（${deployed} 已部署，${sourceOnly} 仅源码）`,
+    pluginsTotal: (total, plugins, modules) => `共计: ${total}（${plugins} 插件，${modules} 模块）`,
+    noSkills: "未找到 Skills。",
+    noPlugins: "未找到插件或模块。"
   },
   policy: {
     invalidServerConfig: "服务器配置不是对象。",
@@ -189,6 +220,14 @@ export const zh: Translations = {
     controlcenter_build_catalog: {
       title: "构建本地服务器目录",
       description: "为本地发现的 MCP 服务器创建 JSON 目录。"
+    },
+    controlcenter_list_skills: {
+      title: "列出 Claude Code Skills",
+      description: "从已部署 skills 文件夹和 skills 源库中列出已安装的 Claude Code skills。"
+    },
+    controlcenter_list_plugins: {
+      title: "列出插件和模块",
+      description: "列出已安装的 Claude Code 插件和本地 ellmos 模块及其功能。"
     }
   },
   inputDescriptions: {
@@ -208,7 +247,14 @@ export const zh: Translations = {
     policyConfigPath: "policy 规则配置的可选路径。",
     catalogOutputPath: "JSON 目录的可选输出位置。",
     includeTools: "为 true 时启动本地 MCP 服务器，并把真实 list_tools 结果加入目录。",
-    includeToolAssignments: "为 true 时为扫描到的工具加入工具 bundle 分配。"
+    includeToolAssignments: "为 true 时为扫描到的工具加入工具 bundle 分配。",
+    skillsRoot: "已部署 Claude Code skills 文件夹的可选路径。默认为 ~/.claude/skills。",
+    sourceSkillsRoot: "skills 源库根目录的可选路径。默认为本地 .AI/.SKILLS/skills 文件夹。",
+    pluginsRoot: "Claude Code 插件文件夹的可选路径。默认为 ~/.claude/plugins。",
+    modulesRoot: "ellmos 模块文件夹的可选路径。默认为本地 .AI/.MODULES 文件夹。",
+    deployedOnly: "为 true 时只返回已部署 skills，不扫描 skills 源库。",
+    pluginsOnly: "为 true 时只返回 Claude Code 插件，不扫描本地模块。",
+    modulesOnly: "为 true 时只返回本地模块，不扫描 Claude Code 插件。"
   },
   dashboard: {
     loading: "正在加载...",

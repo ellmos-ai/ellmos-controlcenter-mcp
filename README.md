@@ -46,6 +46,8 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 | `controlcenter_switch_profile` | Prepare a generated `--mcp-config` file |
 | `controlcenter_audit_profile` | Run initial policy checks against a profile |
 | `controlcenter_build_catalog` | Build a JSON catalog of local MCP servers, optionally including tool probes |
+| `controlcenter_list_skills` | Inventory deployed Claude Code skills (`~/.claude/skills`) and the source skills library (`.AI/.SKILLS/skills`) |
+| `controlcenter_list_plugins` | Inventory Claude Code plugins (`~/.claude/plugins`) and local ellmos modules (`.AI/.MODULES`) |
 
 ## Dashboard
 
