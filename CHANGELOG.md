@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Broadened npm keywords with provider-neutral MCP discovery terms such as `mcp-client`, `mcp-profiles`, `mcp-control-plane`, `mcp-host`, `codex`, and `provider-neutral`.
+
 ## 0.1.0-alpha.8 - 2026-06-17
 
 ### Changed
