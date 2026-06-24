@@ -109,7 +109,7 @@ function formatBundleTable(bundleRows: CapabilityBundle[]): string {
 }
 
 function escapeMarkdownTableCell(value: string): string {
-  return value.replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+  return value.replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 }
 
 function formatToolCatalog(toolCatalog: ServerToolCatalog[]): string {
