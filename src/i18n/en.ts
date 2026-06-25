@@ -243,6 +243,7 @@ export const en: Translations = {
     bundleConfigPath: "Optional path to a capability bundle configuration.",
     task: "Task description or session goal.",
     outputPath: "Optional output location for the generated MCP config.",
+    launchTemplate: "Optional launch command template. Use {config} as placeholder for the generated MCP config path.",
     write: "When true, the generated config is written. Otherwise only a preview is returned.",
     policyConfigPath: "Optional path to a policy rule configuration.",
     catalogOutputPath: "Optional output location for the JSON catalog.",

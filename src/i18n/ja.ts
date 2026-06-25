@@ -243,6 +243,7 @@ export const ja: Translations = {
     bundleConfigPath: "Capability bundle 設定への任意のパス。",
     task: "タスク説明またはセッション目標。",
     outputPath: "生成される MCP 設定の任意の出力先。",
+    launchTemplate: "任意の起動コマンドテンプレート。生成された MCP 設定パスのプレースホルダーとして {config} を使います。",
     write: "true の場合は生成された設定を書き込みます。それ以外はプレビューのみ返します。",
     policyConfigPath: "Policy ルール設定への任意のパス。",
     catalogOutputPath: "JSON カタログの任意の出力先。",

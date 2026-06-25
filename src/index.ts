@@ -34,9 +34,9 @@ import { auditResolvedProfile, loadPolicyRules, summarizePolicyFindings } from "
 import { buildToolCatalog, scanLocalServerTools, scanProfileServerTools, type ServerToolCatalog } from "./toolCatalog.js";
 import {
   DEFAULT_PROFILE_ROOT,
-  listClaudeProfiles,
+  listMcpProfiles,
   prepareProfileSwitch,
-  resolveClaudeProfile,
+  resolveMcpProfile,
   suggestProfile
 } from "./profiles.js";
 
@@ -67,7 +67,7 @@ function formatServerTable(serverRows: Awaited<ReturnType<typeof scanLocalServer
   return lines.join("\n");
 }
 
-function formatProfileTable(profileRows: Awaited<ReturnType<typeof listClaudeProfiles>>): string {
+function formatProfileTable(profileRows: Awaited<ReturnType<typeof listMcpProfiles>>): string {
   const labels = t();
   if (profileRows.length === 0) {
     return labels.common.noProfiles;
@@ -276,7 +276,7 @@ server.registerTool(
     const labels = t();
     const [servers, profiles] = await Promise.all([
       scanLocalServers(DEFAULT_MCP_ROOT),
-      listClaudeProfiles(DEFAULT_PROFILE_ROOT)
+      listMcpProfiles(DEFAULT_PROFILE_ROOT)
     ]);
     const bundles = await loadCapabilityBundles(servers);
 
@@ -490,7 +490,7 @@ server.registerTool(
   async ({ profileRoot }) => {
     const labels = t();
     const resolvedRoot = profileRoot ?? DEFAULT_PROFILE_ROOT;
-    const profiles = await listClaudeProfiles(resolvedRoot);
+    const profiles = await listMcpProfiles(resolvedRoot);
 
     const output = [
       labels.headings.claudeProfiles(resolvedRoot),
@@ -541,7 +541,7 @@ server.registerTool(
   },
   async ({ profileName, profileRoot }) => {
     const labels = t();
-    const resolved = await resolveClaudeProfile(profileName, profileRoot ?? DEFAULT_PROFILE_ROOT);
+    const resolved = await resolveMcpProfile(profileName, profileRoot ?? DEFAULT_PROFILE_ROOT);
     const output = [
       labels.headings.resolvedProfile,
       "",
@@ -566,15 +566,17 @@ server.registerTool(
       profileName: z.string().min(1).describe(inputText("requiredProfileName")),
       profileRoot: z.string().optional().describe(inputText("profileRoot")),
       outputPath: z.string().optional().describe(inputText("outputPath")),
+      launchTemplate: z.string().optional().describe(inputText("launchTemplate")),
       write: z.boolean().default(false).describe(inputText("write"))
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
   },
-  async ({ profileName, profileRoot, outputPath, write }) => {
+  async ({ profileName, profileRoot, outputPath, launchTemplate, write }) => {
     const labels = t();
     const plan = await prepareProfileSwitch(profileName, {
       profileRoot: profileRoot ?? DEFAULT_PROFILE_ROOT,
       outputPath,
+      launchTemplate,
       write
     });
     const output = [
@@ -608,7 +610,7 @@ server.registerTool(
   },
   async ({ profileName, profileRoot, policyConfigPath }) => {
     const labels = t();
-    const resolved = await resolveClaudeProfile(profileName, profileRoot ?? DEFAULT_PROFILE_ROOT);
+    const resolved = await resolveMcpProfile(profileName, profileRoot ?? DEFAULT_PROFILE_ROOT);
     const policyRules = await loadPolicyRules(policyConfigPath);
     const findings = auditResolvedProfile(resolved, policyRules);
     const summary = summarizePolicyFindings(findings);

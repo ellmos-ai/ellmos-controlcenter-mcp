@@ -21,11 +21,11 @@ import {
   extractExtendsProfiles,
   extractRemovedServerNames,
   extractServerNames,
-  listClaudeProfiles,
+  listMcpProfiles,
   prepareProfileSwitch,
   ProfileConfigError,
   readEditableProfile,
-  resolveClaudeProfile,
+  resolveMcpProfile,
   suggestProfile,
   summarizeProfile,
   writeEditableProfile
@@ -462,7 +462,7 @@ describe("profile helpers", () => {
       "utf-8"
     );
 
-    const profiles = await listClaudeProfiles(root);
+    const profiles = await listMcpProfiles(root);
     expect(profiles).toHaveLength(1);
     expect(profiles[0].name).toBe("ai-lab");
     expect(profiles[0].serverCount).toBe(2);
@@ -492,7 +492,7 @@ describe("profile helpers", () => {
       "utf-8"
     );
 
-    const resolved = await resolveClaudeProfile("software", root);
+    const resolved = await resolveMcpProfile("software", root);
     expect(resolved.servers).toEqual(["context7", "github", "shared"]);
     expect(resolved.config.mcpServers.shared).toEqual({ command: "child" });
     expect(resolved.sourceFiles.map((file) => path.basename(file))).toEqual(["software.json", "base.json"]);
@@ -531,7 +531,7 @@ describe("profile helpers", () => {
       "utf-8"
     );
 
-    const resolved = await resolveClaudeProfile("ai-lab", root);
+    const resolved = await resolveMcpProfile("ai-lab", root);
 
     expect(resolved.servers).toEqual(["n8n", "ollama", "shared"]);
     expect(resolved.config.mcpServers.github).toBeUndefined();
@@ -541,7 +541,7 @@ describe("profile helpers", () => {
   it("reports missing profiles with a user-facing path", async () => {
     const root = await createTempDirectory("controlcenter-profile-root-");
 
-    await expect(resolveClaudeProfile("missing", root)).rejects.toMatchObject({
+    await expect(resolveMcpProfile("missing", root)).rejects.toMatchObject({
       name: "ProfileConfigError",
       code: "profile-not-found",
       details: {
@@ -555,7 +555,7 @@ describe("profile helpers", () => {
     const root = await createTempDirectory("controlcenter-profile-root-");
     await fs.writeFile(path.join(root, "broken.json"), "{", "utf-8");
 
-    await expect(resolveClaudeProfile("broken", root)).rejects.toMatchObject({
+    await expect(resolveMcpProfile("broken", root)).rejects.toMatchObject({
       name: "ProfileConfigError",
       code: "profile-json-invalid",
       details: {
@@ -569,7 +569,7 @@ describe("profile helpers", () => {
     await fs.writeFile(path.join(root, "a.json"), JSON.stringify({ extends: "b" }), "utf-8");
     await fs.writeFile(path.join(root, "b.json"), JSON.stringify({ extends: "a" }), "utf-8");
 
-    await expect(resolveClaudeProfile("a", root)).rejects.toMatchObject({
+    await expect(resolveMcpProfile("a", root)).rejects.toMatchObject({
       name: "ProfileConfigError",
       code: "profile-inheritance-cycle",
       details: {
@@ -601,6 +601,29 @@ describe("profile helpers", () => {
     expect(plan.written).toBe(true);
     expect(plan.command).toContain("claude --mcp-config");
     expect(written.mcpServers.github.command).toBe("npx");
+  });
+
+  it("supports custom launch templates for generated mcp config files", async () => {
+    const root = await createTempDirectory("controlcenter-profile-root-");
+    const outputPath = path.join(root, "_generated", "base.mcp.json");
+    await fs.writeFile(
+      path.join(root, "base.json"),
+      JSON.stringify({
+        mcpServers: {
+          github: { command: "npx" }
+        }
+      }),
+      "utf-8"
+    );
+
+    const plan = await prepareProfileSwitch("base", {
+      profileRoot: root,
+      outputPath,
+      launchTemplate: "codex mcp run --config {config}"
+    });
+
+    expect(plan.command).toContain("codex mcp run --config");
+    expect(plan.command).toContain(outputPath.includes(" ") ? `"${outputPath}"` : outputPath);
   });
 
   it("backs up existing generated mcp config files before overwriting", async () => {

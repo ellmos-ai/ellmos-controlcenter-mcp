@@ -6,7 +6,10 @@ import { t } from "./i18n/index.js";
 export const DEFAULT_PROFILE_ROOT =
   process.env.ELLMOS_PROFILE_ROOT ?? path.join(os.homedir(), ".claude", "profiles");
 
-export interface ClaudeProfileSummary {
+export const DEFAULT_LAUNCH_TEMPLATE =
+  process.env.ELLMOS_LAUNCH_TEMPLATE ?? "claude --mcp-config {config}";
+
+export interface McpProfileSummary {
   name: string;
   filePath: string;
   extendsProfile: string | null;
@@ -14,6 +17,9 @@ export interface ClaudeProfileSummary {
   serverCount: number;
   servers: string[];
 }
+
+/** @deprecated Use McpProfileSummary. */
+export type ClaudeProfileSummary = McpProfileSummary;
 
 export interface ProfileSuggestion {
   profile: string;
@@ -220,7 +226,7 @@ export function extractServerNames(profile: ProfileJsonShape): string[] {
   return Object.keys(extractServerMap(profile)).sort((a, b) => a.localeCompare(b));
 }
 
-export function summarizeProfile(name: string, filePath: string, profile: ProfileJsonShape): ClaudeProfileSummary {
+export function summarizeProfile(name: string, filePath: string, profile: ProfileJsonShape): McpProfileSummary {
   const servers = extractServerNames(profile);
   const extendsProfiles = extractExtendsProfiles(profile);
   return {
@@ -233,7 +239,7 @@ export function summarizeProfile(name: string, filePath: string, profile: Profil
   };
 }
 
-export async function listClaudeProfiles(profileRoot: string = DEFAULT_PROFILE_ROOT): Promise<ClaudeProfileSummary[]> {
+export async function listMcpProfiles(profileRoot: string = DEFAULT_PROFILE_ROOT): Promise<McpProfileSummary[]> {
   let entries;
   try {
     entries = await fs.readdir(profileRoot, { withFileTypes: true });
@@ -246,7 +252,7 @@ export async function listClaudeProfiles(profileRoot: string = DEFAULT_PROFILE_R
     .map((entry) => entry.name)
     .sort((a, b) => a.localeCompare(b));
 
-  const profiles: ClaudeProfileSummary[] = [];
+  const profiles: McpProfileSummary[] = [];
   for (const fileName of files) {
     const filePath = path.join(profileRoot, fileName);
     try {
@@ -260,7 +266,10 @@ export async function listClaudeProfiles(profileRoot: string = DEFAULT_PROFILE_R
   return profiles;
 }
 
-export async function resolveClaudeProfile(profileName: string, profileRoot: string = DEFAULT_PROFILE_ROOT): Promise<ResolvedProfile> {
+/** @deprecated Use listMcpProfiles. */
+export const listClaudeProfiles = listMcpProfiles;
+
+export async function resolveMcpProfile(profileName: string, profileRoot: string = DEFAULT_PROFILE_ROOT): Promise<ResolvedProfile> {
   const resolvedCache = new Map<string, Record<string, unknown>>();
   const sourceFileSet = new Set<string>();
   const sourceFiles: string[] = [];
@@ -316,8 +325,18 @@ export async function resolveClaudeProfile(profileName: string, profileRoot: str
   };
 }
 
+/** @deprecated Use resolveMcpProfile. */
+export const resolveClaudeProfile = resolveMcpProfile;
+
 function quoteCommandPath(value: string): string {
   return value.includes(" ") ? `"${value}"` : value;
+}
+
+function buildLaunchCommand(template: string, outputPath: string): string {
+  const quotedPath = quoteCommandPath(outputPath);
+  return template.includes("{config}")
+    ? template.replaceAll("{config}", quotedPath)
+    : `${template} ${quotedPath}`;
 }
 
 export async function prepareProfileSwitch(
@@ -325,15 +344,16 @@ export async function prepareProfileSwitch(
   options: {
     profileRoot?: string;
     outputPath?: string;
+    launchTemplate?: string;
     write?: boolean;
   } = {}
 ): Promise<ProfileSwitchPlan> {
   const profileRoot = options.profileRoot ?? DEFAULT_PROFILE_ROOT;
-  const resolved = await resolveClaudeProfile(profileName, profileRoot);
+  const resolved = await resolveMcpProfile(profileName, profileRoot);
   const outputPath =
     options.outputPath ??
     path.join(profileRoot, "_generated", `${profileName}.mcp.json`);
-  const command = `claude --mcp-config ${quoteCommandPath(outputPath)}`;
+  const command = buildLaunchCommand(options.launchTemplate ?? DEFAULT_LAUNCH_TEMPLATE, outputPath);
   let backupPath: string | null = null;
 
   if (options.write === true) {

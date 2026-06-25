@@ -45,7 +45,7 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 | `controlcenter_list_profiles` | MCP-Profile aus dem Profilordner auflisten (Standard: `~/.claude/profiles`; Override via `ELLMOS_PROFILE_ROOT`) |
 | `controlcenter_suggest_profile` | Passendes Profil für eine Aufgabe empfehlen |
 | `controlcenter_resolve_profile` | Profil inklusive `extends`-Ketten auflösen |
-| `controlcenter_switch_profile` | Generierte `--mcp-config`-Datei vorbereiten (Launch-Befehl aktuell Claude-Code-spezifisch) |
+| `controlcenter_switch_profile` | Generierte `--mcp-config`-Datei und konfigurierbaren Startbefehl vorbereiten |
 | `controlcenter_audit_profile` | Erste Policy-Prüfungen gegen ein Profil ausführen |
 | `controlcenter_build_catalog` | JSON-Katalog der lokalen MCP-Server erzeugen, optional inklusive Tool-Probes |
 | `controlcenter_list_skills` | Inventar deployted Skills (`~/.claude/skills` als Standard; Claude-Code-Konvention, Override via `ELLMOS_SKILLS_ROOT`) und der Quell-Skill-Bibliothek |
@@ -159,6 +159,7 @@ Optionale Umgebungsvariablen:
 - `ELLMOS_PLUGINS_ROOT` überschreibt den Plugins-Ordner (Standard: `~/.claude/plugins`)
 - `ELLMOS_BUNDLE_CONFIG` überschreibt die Datei mit Capability-Bundle-Definitionen
 - `ELLMOS_POLICY_CONFIG` überschreibt die Datei mit Profil-Audit-Regeln
+- `ELLMOS_LAUNCH_TEMPLATE` überschreibt den erzeugten Profilwechsel-Startbefehl. Nutze `{config}` als Platzhalter für den Pfad zur generierten MCP-Config.
 - `CONTROLCENTER_LANGUAGE` oder `ELLMOS_CONTROLCENTER_LANGUAGE` setzt die initiale Ausgabesprache
 
 Standardmäßig wird der MCP-Root aus der Umgebungsvariable `OneDrive`/`ONEDRIVE` abgeleitet und fällt sonst auf `~/OneDrive/.TOPICS/.AI/.MCP` zurück.
@@ -171,13 +172,13 @@ Mit `controlcenter_get_language` lässt sich die aktuelle Sprache prüfen; `cont
 
 ## Profilwechsel
 
-`controlcenter_switch_profile` verändert keine laufende Session. Das Tool erzeugt eine aufgelöste MCP-Konfiguration und gibt den passenden Startbefehl zurück. Der aktuelle Standard-Launch-Befehl ist Claude-Code-spezifisch:
+`controlcenter_switch_profile` verändert keine laufende Session. Das Tool erzeugt eine aufgelöste MCP-Konfiguration und gibt den passenden Startbefehl zurück. Der Standard bleibt mit Claude Code kompatibel:
 
 ```bash
 claude --mcp-config ~/.claude/profiles/_generated/software.mcp.json
 ```
 
-Mit `write: false` läuft der Wechsel als Vorschau. Mit `write: true` schreibt ControlCenter die generierte Datei. Das erzeugte `mcpServers`-JSON ist von jedem MCP-fähigen Client lesbar; die Anpassung des Launch-Befehls an andere Clients ist für eine spätere Version geplant.
+Mit `write: false` läuft der Wechsel als Vorschau. Mit `write: true` schreibt ControlCenter die generierte Datei. Das erzeugte `mcpServers`-JSON ist von jedem MCP-fähigen Client lesbar. Über den Input `launchTemplate` oder `ELLMOS_LAUNCH_TEMPLATE` kann der zurückgegebene Befehl auf Codex, Gemini oder eigene Starter zeigen, zum Beispiel `codex mcp run --config {config}`.
 
 Die Profilauflösung unterstützt einfache Vererbung (`"extends": "base"`), Mehrfachvererbung (`"extends": ["base", "shared"]`) und das Entfernen geerbter Server über `"remove"`, `"disabled"` oder `"disabledServers"`. Fehlende Profile, ungültiges JSON, ungültige Profilnamen und Vererbungszyklen liefern jetzt explizite Profilfehler mit betroffenem Dateipfad oder betroffener Kette.
 

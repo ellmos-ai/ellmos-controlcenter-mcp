@@ -20,10 +20,10 @@ import {
 import { auditResolvedProfile, loadPolicyRules, summarizePolicyFindings } from "./policy.js";
 import {
   DEFAULT_PROFILE_ROOT,
-  listClaudeProfiles,
+  listMcpProfiles,
   prepareProfileSwitch,
   readEditableProfile,
-  resolveClaudeProfile,
+  resolveMcpProfile,
   writeEditableProfile
 } from "./profiles.js";
 import { scanLocalServerTools, scanProfileServerTools } from "./toolCatalog.js";
@@ -71,7 +71,7 @@ function requireConfirmed(body: Record<string, unknown>, action: string): void {
 async function getOverview() {
   const [servers, profiles] = await Promise.all([
     scanLocalServers(DEFAULT_MCP_ROOT),
-    listClaudeProfiles(DEFAULT_PROFILE_ROOT)
+    listMcpProfiles(DEFAULT_PROFILE_ROOT)
   ]);
   return {
     mcpRoot: DEFAULT_MCP_ROOT,
@@ -143,7 +143,7 @@ async function setServerEnabled(profileName: string, serverName: string, enabled
 
   const updatedProfile = { ...editable.profile, mcpServers };
   const writeResult = await writeEditableProfile(profileName, updatedProfile, DEFAULT_PROFILE_ROOT);
-  const resolved = await resolveClaudeProfile(profileName, DEFAULT_PROFILE_ROOT);
+  const resolved = await resolveMcpProfile(profileName, DEFAULT_PROFILE_ROOT);
   return { ...writeResult, resolved };
 }
 
@@ -562,7 +562,7 @@ async function handleApi(request: http.IncomingMessage, response: http.ServerRes
   const profileMatch = url.pathname.match(/^\/api\/profiles\/([^/]+)$/);
   if (request.method === "GET" && profileMatch) {
     const profileName = decodeURIComponent(profileMatch[1]);
-    const resolved = await resolveClaudeProfile(profileName, DEFAULT_PROFILE_ROOT);
+    const resolved = await resolveMcpProfile(profileName, DEFAULT_PROFILE_ROOT);
     const policyRules = await loadPolicyRules();
     const findings = auditResolvedProfile(resolved, policyRules);
     sendJson(response, 200, {
@@ -583,7 +583,8 @@ async function handleApi(request: http.IncomingMessage, response: http.ServerRes
     }
     sendJson(response, 200, await prepareProfileSwitch(profileName, {
       write: body.write === true,
-      outputPath: typeof body.outputPath === "string" ? body.outputPath : undefined
+      outputPath: typeof body.outputPath === "string" ? body.outputPath : undefined,
+      launchTemplate: typeof body.launchTemplate === "string" ? body.launchTemplate : undefined
     }));
     return;
   }

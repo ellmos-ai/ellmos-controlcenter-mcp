@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Rename profile helpers to provider-neutral `McpProfile*` names while keeping deprecated `ClaudeProfile*` aliases for compatibility.
+- Make the generated profile-switch launch command configurable via `launchTemplate` or `ELLMOS_LAUNCH_TEMPLATE`.
+
 ## 0.1.0-alpha.8 - 2026-06-17
 
 ### Changed

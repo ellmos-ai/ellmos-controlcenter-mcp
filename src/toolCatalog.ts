@@ -9,7 +9,7 @@ import {
   type LocalServerSummary
 } from "./catalog.js";
 import { t } from "./i18n/index.js";
-import { resolveClaudeProfile, type ResolvedProfile } from "./profiles.js";
+import { resolveMcpProfile, type ResolvedProfile } from "./profiles.js";
 
 export const DEFAULT_TOOL_SCAN_TIMEOUT_MS = 5000;
 
@@ -402,7 +402,7 @@ export async function scanProfileServerTools(
   profileRoot: string,
   options: ToolCatalogOptions = {}
 ): Promise<ServerToolCatalog[]> {
-  const profile = await resolveClaudeProfile(profileName, profileRoot);
+  const profile = await resolveMcpProfile(profileName, profileRoot);
   const targets = filterTargetsForToolScan(createProfileToolCatalogTargets(profile), options.serverName);
   const catalogs: ServerToolCatalog[] = [];
   for (const target of targets) {

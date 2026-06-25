@@ -243,6 +243,7 @@ export const es: Translations = {
     bundleConfigPath: "Ruta opcional a una configuración de bundles de capacidades.",
     task: "Descripción de la tarea u objetivo de la sesión.",
     outputPath: "Ubicación de salida opcional para la configuración MCP generada.",
+    launchTemplate: "Plantilla opcional del comando de inicio. Usa {config} como marcador para la ruta de la configuración MCP generada.",
     write: "Si es true, se escribe la configuración generada. Si no, solo se devuelve una vista previa.",
     policyConfigPath: "Ruta opcional a una configuración de reglas de policy.",
     catalogOutputPath: "Ubicación de salida opcional para el catálogo JSON.",

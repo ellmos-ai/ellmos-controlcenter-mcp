@@ -243,6 +243,7 @@ export const de: Translations = {
     bundleConfigPath: "Optionaler Pfad zu einer Capability-Bundle-Konfiguration.",
     task: "Aufgabenbeschreibung oder Ziel der Session.",
     outputPath: "Optionaler Ausgabeort für die generierte MCP-Config.",
+    launchTemplate: "Optionales Startbefehl-Template. Nutze {config} als Platzhalter für den Pfad zur generierten MCP-Config.",
     write: "Wenn true, wird die generierte Config geschrieben. Sonst nur Vorschau.",
     policyConfigPath: "Optionaler Pfad zu einer Policy-Regel-Konfiguration.",
     catalogOutputPath: "Optionaler Ausgabeort für den JSON-Katalog.",

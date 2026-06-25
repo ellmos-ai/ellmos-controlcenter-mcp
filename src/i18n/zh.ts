@@ -243,6 +243,7 @@ export const zh: Translations = {
     bundleConfigPath: "能力 bundle 配置的可选路径。",
     task: "任务描述或会话目标。",
     outputPath: "生成 MCP 配置的可选输出位置。",
+    launchTemplate: "可选的启动命令模板。使用 {config} 作为生成的 MCP 配置路径占位符。",
     write: "为 true 时写入生成的配置；否则只返回预览。",
     policyConfigPath: "policy 规则配置的可选路径。",
     catalogOutputPath: "JSON 目录的可选输出位置。",
