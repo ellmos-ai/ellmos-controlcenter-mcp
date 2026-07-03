@@ -31,6 +31,9 @@ It is useful for local MCP stack visibility and profile management. It is not a 
 - `controlcenter_switch_profile`: generate a resolved `--mcp-config` file and launch command.
 - `controlcenter_audit_profile`: run initial profile policy checks.
 - `controlcenter_build_catalog`: build a JSON catalog of local MCP servers, optionally including tool probes.
+- `controlcenter_list_skills`: inventory deployed Claude Code skills and the source skills library.
+- `controlcenter_find_skill`: match a free-text task or intent against the scanned skill catalogue and return ranked candidates.
+- `controlcenter_list_plugins`: inventory installed Claude Code plugins and local ellmos modules.
 
 ## Install
 
