@@ -49,6 +49,7 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 | `controlcenter_audit_profile` | Erste Policy-Prüfungen gegen ein Profil ausführen |
 | `controlcenter_build_catalog` | JSON-Katalog der lokalen MCP-Server erzeugen, optional inklusive Tool-Probes |
 | `controlcenter_list_skills` | Inventar deployted Skills (`~/.claude/skills` als Standard; Claude-Code-Konvention, Override via `ELLMOS_SKILLS_ROOT`) und der Quell-Skill-Bibliothek |
+| `controlcenter_find_skill` | Freitext-Aufgabe bzw. Intent gegen den gescannten Skill-Katalog matchen und gerankte Kandidaten zurückgeben |
 | `controlcenter_list_plugins` | Inventar installierter Plugins (`~/.claude/plugins` als Standard; Claude-Code-Konvention, Override via `ELLMOS_PLUGINS_ROOT`) und lokaler ellmos-Module |
 
 ## Dashboard
@@ -274,7 +275,7 @@ Dieser MCP-Server ist Teil des **[ellmos-ai](https://github.com/ellmos-ai)**-Ök
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n-Workflow-Verwaltung über KI-Assistenten | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
 | [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 44 | LLM-Memory, Wissen, State, Routing und Orchestrierung | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
 | [ServerCommander](https://github.com/ellmos-ai/ellmos-servercommander-mcp) | 8 | Server-Operationen: Deploy-Dry-Runs, Mail, Log-Analyse, Health-Checks | [`ellmos-servercommander-mcp`](https://www.npmjs.com/package/ellmos-servercommander-mcp) (alpha) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **16** | **MCP-Stack-Discovery, Profilverwaltung, Control Plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **17** | **MCP-Stack-Discovery, Profilverwaltung, Control Plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 
 ### KI-Infrastruktur
 

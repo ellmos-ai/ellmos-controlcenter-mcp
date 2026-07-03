@@ -34,6 +34,7 @@
 - Scan local skills from source roots (category subdirectories) and deployed skill directories
 - Scan local plugins from a plugin root and report type, marketplace scope, and sub-component presence
 - List and filter skills and plugins via `controlcenter_list_tools`
+- Match a free-text task or intent against the scanned skill catalogue and return ranked skill candidates with matched terms (`controlcenter_find_skill`)
 
 ## What Is Still Missing
 
