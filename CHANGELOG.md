@@ -2,13 +2,22 @@
 
 ## Unreleased
 
+### Added
+- **Skill recognition / skill-finder.** New tool `controlcenter_find_skill`: matches a free-text task/intent against the scanned skill catalogue and returns ranked candidates with the matched terms. Lexical matching at the core (keyword/alias overlap over name, aliases, tags, category, and description — zero-dependency, deterministic); embedding/semantic ranking remains a documented stretch goal behind explicit configuration.
+- `SkillSummary` now carries `tags` and `aliases` (parsed from SKILL.md frontmatter via the new `parseInlineList` helper), so the finder can weight precise hooks above the broad description.
+- Test coverage for the skill-finder (tokenisation, ranking, field weighting, limit, no-match).
+
 ### Changed
 - Rename profile helpers to provider-neutral `McpProfile*` names while keeping deprecated `ClaudeProfile*` aliases for compatibility.
 - Make the generated profile-switch launch command configurable via `launchTemplate` or `ELLMOS_LAUNCH_TEMPLATE`.
+- Broadened npm keywords with provider-neutral MCP discovery terms such as `mcp-client`, `mcp-profiles`, `mcp-control-plane`, `mcp-host`, `codex`, and `provider-neutral`.
 
 ### Documentation
 - Refresh README and `llms.txt` discovery metadata for ControlCenter search phrases, current registry version, and Elmo/ELMO name-collision context.
 - Add `.npmignore` so future npm packages keep built `dist/` files while still excluding local logs and generated catalog state.
+
+### i18n
+- Skill-finder tool/input descriptions translated for all six supported languages (`de`, `en`, `es`, `zh`, `ja`, `ru`); the `toolText`/`inputText` English fallback remains only as a safety net for any future untranslated key.
 
 ## 0.1.0-alpha.8 - 2026-06-17
 

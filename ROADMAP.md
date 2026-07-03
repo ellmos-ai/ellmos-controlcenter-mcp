@@ -39,6 +39,26 @@ Status: planned
 - Reference or maintain current documentation for detected APIs, preferably via Context7 or comparable sources
 - Evaluate the BACH partner program and BACH-internal tool/skill structures as an input source
 
+### Skill recognition / skill-finder (2026-06-27)
+
+The skill scan (`controlcenter_list_skills`) already enumerates skills. The missing piece is
+*recognition*: given a free-text task or intent, return the ranked skills that apply.
+
+- **`find_skill` / `suggest_skill` tool** — match an intent against the scanned skill catalog and
+  return ranked candidates with the trigger reason (which phrase matched). `SKILL.md` `description`
+  fields are authored as trigger phrases ("Aktiviert sich bei …") plus `tags` and `aliases`, so
+  keyword/intent matching over description+tags+aliases is the primary signal. Mirror the existing
+  `suggest_bundles` / `suggest_profile` pattern. **Decision (2026-06-27): lexical matching at the
+  core** (keyword/alias over description+tags+aliases — zero-dependency, deterministic); **optional
+  embedding/semantic ranking is a stretch goal behind explicit configuration** (requires a local
+  embedding model), consistent with the credential-/dependency-free design of the ellmos servers.
+- **Cross-agent availability** — reuse the `agent-config-sync` registry/cache (which agent app
+  exposes which skill, and where) so the finder reports availability per agent, not only on disk.
+  `agent-config-sync` already treats ControlCenter as its profile backend.
+- **Shared taxonomy with `skill-explorer`** — align the MCP-side recognition with the skill-side
+  `skill-explorer` (audit/cluster/finder authoring) so both use one cluster/family taxonomy; this
+  also feeds the Phase 3.5 thematic-cluster work.
+
 ## Phase 3: Permissions and Policies
 
 Status: planned

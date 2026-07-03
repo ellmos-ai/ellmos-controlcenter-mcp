@@ -221,6 +221,10 @@ export const en: Translations = {
       title: "Build Local Server Catalog",
       description: "Creates a JSON catalog of locally discovered MCP servers."
     },
+    controlcenter_find_skill: {
+      title: "Find Matching Skills",
+      description: "Recognizes which skills apply to a free-text task or intent. Ranks the scanned skill catalogue by lexical match over name, aliases, tags, category, and description, and returns the best candidates with the matched terms."
+    },
     controlcenter_list_skills: {
       title: "List Claude Code Skills",
       description: "Inventorizes installed Claude Code skills from the deployed skills folder and the source skills library."
@@ -251,6 +255,8 @@ export const en: Translations = {
     includeToolAssignments: "When true, tool bundle assignments are added for scanned tools.",
     skillsRoot: "Optional path to the deployed Claude Code skills folder. Defaults to ~/.claude/skills.",
     sourceSkillsRoot: "Optional path to the source skills library root. Defaults to the local .AI/.SKILLS/skills folder.",
+    skillIntent: "Free-text task or intent to match against the skill catalogue.",
+    skillFinderLimit: "Maximum number of ranked skill candidates to return. Default: 5.",
     pluginsRoot: "Optional path to the Claude Code plugins folder. Defaults to ~/.claude/plugins.",
     modulesRoot: "Optional path to the ellmos modules folder. Defaults to the local .AI/.MODULES folder.",
     deployedOnly: "When true, only deployed skills are returned and the source skills library is not scanned.",

@@ -221,6 +221,10 @@ export const ja: Translations = {
       title: "ローカルサーバーカタログを作成",
       description: "ローカルで検出された MCP サーバーの JSON カタログを作成します。"
     },
+    controlcenter_find_skill: {
+      title: "一致するスキルを検索",
+      description: "自由文テキストのタスクまたは意図にどのスキルが該当するかを認識します。スキャン済みスキルカタログを名前・エイリアス・タグ・カテゴリ・説明への字句的一致でランク付けし、一致した語とともに最良の候補を返します。"
+    },
     controlcenter_list_skills: {
       title: "Claude Code Skills を一覧表示",
       description: "デプロイ済み skills フォルダーと skills ソースライブラリから、インストール済みの Claude Code skills を一覧表示します。"
@@ -251,6 +255,8 @@ export const ja: Translations = {
     includeToolAssignments: "true の場合、スキャンされたツールの tool bundle 割り当てを追加します。",
     skillsRoot: "デプロイ済み Claude Code skills フォルダーへの任意のパス。既定は ~/.claude/skills です。",
     sourceSkillsRoot: "skills ソースライブラリルートへの任意のパス。既定はローカルの .AI/.SKILLS/skills フォルダーです。",
+    skillIntent: "スキルカタログと照合する自由文テキストのタスクまたは意図。",
+    skillFinderLimit: "返すランク付けされたスキル候補の最大数。既定値: 5。",
     pluginsRoot: "Claude Code プラグインフォルダーへの任意のパス。既定は ~/.claude/plugins です。",
     modulesRoot: "ellmos モジュールフォルダーへの任意のパス。既定はローカルの .AI/.MODULES フォルダーです。",
     deployedOnly: "true の場合、デプロイ済み skills のみを返し、skills ソースライブラリをスキャンしません。",

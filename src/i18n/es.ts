@@ -221,6 +221,10 @@ export const es: Translations = {
       title: "Crear catálogo de servidores locales",
       description: "Crea un catálogo JSON de los servidores MCP descubiertos localmente."
     },
+    controlcenter_find_skill: {
+      title: "Encontrar skills coincidentes",
+      description: "Reconoce qué skills aplican a una tarea o intención en texto libre. Clasifica el catálogo de skills escaneado por coincidencia léxica sobre nombre, alias, etiquetas, categoría y descripción, y devuelve los mejores candidatos con los términos coincidentes."
+    },
     controlcenter_list_skills: {
       title: "Listar skills de Claude Code",
       description: "Inventaría los skills de Claude Code instalados desde la carpeta de skills desplegados y la biblioteca de skills fuente."
@@ -251,6 +255,8 @@ export const es: Translations = {
     includeToolAssignments: "Si es true, se añaden asignaciones de herramientas a bundles para las herramientas escaneadas.",
     skillsRoot: "Ruta opcional a la carpeta de skills desplegados de Claude Code. Por defecto es ~/.claude/skills.",
     sourceSkillsRoot: "Ruta opcional al root de la biblioteca de skills fuente. Por defecto es la carpeta .AI/.SKILLS/skills local.",
+    skillIntent: "Tarea o intención en texto libre para comparar con el catálogo de skills.",
+    skillFinderLimit: "Número máximo de candidatos de skills clasificados a devolver. Predeterminado: 5.",
     pluginsRoot: "Ruta opcional a la carpeta de plugins de Claude Code. Por defecto es ~/.claude/plugins.",
     modulesRoot: "Ruta opcional a la carpeta de módulos ellmos. Por defecto es la carpeta .AI/.MODULES local.",
     deployedOnly: "Si es true, solo se devuelven los skills desplegados y no se escanea la biblioteca de skills fuente.",

@@ -221,6 +221,10 @@ export const zh: Translations = {
       title: "构建本地服务器目录",
       description: "为本地发现的 MCP 服务器创建 JSON 目录。"
     },
+    controlcenter_find_skill: {
+      title: "查找匹配的技能",
+      description: "识别哪些技能适用于自由文本任务或意图。按对名称、别名、标签、类别和描述的词法匹配对已扫描的技能目录排序，并返回最佳候选及匹配到的词语。"
+    },
     controlcenter_list_skills: {
       title: "列出 Claude Code Skills",
       description: "从已部署 skills 文件夹和 skills 源库中列出已安装的 Claude Code skills。"
@@ -251,6 +255,8 @@ export const zh: Translations = {
     includeToolAssignments: "为 true 时为扫描到的工具加入工具 bundle 分配。",
     skillsRoot: "已部署 Claude Code skills 文件夹的可选路径。默认为 ~/.claude/skills。",
     sourceSkillsRoot: "skills 源库根目录的可选路径。默认为本地 .AI/.SKILLS/skills 文件夹。",
+    skillIntent: "用于与技能目录匹配的自由文本任务或意图。",
+    skillFinderLimit: "返回的已排序技能候选的最大数量。默认值：5。",
     pluginsRoot: "Claude Code 插件文件夹的可选路径。默认为 ~/.claude/plugins。",
     modulesRoot: "ellmos 模块文件夹的可选路径。默认为本地 .AI/.MODULES 文件夹。",
     deployedOnly: "为 true 时只返回已部署 skills，不扫描 skills 源库。",

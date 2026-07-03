@@ -20,6 +20,7 @@ import {
 import { DEFAULT_MCP_ROOT, scanLocalServers } from "./catalog.js";
 import { DEFAULT_PLUGINS_ROOT, DEFAULT_MODULES_ROOT, scanInstalledPlugins, scanModules, scanPluginsAndModules, type PluginSummary } from "./plugins.js";
 import { DEFAULT_SKILLS_ROOT, DEFAULT_SOURCE_SKILLS_ROOT, scanSkills, type SkillSummary } from "./skills.js";
+import { findSkills, type SkillMatch } from "./skillFinder.js";
 import {
   describeSupportedLanguages,
   getLanguage,
@@ -210,11 +211,11 @@ async function readRequestedToolCatalog(options: {
 }
 
 function toolText(name: string) {
-  return t().toolDescriptions[name];
+  return t().toolDescriptions[name] ?? t("en").toolDescriptions[name] ?? { title: name, description: "" };
 }
 
 function inputText(name: string): string {
-  return t().inputDescriptions[name];
+  return t().inputDescriptions[name] ?? t("en").inputDescriptions[name] ?? name;
 }
 
 function formatLanguageReport(): string {
@@ -779,6 +780,56 @@ server.registerTool(
     ].join("\n");
 
     return { content: [{ type: "text", text: output }] };
+  }
+);
+
+function formatSkillMatches(intent: string, matches: SkillMatch[]): string {
+  const labels = t();
+  const title = toolText("controlcenter_find_skill").title;
+  const header = [
+    `# ${title}`,
+    "",
+    `- ${labels.common.filter}: ${intent}`,
+    ""
+  ];
+  if (matches.length === 0) {
+    return [...header, labels.common.none].join("\n");
+  }
+  const blocks = matches.map((m) =>
+    [
+      `## ${m.skill.name}`,
+      "",
+      `- ${labels.messages.score}: ${m.score}`,
+      `- ${labels.common.keywords}: ${m.matchedTerms.length > 0 ? m.matchedTerms.join(", ") : labels.common.none}`,
+      `- ${labels.tables.skill.category}: ${m.skill.category ?? labels.common.notAvailable}`,
+      `- ${labels.tables.skill.deployed}: ${m.skill.deployed ? labels.common.yes : labels.common.no}`,
+      `- ${labels.common.hint}: ${m.skill.description || labels.common.notAvailable}`,
+      `- ${labels.tables.skill.path}: ${m.skill.absolutePath}`
+    ].join("\n")
+  );
+  return [...header, blocks.join("\n\n")].join("\n");
+}
+
+server.registerTool(
+  "controlcenter_find_skill",
+  {
+    title: toolText("controlcenter_find_skill").title,
+    description: toolText("controlcenter_find_skill").description,
+    inputSchema: {
+      intent: z.string().min(3).describe(inputText("skillIntent")),
+      skillsRoot: z.string().optional().describe(inputText("skillsRoot")),
+      sourceSkillsRoot: z.string().optional().describe(inputText("sourceSkillsRoot")),
+      deployedOnly: z.boolean().default(false).describe(inputText("deployedOnly")),
+      limit: z.number().int().positive().max(25).default(5).describe(inputText("skillFinderLimit"))
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ intent, skillsRoot, sourceSkillsRoot, deployedOnly, limit }) => {
+    const resolvedSkillsRoot = skillsRoot ?? DEFAULT_SKILLS_ROOT;
+    const resolvedSourceRoot = sourceSkillsRoot ?? DEFAULT_SOURCE_SKILLS_ROOT;
+    const skills = await scanSkills(resolvedSkillsRoot, deployedOnly ? "" : resolvedSourceRoot);
+    const matches = findSkills(intent, skills, limit);
+    return { content: [{ type: "text", text: formatSkillMatches(intent, matches) }] };
   }
 );
 

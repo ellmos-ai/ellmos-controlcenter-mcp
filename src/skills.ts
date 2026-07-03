@@ -34,9 +34,28 @@ export interface SkillSummary {
   type: string | null;
   category: string | null;
   status: string | null;
+  tags: string[];
+  aliases: string[];
   absolutePath: string;
   deployed: boolean;
   hasSkillMd: boolean;
+}
+
+/**
+ * Parses an inline YAML list value such as "[mcp, skills, sync]" or a plain
+ * comma-separated string into a string array. Strips brackets and quotes.
+ * Returns [] for empty/undefined input. Used for `tags` and `aliases`.
+ */
+export function parseInlineList(value: string | undefined): string[] {
+  if (!value) return [];
+  let inner = value.trim();
+  if (inner.startsWith("[") && inner.endsWith("]")) {
+    inner = inner.slice(1, -1);
+  }
+  return inner
+    .split(",")
+    .map((item) => item.trim().replace(/^["']|["']$/g, "").trim())
+    .filter((item) => item.length > 0);
 }
 
 /**
@@ -117,6 +136,8 @@ async function readSkillMd(dirPath: string): Promise<SkillSummary | null> {
     type: fm["type"] ?? null,
     category: fm["category"] ?? null,
     status: fm["status"] ?? null,
+    tags: parseInlineList(fm["tags"]),
+    aliases: parseInlineList(fm["aliases"]),
     absolutePath: dirPath,
     deployed: false, // will be overwritten by caller
     hasSkillMd: true
@@ -155,6 +176,8 @@ async function scanSkillsRoot(
         type: null,
         category: null,
         status: null,
+        tags: [],
+        aliases: [],
         absolutePath: dirPath,
         deployed,
         hasSkillMd: false

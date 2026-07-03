@@ -38,9 +38,12 @@ import {
 } from "../src/policy.js";
 import {
   parseFrontmatter,
+  parseInlineList,
   scanSkills,
-  getDefaultSourceSkillsRoot
+  getDefaultSourceSkillsRoot,
+  type SkillSummary
 } from "../src/skills.js";
+import { findSkills, scoreSkill, tokenize } from "../src/skillFinder.js";
 import {
   scanInstalledPlugins,
   scanModules,
@@ -1108,6 +1111,69 @@ status: active
 // ──────────────────────────────────────────────────────────────────────────────
 // plugins helpers
 // ──────────────────────────────────────────────────────────────────────────────
+
+function makeSkill(partial: Partial<SkillSummary> & { name: string }): SkillSummary {
+  return {
+    name: partial.name,
+    description: partial.description ?? "",
+    version: partial.version ?? null,
+    type: partial.type ?? null,
+    category: partial.category ?? null,
+    status: partial.status ?? null,
+    tags: partial.tags ?? [],
+    aliases: partial.aliases ?? [],
+    absolutePath: partial.absolutePath ?? `/skills/${partial.name}`,
+    deployed: partial.deployed ?? false,
+    hasSkillMd: partial.hasSkillMd ?? true
+  };
+}
+
+describe("skill finder", () => {
+  it("parses inline YAML lists for tags and aliases", () => {
+    expect(parseInlineList("[mcp, skills, sync]")).toEqual(["mcp", "skills", "sync"]);
+    expect(parseInlineList("alpha, beta")).toEqual(["alpha", "beta"]);
+    expect(parseInlineList('["a", "b"]')).toEqual(["a", "b"]);
+    expect(parseInlineList(undefined)).toEqual([]);
+    expect(parseInlineList("")).toEqual([]);
+  });
+
+  it("tokenizes and drops stopwords", () => {
+    const tokens = tokenize("Please help me sync the MCP servers");
+    expect(tokens).toContain("sync");
+    expect(tokens).toContain("mcp");
+    expect(tokens).toContain("servers");
+    expect(tokens).not.toContain("the");
+    expect(tokens).not.toContain("me");
+  });
+
+  it("ranks skills by lexical relevance and reports matched terms", () => {
+    const skills = [
+      makeSkill({ name: "mcp-config-sync", description: "Synchronisiert MCP-Server zwischen Claude Code und Claude Desktop", tags: ["mcp", "sync"] }),
+      makeSkill({ name: "brainstorm", description: "Kreativitaetsmethoden fuer Ideenfindung", tags: ["ideas"] }),
+      makeSkill({ name: "agents-bridge", description: "Bridge fuer fremde Agent-Tools", tags: ["multi-agent"] })
+    ];
+    const matches = findSkills("mcp server sync", skills);
+    expect(matches.length).toBeGreaterThan(0);
+    expect(matches[0].skill.name).toBe("mcp-config-sync");
+    expect(matches[0].matchedTerms).toContain("sync");
+    expect(matches.find((m) => m.skill.name === "brainstorm")).toBeUndefined();
+  });
+
+  it("weights name above description", () => {
+    const named = makeSkill({ name: "deploy-tool", description: "unrelated text" });
+    const described = makeSkill({ name: "other", description: "this helps you deploy things" });
+    const namedScore = scoreSkill(tokenize("deploy"), named).score;
+    const describedScore = scoreSkill(tokenize("deploy"), described).score;
+    expect(namedScore).toBeGreaterThan(describedScore);
+  });
+
+  it("respects the limit and returns [] for no match or empty intent", () => {
+    const skills = Array.from({ length: 10 }, (_, i) => makeSkill({ name: `skill-${i}`, tags: ["common"] }));
+    expect(findSkills("common", skills, 3)).toHaveLength(3);
+    expect(findSkills("zzznomatch", skills)).toEqual([]);
+    expect(findSkills("   ", skills)).toEqual([]);
+  });
+});
 
 describe("plugins helpers", () => {
   it("returns empty array when installed_plugins.json is missing", async () => {

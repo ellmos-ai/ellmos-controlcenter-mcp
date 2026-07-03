@@ -221,6 +221,10 @@ export const ru: Translations = {
       title: "Создать каталог локальных серверов",
       description: "Создает JSON-каталог локально найденных MCP-серверов."
     },
+    controlcenter_find_skill: {
+      title: "Найти подходящие skills",
+      description: "Определяет, какие skills подходят к свободнотекстовой задаче или намерению. Ранжирует просканированный каталог skills по лексическому совпадению по имени, алиасам, тегам, категории и описанию и возвращает лучших кандидатов с совпавшими терминами."
+    },
     controlcenter_list_skills: {
       title: "Список skills Claude Code",
       description: "Инвентаризирует установленные skills Claude Code из папки развернутых skills и библиотеки исходных skills."
@@ -251,6 +255,8 @@ export const ru: Translations = {
     includeToolAssignments: "Если true, для просканированных инструментов добавляются назначения tool bundle.",
     skillsRoot: "Необязательный путь к папке развернутых skills Claude Code. По умолчанию ~/.claude/skills.",
     sourceSkillsRoot: "Необязательный путь к корню библиотеки исходных skills. По умолчанию локальная папка .AI/.SKILLS/skills.",
+    skillIntent: "Свободнотекстовая задача или намерение для сопоставления с каталогом skills.",
+    skillFinderLimit: "Максимальное число ранжированных кандидатов skills для возврата. По умолчанию: 5.",
     pluginsRoot: "Необязательный путь к папке плагинов Claude Code. По умолчанию ~/.claude/plugins.",
     modulesRoot: "Необязательный путь к папке модулей ellmos. По умолчанию локальная папка .AI/.MODULES.",
     deployedOnly: "Если true, возвращаются только развернутые skills, библиотека исходных skills не сканируется.",
