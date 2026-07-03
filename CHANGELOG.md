@@ -6,6 +6,10 @@
 - Rename profile helpers to provider-neutral `McpProfile*` names while keeping deprecated `ClaudeProfile*` aliases for compatibility.
 - Make the generated profile-switch launch command configurable via `launchTemplate` or `ELLMOS_LAUNCH_TEMPLATE`.
 
+### Documentation
+- Refresh README and `llms.txt` discovery metadata for ControlCenter search phrases, current registry version, and Elmo/ELMO name-collision context.
+- Add `.npmignore` so future npm packages keep built `dist/` files while still excluding local logs and generated catalog state.
+
 ## 0.1.0-alpha.8 - 2026-06-17
 
 ### Changed

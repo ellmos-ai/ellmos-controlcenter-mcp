@@ -1,6 +1,6 @@
 # ellmos ControlCenter MCP
 
-> MCP control plane for local MCP stack discovery, Claude profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, and a local dashboard.
+> MCP control plane for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, and a local dashboard.
 
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
@@ -11,7 +11,7 @@ Runtime: Node.js >=18
 
 ## Summary
 
-ellmos ControlCenter MCP is an alpha-stage Model Context Protocol server for local MCP administration. It discovers local MCP repositories, reads Claude profile files, resolves inherited profile configurations, recommends profiles and capability bundles for tasks, runs initial profile policy audits, builds local server catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, supports maintained output text sets for `de`, `en`, `es`, `zh`, `ja`, and `ru`, and can start a local dashboard.
+ellmos ControlCenter MCP is an alpha-stage Model Context Protocol server for local MCP administration. It discovers local MCP repositories, reads MCP profile files, resolves inherited profile configurations, recommends profiles and capability bundles for tasks, runs initial profile policy audits, builds local server catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, supports maintained output text sets for `de`, `en`, `es`, `zh`, `ja`, and `ru`, and can start a local dashboard.
 
 It is useful for local MCP stack visibility and profile management. It is not a hardened security gateway. Gateway mode, enforced tool-level permissions, authentication, and hard isolation are planned but not implemented.
 
@@ -49,7 +49,7 @@ Default dashboard URL: http://127.0.0.1:3737
 
 ## Audience
 
-- Developers managing local Claude Code MCP stacks who want visibility without manual JSON editing
+- Developers managing local MCP stacks who want visibility without manual JSON editing
 - AI assistants (Claude, Codex, Gemini) that need to discover, catalog, or switch local MCP profiles programmatically
 - Teams maintaining multiple MCP server setups and Claude profiles across projects
 - Developers building on the ellmos-ai ecosystem or integrating FileCommander, CodeCommander, or n8n Manager
@@ -60,14 +60,24 @@ Default dashboard URL: http://127.0.0.1:3737
 ```
 ellmos ControlCenter MCP local stack discovery
 MCP control plane Claude profile management
+MCP profile management dashboard
 local MCP server catalog dashboard
 capability bundle recommendation MCP
 Claude profile switch mcp-config generator
+Claude Codex Gemini MCP profile switcher
 MCP profile audit policy rules
 ellmos-ai MCP server TypeScript
 local MCP tool list probe
 ellmos controlcenter npm
+ellmos-controlcenter-mcp
 ```
+
+## External Discovery Notes
+
+- GitHub exact-repo and topic discovery work for the canonical package and repo name.
+- npm and jsDelivr expose the package metadata for `ellmos-controlcenter-mcp`.
+- Broad web searches collide with Elmo/ELMO motion-control, HR software, and voice-generator pages; use the full package name or MCP-specific phrases.
+- Good listing context: MCP control planes, local MCP server catalogs, profile management, policy audits, and MCP dashboard tooling.
 
 ## Important Files
 
@@ -83,4 +93,4 @@ ellmos controlcenter npm
 - `src/dashboard.ts`: local dashboard server.
 - `test/catalog.test.ts`: unit coverage for catalog, profiles, bundles, and policy rules.
 
-## Last-checked: 2026-06-11
+## Last-checked: 2026-07-03

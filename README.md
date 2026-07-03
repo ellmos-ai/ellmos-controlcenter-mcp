@@ -23,7 +23,7 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.1.0-alpha.6`
+- **Version:** `0.1.0-alpha.8`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI checks:** `npm run test` and `npm run build`
@@ -76,6 +76,20 @@ ControlCenter ships MCP registry metadata for crawlers and catalog tools:
 - `package.json` includes both files in the npm package so registry indexers can read the same metadata from GitHub or npm.
 
 The public npm package is the canonical install target. The GitHub repository remains the canonical source for development, issues, and release notes.
+
+## Search and Discovery Context
+
+Use the full name **ellmos ControlCenter MCP** or the package name `ellmos-controlcenter-mcp` when linking or searching. The short phrase "control center" is too broad, and "ellmos" can collide with Elmo/ELMO motion-control, HR, and voice-generator results.
+
+Best-fit search phrases:
+
+- `ellmos ControlCenter MCP`
+- `ellmos-controlcenter-mcp`
+- `MCP control plane for local servers`
+- `MCP profile management dashboard`
+- `local MCP stack discovery TypeScript`
+- `Claude Codex Gemini MCP profile switcher`
+- `MCP policy audit profile management`
 
 ## Installation
 
