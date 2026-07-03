@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.ellmos-ai/ellmos-controlcenter-mcp",
-  "version": "0.1.0-alpha.8",
+  "version": "0.2.0",
   "title": "ellmos ControlCenter",
   "description": "MCP control plane for local server discovery, MCP profile inspection, and profile recommendation. Works with any MCP-capable client; profile defaults target Claude Code conventions and are overridable.",
   "websiteUrl": "https://github.com/ellmos-ai/ellmos-controlcenter-mcp",
@@ -14,7 +14,7 @@
     {
       "registryType": "npm",
       "identifier": "ellmos-controlcenter-mcp",
-      "version": "0.1.0-alpha.8",
+      "version": "0.2.0",
       "transport": {
         "type": "stdio"
       },
