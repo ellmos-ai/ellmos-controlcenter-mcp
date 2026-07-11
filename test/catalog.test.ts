@@ -1260,6 +1260,57 @@ describe("plugins helpers", () => {
     expect(modules[0].hasMcp).toBe(true);
   });
 
+  it("prefers the v2 catalog and discovers modules inside category directories", async () => {
+    const root = await createTempDirectory("controlcenter-modules-v2-");
+    const modDir = path.join(root, ".MEMORY", "catalog-module");
+    await fs.mkdir(modDir, { recursive: true });
+    await fs.writeFile(
+      path.join(modDir, "ellmos-module.v2.json"),
+      JSON.stringify({ id: "catalog-module", version: "4.0.0" }),
+      "utf-8"
+    );
+    await fs.writeFile(
+      path.join(root, "modules.catalog.json"),
+      JSON.stringify({
+        schema: "ellmos.modules-catalog.v1",
+        modules: [{
+          id: "catalog-module",
+          category: "memory",
+          version: "4.0.0",
+          resolved_source: ".MEMORY/catalog-module",
+          surfaces: ["skill"]
+        }]
+      }),
+      "utf-8"
+    );
+
+    const modules = await scanModules(root);
+    expect(modules).toHaveLength(1);
+    expect(modules[0]).toMatchObject({
+      name: "catalog-module",
+      version: "4.0.0",
+      scope: "memory",
+      absolutePath: modDir,
+      hasSkills: true
+    });
+  });
+
+  it("keeps the flat directory scan as fallback for an invalid catalog", async () => {
+    const root = await createTempDirectory("controlcenter-modules-fallback-");
+    const modDir = path.join(root, "legacy-module");
+    await fs.mkdir(modDir, { recursive: true });
+    await fs.writeFile(path.join(root, "modules.catalog.json"), "{}", "utf-8");
+    await fs.writeFile(
+      path.join(modDir, "ellmos-module.json"),
+      JSON.stringify({ name: "legacy-module", version: "1.0.0" }),
+      "utf-8"
+    );
+
+    const modules = await scanModules(root);
+    expect(modules).toHaveLength(1);
+    expect(modules[0].name).toBe("legacy-module");
+  });
+
   it("falls back to package.json for module version", async () => {
     const root = await createTempDirectory("controlcenter-modules-pkgjson-");
     const modDir = path.join(root, "pkg-module");

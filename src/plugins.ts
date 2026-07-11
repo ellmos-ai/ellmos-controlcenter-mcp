@@ -150,26 +150,40 @@ export async function scanInstalledPlugins(
 // ──────────────────────────────────────────────
 
 interface EllmosModuleJson {
+  id?: string;
   name?: string;
   version?: string;
   description?: string;
   type?: string;
+  surfaces?: string[];
+  resolved_source?: string;
+}
+
+interface EllmosModulesCatalog {
+  schema?: string;
+  modules?: unknown[];
 }
 
 async function readModuleVersion(modulePath: string): Promise<string | null> {
-  // Priority 1: ellmos-module.json
+  // Priority 1: portable v2 module manifest
+  const moduleV2Json = await readJsonFile(path.join(modulePath, "ellmos-module.v2.json"));
+  if (isRecord(moduleV2Json) && typeof moduleV2Json["version"] === "string") {
+    return moduleV2Json["version"] as string;
+  }
+
+  // Priority 2: legacy ellmos-module.json
   const moduleJson = await readJsonFile(path.join(modulePath, "ellmos-module.json"));
   if (isRecord(moduleJson) && typeof moduleJson["version"] === "string") {
     return moduleJson["version"] as string;
   }
 
-  // Priority 2: package.json
+  // Priority 3: package.json
   const pkgJson = await readJsonFile(path.join(modulePath, "package.json"));
   if (isRecord(pkgJson) && typeof pkgJson["version"] === "string") {
     return pkgJson["version"] as string;
   }
 
-  // Priority 3: pyproject.toml — read first line match
+  // Priority 4: pyproject.toml — read first line match
   try {
     const pyproject = await fs.readFile(path.join(modulePath, "pyproject.toml"), "utf-8");
     const match = /version\s*=\s*["']([^"']+)["']/.exec(pyproject);
@@ -178,7 +192,7 @@ async function readModuleVersion(modulePath: string): Promise<string | null> {
     // not present
   }
 
-  // Priority 4: VERSION file
+  // Priority 5: VERSION file
   try {
     const versionContent = await fs.readFile(path.join(modulePath, "VERSION"), "utf-8");
     return versionContent.trim().split(/\r?\n/)[0] ?? null;
@@ -215,6 +229,45 @@ async function detectModuleCapabilities(modulePath: string): Promise<{
 export async function scanModules(
   modulesRoot: string = DEFAULT_MODULES_ROOT
 ): Promise<PluginSummary[]> {
+  const catalogRaw = await readJsonFile(path.join(modulesRoot, "modules.catalog.json"));
+  if (isRecord(catalogRaw)) {
+    const catalog = catalogRaw as EllmosModulesCatalog;
+    if (catalog.schema === "ellmos.modules-catalog.v1" && Array.isArray(catalog.modules)) {
+      const catalogModules = catalog.modules.filter(isRecord) as Array<Record<string, unknown>>;
+      const results: Array<PluginSummary | null> = await Promise.all(
+        catalogModules.map(async (moduleJson): Promise<PluginSummary | null> => {
+          const moduleId = typeof moduleJson["id"] === "string" ? moduleJson["id"] as string : null;
+          const resolvedSource = typeof moduleJson["resolved_source"] === "string"
+            ? moduleJson["resolved_source"] as string
+            : null;
+          if (!moduleId || !resolvedSource) return null;
+          const modulePath = path.resolve(modulesRoot, resolvedSource);
+          const detected = await detectModuleCapabilities(modulePath);
+          const surfaces = Array.isArray(moduleJson["surfaces"])
+            ? moduleJson["surfaces"].filter((item): item is string => typeof item === "string")
+            : [];
+          return {
+            name: moduleId,
+            type: "module" as const,
+            version: typeof moduleJson["version"] === "string"
+              ? moduleJson["version"] as string
+              : await readModuleVersion(modulePath),
+            marketplace: null,
+            scope: typeof moduleJson["category"] === "string" ? moduleJson["category"] as string : null,
+            absolutePath: modulePath,
+            installedAt: null,
+            lastUpdated: null,
+            hasSkills: detected.hasSkills || surfaces.includes("skill"),
+            hasCommands: detected.hasCommands,
+            hasMcp: detected.hasMcp || surfaces.includes("mcp-adapter")
+          } satisfies PluginSummary;
+        })
+      );
+      return results.filter((item): item is PluginSummary => item !== null);
+    }
+  }
+
+  // Compatibility fallback for installations that do not have the v2 catalog yet.
   let entries: import("fs").Dirent[];
   try {
     entries = await fs.readdir(modulesRoot, { withFileTypes: true });
