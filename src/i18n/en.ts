@@ -229,6 +229,14 @@ export const en: Translations = {
       title: "List Claude Code Skills",
       description: "Inventorizes installed Claude Code skills from the deployed skills folder and the source skills library."
     },
+    controlcenter_list_stacks: {
+      title: "List Registered Stacks",
+      description: "Reads the neutral stacks catalog and its ellmos.stack.v2 manifests without executing stack components."
+    },
+    controlcenter_describe_stack: {
+      title: "Describe Registered Stack",
+      description: "Shows typed components, required roles, policies, and validation warnings for one registered stack."
+    },
     controlcenter_list_plugins: {
       title: "List Plugins and Modules",
       description: "Inventorizes installed Claude Code plugins and local ellmos modules with their capabilities."
@@ -257,6 +265,8 @@ export const en: Translations = {
     sourceSkillsRoot: "Optional path to the source skills library root. Defaults to the local .AI/.SKILLS/skills folder.",
     skillIntent: "Free-text task or intent to match against the skill catalogue.",
     skillFinderLimit: "Maximum number of ranked skill candidates to return. Default: 5.",
+    stacksRoot: "Optional path to the directory containing stacks.catalog.json. Defaults to the local .AI/.STACKS folder.",
+    stackId: "Stable stack ID from stacks.catalog.json.",
     pluginsRoot: "Optional path to the Claude Code plugins folder. Defaults to ~/.claude/plugins.",
     modulesRoot: "Optional path to the ellmos modules folder. Defaults to the local .AI/.MODULES folder.",
     deployedOnly: "When true, only deployed skills are returned and the source skills library is not scanned.",

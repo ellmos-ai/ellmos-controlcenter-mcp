@@ -229,6 +229,14 @@ export const zh: Translations = {
       title: "列出 Claude Code Skills",
       description: "从已部署 skills 文件夹和 skills 源库中列出已安装的 Claude Code skills。"
     },
+    controlcenter_list_stacks: {
+      title: "列出已注册堆栈",
+      description: "读取中立的堆栈目录及其 ellmos.stack.v2 清单，而不执行堆栈组件。"
+    },
+    controlcenter_describe_stack: {
+      title: "描述已注册堆栈",
+      description: "显示一个已注册堆栈的类型化组件、必需角色、策略和验证警告。"
+    },
     controlcenter_list_plugins: {
       title: "列出插件和模块",
       description: "列出已安装的 Claude Code 插件和本地 ellmos 模块及其功能。"
@@ -257,6 +265,8 @@ export const zh: Translations = {
     sourceSkillsRoot: "skills 源库根目录的可选路径。默认为本地 .AI/.SKILLS/skills 文件夹。",
     skillIntent: "用于与技能目录匹配的自由文本任务或意图。",
     skillFinderLimit: "返回的已排序技能候选的最大数量。默认值：5。",
+    stacksRoot: "包含 stacks.catalog.json 的目录的可选路径。默认为本地 .AI/.STACKS 文件夹。",
+    stackId: "stacks.catalog.json 中的稳定堆栈 ID。",
     pluginsRoot: "Claude Code 插件文件夹的可选路径。默认为 ~/.claude/plugins。",
     modulesRoot: "ellmos 模块文件夹的可选路径。默认为本地 .AI/.MODULES 文件夹。",
     deployedOnly: "为 true 时只返回已部署 skills，不扫描 skills 源库。",

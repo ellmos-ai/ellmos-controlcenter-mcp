@@ -38,6 +38,8 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 | `controlcenter_get_language` | Aktuelle ControlCenter-Ausgabesprache anzeigen |
 | `controlcenter_set_language` | ControlCenter-Ausgabesprache für diese laufende Serverinstanz setzen |
 | `controlcenter_list_local_servers` | Lokale MCP-Repositories unterhalb des MCP-Roots scannen |
+| `controlcenter_list_stacks` | Registrierte Stacks aus `stacks.catalog.json` lesen und ihre `ellmos.stack.v2`-Manifeste prüfen |
+| `controlcenter_describe_stack` | Typisierte Komponenten, Rollen, Policies und Validierungswarnungen eines Stacks beschreiben |
 | `controlcenter_list_tools` | Lokale oder profildefinierte MCP-Server starten und deren echte `list_tools`-Ausgabe lesen |
 | `controlcenter_assign_tool_bundles` | Ausgelesene MCP-Tools Capability-Bundles zuordnen |
 | `controlcenter_list_bundles` | Lokale Server nach Capability-Bundles gruppieren |
@@ -169,6 +171,7 @@ Bei Installation aus dem Quellcode:
 Optionale Umgebungsvariablen:
 
 - `ELLMOS_MCP_ROOT` überschreibt den Standard-MCP-Root
+- `ELLMOS_STACKS_ROOT` überschreibt den Stack-Katalog-Root (Standard: lokales `.AI/.STACKS`)
 - `ELLMOS_PROFILE_ROOT` überschreibt den Profilordner (Standard: `~/.claude/profiles`)
 - `ELLMOS_SKILLS_ROOT` überschreibt den Skills-Ordner (Standard: `~/.claude/skills`)
 - `ELLMOS_PLUGINS_ROOT` überschreibt den Plugins-Ordner (Standard: `~/.claude/plugins`)
@@ -275,7 +278,7 @@ Dieser MCP-Server ist Teil des **[ellmos-ai](https://github.com/ellmos-ai)**-Ök
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n-Workflow-Verwaltung über KI-Assistenten | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
 | [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 44 | LLM-Memory, Wissen, State, Routing und Orchestrierung | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
 | [ServerCommander](https://github.com/ellmos-ai/ellmos-servercommander-mcp) | 8 | Server-Operationen: Deploy-Dry-Runs, Mail, Log-Analyse, Health-Checks | [`ellmos-servercommander-mcp`](https://www.npmjs.com/package/ellmos-servercommander-mcp) (alpha) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **17** | **MCP-Stack-Discovery, Profilverwaltung, Control Plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **19** | **MCP-Stack-Discovery, Profilverwaltung, Control Plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 
 ### KI-Infrastruktur
 

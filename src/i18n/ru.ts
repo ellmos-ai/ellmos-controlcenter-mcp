@@ -229,6 +229,14 @@ export const ru: Translations = {
       title: "Список skills Claude Code",
       description: "Инвентаризирует установленные skills Claude Code из папки развернутых skills и библиотеки исходных skills."
     },
+    controlcenter_list_stacks: {
+      title: "Список зарегистрированных стеков",
+      description: "Читает нейтральный каталог стеков и манифесты ellmos.stack.v2 без запуска компонентов."
+    },
+    controlcenter_describe_stack: {
+      title: "Описание зарегистрированного стека",
+      description: "Показывает типизированные компоненты, обязательные роли, политики и предупреждения валидации стека."
+    },
     controlcenter_list_plugins: {
       title: "Список плагинов и модулей",
       description: "Инвентаризирует установленные плагины Claude Code и локальные модули ellmos с их возможностями."
@@ -257,6 +265,8 @@ export const ru: Translations = {
     sourceSkillsRoot: "Необязательный путь к корню библиотеки исходных skills. По умолчанию локальная папка .AI/.SKILLS/skills.",
     skillIntent: "Свободнотекстовая задача или намерение для сопоставления с каталогом skills.",
     skillFinderLimit: "Максимальное число ранжированных кандидатов skills для возврата. По умолчанию: 5.",
+    stacksRoot: "Необязательный путь к каталогу с stacks.catalog.json. По умолчанию локальная папка .AI/.STACKS.",
+    stackId: "Стабильный ID стека из stacks.catalog.json.",
     pluginsRoot: "Необязательный путь к папке плагинов Claude Code. По умолчанию ~/.claude/plugins.",
     modulesRoot: "Необязательный путь к папке модулей ellmos. По умолчанию локальная папка .AI/.MODULES.",
     deployedOnly: "Если true, возвращаются только развернутые skills, библиотека исходных skills не сканируется.",

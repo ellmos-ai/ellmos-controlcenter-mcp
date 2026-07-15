@@ -229,6 +229,14 @@ export const de: Translations = {
       title: "Claude Code Skills listen",
       description: "Inventarisiert installierte Claude Code Skills aus dem deployte Skills-Ordner und der Quell-Skill-Bibliothek."
     },
+    controlcenter_list_stacks: {
+      title: "Registrierte Stacks listen",
+      description: "Liest den neutralen Stack-Katalog und seine ellmos.stack.v2-Manifeste, ohne Stack-Komponenten auszuführen."
+    },
+    controlcenter_describe_stack: {
+      title: "Registrierten Stack beschreiben",
+      description: "Zeigt typisierte Komponenten, Pflichtrollen, Policies und Validierungswarnungen für einen registrierten Stack."
+    },
     controlcenter_list_plugins: {
       title: "Plugins und Module listen",
       description: "Inventarisiert installierte Claude Code Plugins und lokale ellmos-Module mit ihren Fähigkeiten."
@@ -257,6 +265,8 @@ export const de: Translations = {
     sourceSkillsRoot: "Optionaler Pfad zum Quell-Skill-Bibliotheks-Root. Standard ist der lokale .AI/.SKILLS/skills-Ordner.",
     skillIntent: "Freitext-Aufgabe oder Intent, gegen den der Skill-Katalog gematcht wird.",
     skillFinderLimit: "Maximale Anzahl gerankter Skill-Kandidaten. Standard: 5.",
+    stacksRoot: "Optionaler Pfad zum Ordner mit stacks.catalog.json. Standard ist der lokale .AI/.STACKS-Ordner.",
+    stackId: "Stabile Stack-ID aus stacks.catalog.json.",
     pluginsRoot: "Optionaler Pfad zum Claude Code Plugins-Ordner. Standard ist ~/.claude/plugins.",
     modulesRoot: "Optionaler Pfad zum ellmos-Module-Ordner. Standard ist der lokale .AI/.MODULES-Ordner.",
     deployedOnly: "Wenn true, werden nur deployte Skills zurückgegeben und die Quell-Skill-Bibliothek nicht gescannt.",

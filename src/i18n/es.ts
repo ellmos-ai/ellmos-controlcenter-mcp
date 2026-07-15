@@ -229,6 +229,14 @@ export const es: Translations = {
       title: "Listar skills de Claude Code",
       description: "Inventaría los skills de Claude Code instalados desde la carpeta de skills desplegados y la biblioteca de skills fuente."
     },
+    controlcenter_list_stacks: {
+      title: "Listar stacks registrados",
+      description: "Lee el catálogo neutral de stacks y sus manifiestos ellmos.stack.v2 sin ejecutar componentes."
+    },
+    controlcenter_describe_stack: {
+      title: "Describir stack registrado",
+      description: "Muestra componentes tipados, roles requeridos, políticas y avisos de validación de un stack."
+    },
     controlcenter_list_plugins: {
       title: "Listar plugins y módulos",
       description: "Inventaría los plugins de Claude Code instalados y los módulos ellmos locales con sus capacidades."
@@ -257,6 +265,8 @@ export const es: Translations = {
     sourceSkillsRoot: "Ruta opcional al root de la biblioteca de skills fuente. Por defecto es la carpeta .AI/.SKILLS/skills local.",
     skillIntent: "Tarea o intención en texto libre para comparar con el catálogo de skills.",
     skillFinderLimit: "Número máximo de candidatos de skills clasificados a devolver. Predeterminado: 5.",
+    stacksRoot: "Ruta opcional al directorio que contiene stacks.catalog.json. Por defecto es la carpeta local .AI/.STACKS.",
+    stackId: "ID estable del stack en stacks.catalog.json.",
     pluginsRoot: "Ruta opcional a la carpeta de plugins de Claude Code. Por defecto es ~/.claude/plugins.",
     modulesRoot: "Ruta opcional a la carpeta de módulos ellmos. Por defecto es la carpeta .AI/.MODULES local.",
     deployedOnly: "Si es true, solo se devuelven los skills desplegados y no se escanea la biblioteca de skills fuente.",

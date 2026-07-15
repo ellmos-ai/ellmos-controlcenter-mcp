@@ -18,6 +18,7 @@ import {
   type CapabilityBundle
 } from "./bundles.js";
 import { DEFAULT_MCP_ROOT, scanLocalServers } from "./catalog.js";
+import { DEFAULT_STACKS_ROOT, describeStack, scanStacks, type StackSummary } from "./stacks.js";
 import { DEFAULT_PLUGINS_ROOT, DEFAULT_MODULES_ROOT, scanInstalledPlugins, scanModules, scanPluginsAndModules, type PluginSummary } from "./plugins.js";
 import { DEFAULT_SKILLS_ROOT, DEFAULT_SOURCE_SKILLS_ROOT, scanSkills, type SkillSummary } from "./skills.js";
 import { findSkills, type SkillMatch } from "./skillFinder.js";
@@ -107,6 +108,17 @@ function formatBundleTable(bundleRows: CapabilityBundle[]): string {
   }
 
   return lines.join("\n");
+}
+
+function formatStackTable(stacks: StackSummary[]): string {
+  if (stacks.length === 0) return "No registered stacks found.";
+  return [
+    "| Stack | Kind | Status | Visibility | Components | Warnings | Manifest |",
+    "|---|---|---|---|---:|---|---|",
+    ...stacks.map((stack) =>
+      `| ${escapeMarkdownTableCell(stack.name)} | ${stack.kind ?? "-"} | ${stack.status ?? "-"} | ${stack.visibility ?? "-"} | ${stack.componentCount + stack.mcpServerCount + stack.skillCount + stack.nestedStackCount + stack.externalComponentCount} | ${stack.warnings.join(", ") || "-"} | ${escapeMarkdownTableCell(stack.manifestPath)} |`
+    )
+  ].join("\n");
 }
 
 function escapeMarkdownTableCell(value: string): string {
@@ -325,6 +337,65 @@ server.registerTool(
     ].join("\n");
 
     return { content: [{ type: "text", text: output }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_list_stacks",
+  {
+    title: toolText("controlcenter_list_stacks").title,
+    description: toolText("controlcenter_list_stacks").description,
+    inputSchema: {
+      stacksRoot: z.string().optional().describe(inputText("stacksRoot"))
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ stacksRoot }) => {
+    const resolvedRoot = stacksRoot ?? DEFAULT_STACKS_ROOT;
+    const stacks = await scanStacks(resolvedRoot);
+    return { content: [{ type: "text", text: [`# Registered Stacks`, "", `- Root: ${resolvedRoot}`, `- Count: ${stacks.length}`, "", formatStackTable(stacks)].join("\n") }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_describe_stack",
+  {
+    title: toolText("controlcenter_describe_stack").title,
+    description: toolText("controlcenter_describe_stack").description,
+    inputSchema: {
+      stackId: z.string().min(1).describe(inputText("stackId")),
+      stacksRoot: z.string().optional().describe(inputText("stacksRoot"))
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ stackId, stacksRoot }) => {
+    const resolvedRoot = stacksRoot ?? DEFAULT_STACKS_ROOT;
+    const stack = await describeStack(stackId, resolvedRoot);
+    if (!stack) {
+      return { content: [{ type: "text", text: `Stack '${stackId}' was not found in ${resolvedRoot}.` }], isError: true };
+    }
+    const lines = [
+      `# ${stack.name}`,
+      "",
+      `- ID: ${stack.id}`,
+      `- Kind: ${stack.kind ?? "-"}`,
+      `- Status: ${stack.status ?? "-"}`,
+      `- Visibility: ${stack.visibility ?? "-"}`,
+      `- Manifest: ${stack.manifestPath}`,
+      `- Warnings: ${stack.warnings.join(", ") || "-"}`,
+      "",
+      "## Components",
+      ...[...stack.components, ...stack.mcpServers, ...stack.skills, ...stack.nestedStacks, ...stack.externalComponents].map((id) => `- ${id}`),
+      "",
+      "## Required roles",
+      ...(stack.requiredRoles.length ? stack.requiredRoles.map((role) => `- ${role}`) : ["-"]),
+      "",
+      "## Policies",
+      "```json",
+      JSON.stringify(stack.policies, null, 2),
+      "```"
+    ];
+    return { content: [{ type: "text", text: lines.join("\n") }] };
   }
 );
 

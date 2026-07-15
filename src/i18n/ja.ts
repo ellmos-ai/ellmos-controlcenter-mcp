@@ -229,6 +229,14 @@ export const ja: Translations = {
       title: "Claude Code Skills を一覧表示",
       description: "デプロイ済み skills フォルダーと skills ソースライブラリから、インストール済みの Claude Code skills を一覧表示します。"
     },
+    controlcenter_list_stacks: {
+      title: "登録済みスタックを一覧表示",
+      description: "スタック構成要素を実行せず、中立なスタックカタログと ellmos.stack.v2 マニフェストを読み取ります。"
+    },
+    controlcenter_describe_stack: {
+      title: "登録済みスタックを説明",
+      description: "登録済みスタックの型付き構成要素、必須ロール、ポリシー、検証警告を表示します。"
+    },
     controlcenter_list_plugins: {
       title: "プラグインとモジュールを一覧表示",
       description: "インストール済みの Claude Code プラグインとローカル ellmos モジュールをその機能と共に一覧表示します。"
@@ -257,6 +265,8 @@ export const ja: Translations = {
     sourceSkillsRoot: "skills ソースライブラリルートへの任意のパス。既定はローカルの .AI/.SKILLS/skills フォルダーです。",
     skillIntent: "スキルカタログと照合する自由文テキストのタスクまたは意図。",
     skillFinderLimit: "返すランク付けされたスキル候補の最大数。既定値: 5。",
+    stacksRoot: "stacks.catalog.json を含むディレクトリへの任意のパス。既定はローカルの .AI/.STACKS フォルダーです。",
+    stackId: "stacks.catalog.json の安定したスタック ID。",
     pluginsRoot: "Claude Code プラグインフォルダーへの任意のパス。既定は ~/.claude/plugins です。",
     modulesRoot: "ellmos モジュールフォルダーへの任意のパス。既定はローカルの .AI/.MODULES フォルダーです。",
     deployedOnly: "true の場合、デプロイ済み skills のみを返し、skills ソースライブラリをスキャンしません。",
