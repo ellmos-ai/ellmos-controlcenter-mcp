@@ -33,11 +33,33 @@ Status: started
 Status: planned
 
 - Automatic scans for skills, modules, MCP servers, tool definitions, and local configuration sources
+- Detect stack manifests and stack candidates from sources such as `ellmos-stack`, future stack catalogs, `ellmos-module.json`, `llms.txt`, `WIRING.md`, `server.json`, and registered local stack roots
 - Detect system resources: paths, installed software, executables, CLI apps, and software with CLI interfaces
 - Capture usage possibilities for detected software: supported file types, typical commands, local APIs, and automation paths
 - Detect APIs in use from code, configurations, profiles, and tool schemas
 - Reference or maintain current documentation for detected APIs, preferably via Context7 or comparable sources
 - Evaluate the BACH partner program and BACH-internal tool/skill structures as an input source
+
+### Stack and capability recognition (2026-07-05)
+
+ControlCenter must remain user-agnostic. It should not hard-code a private
+`_control-center` folder or create one for every user. Instead, it should
+discover public stack templates and local stack instances through neutral
+manifests and adapter contracts.
+
+- **Stack detection** — add read-only stack inventory tools such as
+  `controlcenter_list_stacks` and `controlcenter_describe_stack`.
+- **Capability finder** — generalize skill recognition into
+  `controlcenter_find_capability`, matching intents against tools, skills,
+  modules, software, APIs, and stacks while returning compact cards instead of
+  full documentation.
+- **Context packs** — add `controlcenter_context_pack` so agents receive only
+  the relevant manifest fields, file references, tool names, and safety notes.
+- **Private stack support** — allow local users to register private stack roots
+  such as `_control-center`, while keeping the public ControlCenter core
+  portable and path-neutral.
+
+See `STACK-CAPABILITY-PLAN.md` for the detailed recognition and execution plan.
 
 ### Skill recognition / skill-finder (2026-06-27)
 
@@ -73,6 +95,9 @@ Status: planned
 Status: planned
 
 - Automatically cluster detected tools, MCPs, skills, modules, APIs, programs, executables, and CLIs by topic
+- Maintain planned personal-domain bundles for dashboard display and future MCP packlists:
+  `personal-office`, `personal-privacy`, `personal-tax-finance`, `personal-health`,
+  `personal-notes-knowledge`, and `personal-data-readers`
 - Enable and disable global clusters
 - Create manual clusters
 - Modify, rename, merge, or split automatically created clusters
@@ -88,6 +113,8 @@ Status: planned
 - Gateway starts selected backend servers
 - Gateway exposes only allowed tools
 - Tool calls are checked, logged, and forwarded
+- Capability execution is adapter-gated: ControlCenter plans calls, checks
+  policy, and executes only declared MCP, module, folder, or stack adapters
 
 ## Phase 5: Publication
 

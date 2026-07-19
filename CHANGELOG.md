@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Add planned personal-domain capability bundles for ControlCenter dashboard and future MCP packlists: office, privacy, tax/finance, health, notes/knowledge, and local data readers.
+- Document the stack/capability recognition plan, including neutral stack manifests, private stack instances, context packs, and adapter-gated execution.
+
 ## 0.2.0 - 2026-07-03
 
 ### Added

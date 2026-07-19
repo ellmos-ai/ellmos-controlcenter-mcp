@@ -37,6 +37,11 @@
 - [x] Skill-Finder: `controlcenter_find_skill` Tool-/Input-Beschreibungen für alle 6 Sprachen
   (de/en/es/zh/ja/ru) übersetzt (ERLEDIGT 2026-06-27). English-Fallback bleibt nur Sicherheitsnetz.
 - Ressourceninventar für Systempfade, installierte Software, ausführbare Dateien, EXE-Dateien, CLI-Apps und Software mit CLI-Schnittstelle planen
+- Stack-Erkennung planen und implementieren: `ellmos-stack`, zukünftige Stack-Kataloge, `controlcenter.stack.json`, `ellmos-module.json`, `llms.txt`, `WIRING.md`, `server.json` und registrierte lokale Stack-Roots auswerten
+- MCP-Tools für Stack-Karten ergänzen: `controlcenter_list_stacks` und `controlcenter_describe_stack`
+- Capability-Finder spezifizieren: `controlcenter_find_capability` als Verallgemeinerung von `controlcenter_find_skill` für Tools, Skills, Module, Software, APIs und Stacks
+- Kontext-Packs spezifizieren: `controlcenter_context_pack` mit `short`, `execution` und `full`, damit LLMs nicht ganze Skill-/Modul-/Stack-Dokumentationen laden müssen
+- Private Stack-Instanzen unterstützen, ohne sie in den Core einzubauen: lokale Roots wie `_control-center` nur über Manifest/Konfiguration registrieren, nicht hardcoden oder automatisch für alle Nutzer anlegen
 - API-Erkennung aus Code, Profilen, Konfigurationen und Tool-Schemas spezifizieren
 - Dokumentationskontext für erkannte APIs vorhalten, bevorzugt über Context7
 - Thematische Cluster für Tools, MCPs, Skills, Module, APIs, Programme, EXE-Dateien und CLIs als Datenmodell definieren
@@ -49,6 +54,7 @@
 
 - Gateway-Modus
 - Virtuelle MCP-Server aus Clustern erzeugen, sodass ausgewählte Fähigkeitsgruppen als kuratierte Server bereitgestellt werden können
+- Adapter-gesteuerte Ausführung planen: `controlcenter_plan_capability` zuerst als Dry-Run, `controlcenter_execute_capability` erst nach Policy-Gates, Audit-Log und expliziten Adapterverträgen
 - BACH-Partnerprogramm und BACH-interne Skill-/Tool-Strukturen als Inspirations- und Importquelle prüfen
 - Private Registry Feed
 - Observability und Tool-Trace-Ansicht

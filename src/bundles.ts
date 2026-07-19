@@ -98,6 +98,42 @@ export const DEFAULT_BUNDLE_DEFINITIONS: BundleDefinition[] = [
     title: "Control Plane",
     description: "Profilverwaltung, Kataloge, Server-Discovery und spätere Policy-Schicht.",
     keywords: ["control", "profile", "catalog", "registry", "policy", "gateway", "discovery"]
+  },
+  {
+    id: "personal-office",
+    title: "Personal Office Services",
+    description: "Geplantes fachliches Bundle für Büro, Kalender, Kontakte, Notizen, Dossiers, Reise, Wetter und Tageszeitung.",
+    keywords: ["office", "buero", "büro", "calendar", "kalender", "contacts", "kontakte", "notes", "notiz", "dossier", "briefing", "reise", "wetter", "news", "tageszeitung"]
+  },
+  {
+    id: "personal-privacy",
+    title: "Personal Privacy Services",
+    description: "Geplantes fachliches Bundle für Anonymisierung, Pseudonymisierung, Datenschutz, lokale Schlüssel und sichere Dokumentenflüsse.",
+    keywords: ["privacy", "datenschutz", "anonymizer", "anonymisierung", "pseudonymisierung", "redaction", "schluessel", "schlüssel", "keys", "document-security"]
+  },
+  {
+    id: "personal-tax-finance",
+    title: "Personal Tax and Finance",
+    description: "Geplantes fachliches Bundle für Steuerbelege, Werbungskosten, Versicherungen, Abos und Finanzübersichten.",
+    keywords: ["tax", "steuer", "steuer-assistent", "finanz", "finance", "versicherung", "versicherungen", "abo", "abos", "beleg", "belege", "werbungskosten", "finanzamt"]
+  },
+  {
+    id: "personal-health",
+    title: "Personal Health Services",
+    description: "Geplantes fachliches Bundle für Gesundheitsdaten, Medikamente, Arztkontakte, Arztbriefe, Vorsorge und medizinische Dokumente.",
+    keywords: ["health", "gesundheit", "medizin", "medical", "medication", "medikament", "arzt", "arztbrief", "vorsorge", "symptom", "diagnose", "medizin-daten"]
+  },
+  {
+    id: "personal-notes-knowledge",
+    title: "Personal Notes and Knowledge",
+    description: "Geplantes fachliches Bundle für Notizblock, Wissensspeicher, lokale Dokumentation, Recherche-Briefings und persönliche Ablage.",
+    keywords: ["notes", "notizen", "notizblock", "knowledge", "wissen", "llm-note", "dokumentation", "briefing", "ablage", "markdown"]
+  },
+  {
+    id: "personal-data-readers",
+    title: "Personal Data Readers",
+    description: "Geplantes fachliches Bundle für Reader-Skills und lokale Softwaredaten aus Hauslagerist, Formbuilder, MediaBrain, Mail und RPG.",
+    keywords: ["reader", "readers", "hauslagerist", "formbuilder", "formconstructor", "mediabrain", "media", "mail", "imap", "rpg", "inventory", "daten"]
   }
 ];
 

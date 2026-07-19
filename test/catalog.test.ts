@@ -697,6 +697,25 @@ describe("profile helpers", () => {
 });
 
 describe("bundle helpers", () => {
+  it("keeps planned personal-domain bundles available", () => {
+    const expectedBundleIds = [
+      "personal-office",
+      "personal-privacy",
+      "personal-tax-finance",
+      "personal-health",
+      "personal-notes-knowledge",
+      "personal-data-readers"
+    ];
+    const bundles = buildCapabilityBundles([]);
+
+    for (const bundleId of expectedBundleIds) {
+      expect(bundles.find((bundle) => bundle.id === bundleId), bundleId).toBeDefined();
+    }
+
+    expect(suggestCapabilityBundles("Steuerbelege und Versicherungen sortieren", bundles)[0].bundle.id).toBe("personal-tax-finance");
+    expect(suggestCapabilityBundles("Medizin und Arztbrief organisieren", bundles)[0].bundle.id).toBe("personal-health");
+  });
+
   it("groups local servers into capability bundles", () => {
     const bundles = buildCapabilityBundles([
       {
