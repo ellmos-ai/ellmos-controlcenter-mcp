@@ -10,6 +10,7 @@
 - Existing profile files and generated MCP config files are backed up before overwrite.
 - Environment values are not printed by the profile audit.
 - The dashboard binds to `127.0.0.1` by default.
+- `controlcenter_context_pack` reads only the server-configured registered stack root. It excludes absolute paths, arbitrary project files, commands, secrets, live state, and unallowlisted policy values.
 
 ## Not Yet Implemented
 
@@ -18,6 +19,7 @@
 - User authentication for the dashboard
 - Remote multi-user access control
 - Tamper-proof audit logs
+- Runtime enforcement of declared stack policies
 
 ## Recommendations
 

@@ -40,6 +40,7 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 | `controlcenter_list_local_servers` | Lokale MCP-Repositories unterhalb des MCP-Roots scannen |
 | `controlcenter_list_stacks` | Registrierte Stacks aus `stacks.catalog.json` lesen und ihre `ellmos.stack.v2`-Manifeste prüfen |
 | `controlcenter_describe_stack` | Typisierte Komponenten, Rollen, Policies und Validierungswarnungen eines Stacks beschreiben |
+| `controlcenter_context_pack` | Begrenztes, manifestbasiertes Übergabepaket für einen registrierten Stack mit `short`, `execution` oder `full` erzeugen |
 | `controlcenter_list_tools` | Lokale oder profildefinierte MCP-Server starten und deren echte `list_tools`-Ausgabe lesen |
 | `controlcenter_assign_tool_bundles` | Ausgelesene MCP-Tools Capability-Bundles zuordnen |
 | `controlcenter_list_bundles` | Lokale Server nach Capability-Bundles gruppieren |

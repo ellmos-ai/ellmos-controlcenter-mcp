@@ -237,6 +237,10 @@ export const es: Translations = {
       title: "Describir stack registrado",
       description: "Muestra componentes tipados, roles requeridos, políticas y avisos de validación de un stack."
     },
+    controlcenter_context_pack: {
+      title: "Crear paquete de contexto del stack",
+      description: "Crea un paquete de contexto compacto y de solo lectura desde un manifiesto de stack registrado. No ejecuta componentes ni lee secretos o estado en vivo."
+    },
     controlcenter_list_plugins: {
       title: "Listar plugins y módulos",
       description: "Inventaría los plugins de Claude Code instalados y los módulos ellmos locales con sus capacidades."
@@ -267,6 +271,7 @@ export const es: Translations = {
     skillFinderLimit: "Número máximo de candidatos de skills clasificados a devolver. Predeterminado: 5.",
     stacksRoot: "Ruta opcional al directorio que contiene stacks.catalog.json. Por defecto es la carpeta local .AI/.STACKS.",
     stackId: "ID estable del stack en stacks.catalog.json.",
+    contextPackLevel: "Nivel de detalle del paquete de contexto: short, execution o full.",
     pluginsRoot: "Ruta opcional a la carpeta de plugins de Claude Code. Por defecto es ~/.claude/plugins.",
     modulesRoot: "Ruta opcional a la carpeta de módulos ellmos. Por defecto es la carpeta .AI/.MODULES local.",
     deployedOnly: "Si es true, solo se devuelven los skills desplegados y no se escanea la biblioteca de skills fuente.",

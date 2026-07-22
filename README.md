@@ -40,6 +40,7 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 | `controlcenter_list_local_servers` | Scan local MCP repositories below the MCP root |
 | `controlcenter_list_stacks` | Read registered stacks from `stacks.catalog.json` and validate their `ellmos.stack.v2` manifests |
 | `controlcenter_describe_stack` | Describe typed components, roles, policies, and validation warnings for one registered stack |
+| `controlcenter_context_pack` | Build a bounded, manifest-only handoff for a registered stack at `short`, `execution`, or `full` detail |
 | `controlcenter_list_tools` | Start local or profile-defined MCP servers and read their real `list_tools` output |
 | `controlcenter_assign_tool_bundles` | Assign probed MCP tools to capability bundles |
 | `controlcenter_list_bundles` | Group local servers by capability bundle |

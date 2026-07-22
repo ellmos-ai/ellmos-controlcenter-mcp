@@ -40,7 +40,7 @@
 - Stack-Erkennung planen und implementieren: `ellmos-stack`, zukünftige Stack-Kataloge, `controlcenter.stack.json`, `ellmos-module.json`, `llms.txt`, `WIRING.md`, `server.json` und registrierte lokale Stack-Roots auswerten
 - MCP-Tools für Stack-Karten ergänzen: `controlcenter_list_stacks` und `controlcenter_describe_stack`
 - Capability-Finder spezifizieren: `controlcenter_find_capability` als Verallgemeinerung von `controlcenter_find_skill` für Tools, Skills, Module, Software, APIs und Stacks
-- Kontext-Packs spezifizieren: `controlcenter_context_pack` mit `short`, `execution` und `full`, damit LLMs nicht ganze Skill-/Modul-/Stack-Dokumentationen laden müssen
+- [x] Kontext-Packs als read-only Manifestübergabe umgesetzt: `controlcenter_context_pack` liefert `short`, `execution` und `full` ohne Komponentenstart, Geheimnisse oder Live-Zustand. Für Skill-/Modul-Dateiinhalte bleibt eine spätere, explizit policy-gebundene Erweiterung nötig.
 - Private Stack-Instanzen unterstützen, ohne sie in den Core einzubauen: lokale Roots wie `_control-center` nur über Manifest/Konfiguration registrieren, nicht hardcoden oder automatisch für alle Nutzer anlegen
 - API-Erkennung aus Code, Profilen, Konfigurationen und Tool-Schemas spezifizieren
 - Dokumentationskontext für erkannte APIs vorhalten, bevorzugt über Context7

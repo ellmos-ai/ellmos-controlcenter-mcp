@@ -237,6 +237,10 @@ export const de: Translations = {
       title: "Registrierten Stack beschreiben",
       description: "Zeigt typisierte Komponenten, Pflichtrollen, Policies und Validierungswarnungen für einen registrierten Stack."
     },
+    controlcenter_context_pack: {
+      title: "Stack-Kontextpaket erstellen",
+      description: "Erstellt ein kompaktes, rein lesendes Kontextpaket aus einem registrierten Stack-Manifest. Es führt keine Komponenten aus und liest weder Geheimnisse noch Live-Zustände."
+    },
     controlcenter_list_plugins: {
       title: "Plugins und Module listen",
       description: "Inventarisiert installierte Claude Code Plugins und lokale ellmos-Module mit ihren Fähigkeiten."
@@ -267,6 +271,7 @@ export const de: Translations = {
     skillFinderLimit: "Maximale Anzahl gerankter Skill-Kandidaten. Standard: 5.",
     stacksRoot: "Optionaler Pfad zum Ordner mit stacks.catalog.json. Standard ist der lokale .AI/.STACKS-Ordner.",
     stackId: "Stabile Stack-ID aus stacks.catalog.json.",
+    contextPackLevel: "Umfang des Kontextpakets: short, execution oder full.",
     pluginsRoot: "Optionaler Pfad zum Claude Code Plugins-Ordner. Standard ist ~/.claude/plugins.",
     modulesRoot: "Optionaler Pfad zum ellmos-Module-Ordner. Standard ist der lokale .AI/.MODULES-Ordner.",
     deployedOnly: "Wenn true, werden nur deployte Skills zurückgegeben und die Quell-Skill-Bibliothek nicht gescannt.",

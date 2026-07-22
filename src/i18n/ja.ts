@@ -237,6 +237,10 @@ export const ja: Translations = {
       title: "登録済みスタックを説明",
       description: "登録済みスタックの型付き構成要素、必須ロール、ポリシー、検証警告を表示します。"
     },
+    controlcenter_context_pack: {
+      title: "スタックコンテキストパックを作成",
+      description: "登録済みスタックマニフェストからコンパクトな読み取り専用コンテキストパックを作成します。コンポーネントの実行、秘密情報や稼働状態の読み取りは行いません。"
+    },
     controlcenter_list_plugins: {
       title: "プラグインとモジュールを一覧表示",
       description: "インストール済みの Claude Code プラグインとローカル ellmos モジュールをその機能と共に一覧表示します。"
@@ -267,6 +271,7 @@ export const ja: Translations = {
     skillFinderLimit: "返すランク付けされたスキル候補の最大数。既定値: 5。",
     stacksRoot: "stacks.catalog.json を含むディレクトリへの任意のパス。既定はローカルの .AI/.STACKS フォルダーです。",
     stackId: "stacks.catalog.json の安定したスタック ID。",
+    contextPackLevel: "コンテキストパックの詳細レベル: short、execution、full。",
     pluginsRoot: "Claude Code プラグインフォルダーへの任意のパス。既定は ~/.claude/plugins です。",
     modulesRoot: "ellmos モジュールフォルダーへの任意のパス。既定はローカルの .AI/.MODULES フォルダーです。",
     deployedOnly: "true の場合、デプロイ済み skills のみを返し、skills ソースライブラリをスキャンしません。",

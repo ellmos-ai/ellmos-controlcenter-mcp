@@ -34,6 +34,10 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
   - auditiert aufgelöste Profile
   - meldet erste Risiken wie `npx`-Starts, Env-Secrets und ungültige Server-Konfigurationen
   - gibt keine Secret-Werte aus
+- `contextPack.ts`
+  - baut gestufte `short`-, `execution`- und `full`-Kontextpakete ausschließlich aus registrierten Stack-Manifesten
+  - akzeptiert keine frei vom Aufrufer wählbare Root und startet keine Komponenten
+  - begrenzt und escaped Manifestwerte; nur eine feste, primitive Policy-Teilmenge ist im `full`-Paket sichtbar
 - `i18n/`
   - hält zentrale Textsets für MCP-Ausgaben und Dashboard bereit
   - unterstützt `de`, `en`, `es`, `zh`, `ja` und `ru`

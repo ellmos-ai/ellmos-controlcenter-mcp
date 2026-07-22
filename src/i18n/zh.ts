@@ -237,6 +237,10 @@ export const zh: Translations = {
       title: "描述已注册堆栈",
       description: "显示一个已注册堆栈的类型化组件、必需角色、策略和验证警告。"
     },
+    controlcenter_context_pack: {
+      title: "构建堆栈上下文包",
+      description: "根据已注册堆栈清单构建紧凑的只读上下文包。它不会执行组件，也不会读取密钥或实时状态。"
+    },
     controlcenter_list_plugins: {
       title: "列出插件和模块",
       description: "列出已安装的 Claude Code 插件和本地 ellmos 模块及其功能。"
@@ -267,6 +271,7 @@ export const zh: Translations = {
     skillFinderLimit: "返回的已排序技能候选的最大数量。默认值：5。",
     stacksRoot: "包含 stacks.catalog.json 的目录的可选路径。默认为本地 .AI/.STACKS 文件夹。",
     stackId: "stacks.catalog.json 中的稳定堆栈 ID。",
+    contextPackLevel: "上下文包详情级别：short、execution 或 full。",
     pluginsRoot: "Claude Code 插件文件夹的可选路径。默认为 ~/.claude/plugins。",
     modulesRoot: "ellmos 模块文件夹的可选路径。默认为本地 .AI/.MODULES 文件夹。",
     deployedOnly: "为 true 时只返回已部署 skills，不扫描 skills 源库。",

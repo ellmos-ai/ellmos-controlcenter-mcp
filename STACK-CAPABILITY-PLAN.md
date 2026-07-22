@@ -163,7 +163,7 @@ The dashboard should gain a stack/capability view:
 
 - Generalize skill-finder logic into `controlcenter_find_capability`.
 - Return ranked cards for tools, skills, modules, software, and stacks.
-- Add `controlcenter_context_pack` with short, execution, and full levels.
+- [x] Add `controlcenter_context_pack` with short, execution, and full levels. The initial contract is deliberately manifest-only and read-only: no arbitrary source-file bundling, commands, secrets, or live service state.
 
 ### P3: Adapter-gated execution
 

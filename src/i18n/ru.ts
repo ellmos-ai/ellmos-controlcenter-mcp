@@ -237,6 +237,10 @@ export const ru: Translations = {
       title: "Описание зарегистрированного стека",
       description: "Показывает типизированные компоненты, обязательные роли, политики и предупреждения валидации стека."
     },
+    controlcenter_context_pack: {
+      title: "Создать пакет контекста стека",
+      description: "Создаёт компактный контекстный пакет только для чтения из манифеста зарегистрированного стека. Компоненты не запускаются, секреты и текущее состояние не читаются."
+    },
     controlcenter_list_plugins: {
       title: "Список плагинов и модулей",
       description: "Инвентаризирует установленные плагины Claude Code и локальные модули ellmos с их возможностями."
@@ -267,6 +271,7 @@ export const ru: Translations = {
     skillFinderLimit: "Максимальное число ранжированных кандидатов skills для возврата. По умолчанию: 5.",
     stacksRoot: "Необязательный путь к каталогу с stacks.catalog.json. По умолчанию локальная папка .AI/.STACKS.",
     stackId: "Стабильный ID стека из stacks.catalog.json.",
+    contextPackLevel: "Уровень детализации пакета контекста: short, execution или full.",
     pluginsRoot: "Необязательный путь к папке плагинов Claude Code. По умолчанию ~/.claude/plugins.",
     modulesRoot: "Необязательный путь к папке модулей ellmos. По умолчанию локальная папка .AI/.MODULES.",
     deployedOnly: "Если true, возвращаются только развернутые skills, библиотека исходных skills не сканируется.",

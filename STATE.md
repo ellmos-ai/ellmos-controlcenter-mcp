@@ -35,9 +35,11 @@
 - Scan local plugins from a plugin root and report type, marketplace scope, and sub-component presence
 - List and filter skills and plugins via `controlcenter_list_tools`
 - Match a free-text task or intent against the scanned skill catalogue and return ranked skill candidates with matched terms (`controlcenter_find_skill`)
+- Build bounded `short`, `execution`, or `full` context packs for registered stacks without loading arbitrary project files, secrets, commands, or live state (`controlcenter_context_pack`)
 
 ## What Is Still Missing
 
 - Remote auth and header handling for legacy SSE
 - Thematic clusters that can be automatically suggested and manually maintained
 - Virtual MCP servers built from curated clusters
+- Policy-gated context packs for arbitrary skill, module, or project content

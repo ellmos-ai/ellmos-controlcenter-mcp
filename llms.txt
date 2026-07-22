@@ -23,6 +23,7 @@ It is useful for local MCP stack visibility and profile management. It is not a 
 - `controlcenter_list_local_servers`: scan local MCP repositories below the configured MCP root.
 - `controlcenter_list_stacks`: read registered stacks from `stacks.catalog.json` and validate their `ellmos.stack.v2` manifests.
 - `controlcenter_describe_stack`: describe the typed components, roles, policies, and warnings of one registered stack.
+- `controlcenter_context_pack`: build a bounded, manifest-only context handoff for one registered stack at short, execution, or full detail; it never starts components or reads secrets or live state.
 - `controlcenter_list_tools`: start local or profile-defined MCP servers and read their real `list_tools` output.
 - `controlcenter_assign_tool_bundles`: assign probed MCP tools to capability bundles.
 - `controlcenter_list_bundles`: group local servers by capability bundle.

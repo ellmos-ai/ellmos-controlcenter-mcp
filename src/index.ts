@@ -18,6 +18,7 @@ import {
   type CapabilityBundle
 } from "./bundles.js";
 import { DEFAULT_MCP_ROOT, scanLocalServers } from "./catalog.js";
+import { buildStackContextPack, CONTEXT_PACK_LEVELS } from "./contextPack.js";
 import { DEFAULT_STACKS_ROOT, describeStack, scanStacks, type StackSummary } from "./stacks.js";
 import { DEFAULT_PLUGINS_ROOT, DEFAULT_MODULES_ROOT, scanInstalledPlugins, scanModules, scanPluginsAndModules, type PluginSummary } from "./plugins.js";
 import { DEFAULT_SKILLS_ROOT, DEFAULT_SOURCE_SKILLS_ROOT, scanSkills, type SkillSummary } from "./skills.js";
@@ -396,6 +397,26 @@ server.registerTool(
       "```"
     ];
     return { content: [{ type: "text", text: lines.join("\n") }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_context_pack",
+  {
+    title: toolText("controlcenter_context_pack").title,
+    description: toolText("controlcenter_context_pack").description,
+    inputSchema: {
+      stackId: z.string().min(1).describe(inputText("stackId")),
+      level: z.enum(CONTEXT_PACK_LEVELS).default("short").describe(inputText("contextPackLevel"))
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ stackId, level }) => {
+    const contextPack = await buildStackContextPack(stackId, level);
+    if (!contextPack) {
+      return { content: [{ type: "text", text: "Registered stack was not found." }], isError: true };
+    }
+    return { content: [{ type: "text", text: contextPack }] };
   }
 );
 
