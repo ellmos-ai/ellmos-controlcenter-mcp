@@ -1,7 +1,31 @@
 # Stack Capability Plan
 
-Status: planned  
-Date: 2026-07-05
+Status: partially implemented  
+Date: 2026-07-05 (status update 2026-07-23)
+
+## Status update (2026-07-23)
+
+- **Stack manifest direction resolved.** Of the three alternatives in
+  "Stack manifest direction" below, the ecosystem implemented the **third** — a
+  section in an existing stack catalog: an external `stacks.catalog.json`
+  (schema `ellmos.stacks.catalog.v1`) under `.STACKS`, pointing to per-stack
+  `ellmos.stack.v2` manifests. A dedicated `controlcenter.stack.json`
+  (`ellmos.controlcenter.stack.v1`) is therefore **superseded** and intentionally
+  not created: `agent-ops-stack` already exists as an `ellmos.stack.v2` manifest,
+  so a v1 self-manifest would be a drift-prone duplicate.
+- **P1 (read-only recognition): done.** `controlcenter_list_stacks` /
+  `controlcenter_describe_stack` read the catalog + v2 manifests; the four current
+  stacks (`ellmos-stack`, `agent-ops-stack`, `sovereign-private`,
+  `sovereign-hosted`) are recognized with 0 warnings, including `policies`
+  passthrough (`local_first`, free-form `max_data_sensitivity`).
+- **P2 (context packs): done** (`controlcenter_context_pack`, manifest-only).
+- **P3 (adapter-gated execution) and P4 (virtual gateway): open, deferred.** These
+  are the remaining build-out: a declared adapter schema + policy classes + audit
+  logging (P3), then exposing selected capability groups as controlled virtual MCP
+  servers (P4). Both are large, approval-gated surfaces — not built autonomously.
+  Note: stack `policies` are free-form strings today (no fixed sensitivity
+  taxonomy), so a strict policy validator is not introduced ahead of a defined
+  policy-class model.
 
 ## Purpose
 

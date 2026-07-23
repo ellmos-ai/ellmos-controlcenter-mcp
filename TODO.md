@@ -37,8 +37,8 @@
 - [x] Skill-Finder: `controlcenter_find_skill` Tool-/Input-Beschreibungen für alle 6 Sprachen
   (de/en/es/zh/ja/ru) übersetzt (ERLEDIGT 2026-06-27). English-Fallback bleibt nur Sicherheitsnetz.
 - Ressourceninventar für Systempfade, installierte Software, ausführbare Dateien, EXE-Dateien, CLI-Apps und Software mit CLI-Schnittstelle planen
-- Stack-Erkennung planen und implementieren: `ellmos-stack`, zukünftige Stack-Kataloge, `controlcenter.stack.json`, `ellmos-module.json`, `llms.txt`, `WIRING.md`, `server.json` und registrierte lokale Stack-Roots auswerten
-- MCP-Tools für Stack-Karten ergänzen: `controlcenter_list_stacks` und `controlcenter_describe_stack`
+- [x] Stack-Erkennung umgesetzt über den externen `stacks.catalog.json` (Schema `ellmos.stacks.catalog.v1`) + je Stack `ellmos.stack.v2`-Manifest (ERLEDIGT). Vier Stacks (ellmos-stack, agent-ops-stack, sovereign-private, sovereign-hosted) werden mit 0 Warnings erkannt. Das früher als Alternative genannte `controlcenter.stack.json` (`ellmos.controlcenter.stack.v1`) ist damit **abgelöst** und wird bewusst NICHT angelegt (wäre ein Duplikat des bereits registrierten agent-ops-stack). Siehe STACK-CAPABILITY-PLAN.md „Status update (2026-07-23)".
+- [x] MCP-Tools für Stack-Karten: `controlcenter_list_stacks` und `controlcenter_describe_stack` (ERLEDIGT, read-only, inkl. `policies`-Passthrough)
 - Capability-Finder spezifizieren: `controlcenter_find_capability` als Verallgemeinerung von `controlcenter_find_skill` für Tools, Skills, Module, Software, APIs und Stacks
 - [x] Kontext-Packs als read-only Manifestübergabe umgesetzt: `controlcenter_context_pack` liefert `short`, `execution` und `full` ohne Komponentenstart, Geheimnisse oder Live-Zustand. Für Skill-/Modul-Dateiinhalte bleibt eine spätere, explizit policy-gebundene Erweiterung nötig.
 - Private Stack-Instanzen unterstützen, ohne sie in den Core einzubauen: lokale Roots wie `_control-center` nur über Manifest/Konfiguration registrieren, nicht hardcoden oder automatisch für alle Nutzer anlegen
@@ -51,6 +51,8 @@
 - Optionaler Restart-/Hinweis-Workflow für Claude Code
 
 ## P2
+
+> **Status 2026-07-23:** Die folgenden Punkte (virtueller Gateway + adapter-gesteuerte Ausführung, ROADMAP Phase 4 / Plan P3+P4) bleiben offen und sind **große, freigabepflichtige Ausbaustufen** — nicht autonom umgesetzt. Der Gateway (P4) hängt an P3 (Adapterschema + Policy-Klassen + Audit-Log). Stack-`policies` sind heute free-form Strings (keine feste Sensitivitäts-Taxonomie); ein strenger Policy-Validator wird deshalb nicht vor einem definierten Policy-Klassen-Modell eingeführt.
 
 - Gateway-Modus
 - Virtuelle MCP-Server aus Clustern erzeugen, sodass ausgewählte Fähigkeitsgruppen als kuratierte Server bereitgestellt werden können
