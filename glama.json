@@ -1,0 +1,34 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "name": "ellmos-controlcenter-mcp",
+  "version": "0.2.1",
+  "description": "MCP control plane for local MCP server discovery, profile management, capability bundles, skill catalogs, and policy audits.",
+  "maintainers": [
+    "lukisch"
+  ],
+  "author": "Lukas Geiger",
+  "homepage": "https://github.com/ellmos-ai/ellmos-controlcenter-mcp",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "control-plane",
+    "mcp-profiles",
+    "tool-bundles",
+    "skills",
+    "claude",
+    "developer-tools",
+    "mcp-server"
+  ],
+  "tools": {
+    "count": 20
+  },
+  "features": [
+    "Profile management",
+    "Capability bundles",
+    "Local server discovery",
+    "Skill catalog",
+    "Stack descriptions",
+    "Policy audits"
+  ]
+}

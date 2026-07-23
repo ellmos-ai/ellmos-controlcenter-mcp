@@ -1,11 +1,16 @@
 # Changelog
 
-## Unreleased
+## 0.2.1 - 2026-07-24
 
 ### Added
 - Add `controlcenter_context_pack` for bounded `short`, `execution`, and `full` stack handoffs. It carries only registered manifest metadata, omits absolute local paths, and explicitly distinguishes declared policies from runtime enforcement.
 - Add planned personal-domain capability bundles for ControlCenter dashboard and future MCP packlists: office, privacy, tax/finance, health, notes/knowledge, and local data readers.
 - Document the stack/capability recognition plan, including neutral stack manifests, private stack instances, context packs, and adapter-gated execution.
+
+### Changed
+- Unified the ellmos-ai ecosystem section in README.md and README_de.md: full 9-server MCP family table with refreshed tool counts, AI infrastructure, and desktop software links.
+- Added `glama.json` for the Glama MCP directory listing.
+- Synced `server.json` version metadata.
 
 ## 0.2.0 - 2026-07-03
 
