@@ -6,3 +6,6 @@ coverage/
 data/server-catalog.json
 _drafts/
 _reports/
+
+# mcp-publisher login artifacts (credentials, never commit)
+.mcpregistry_*
