@@ -6,3 +6,9 @@ coverage/
 data/server-catalog.json
 _drafts/
 _reports/
+
+# mcp-publisher login artifacts (credentials, never commit)
+.mcpregistry_*
+
+# lock system (multi-agent coordination, host-local, never commit)
+LOCK*.txt
