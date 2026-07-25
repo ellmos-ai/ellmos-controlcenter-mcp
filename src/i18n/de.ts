@@ -223,7 +223,7 @@ export const de: Translations = {
     },
     controlcenter_find_skill: {
       title: "Passende Skills finden",
-      description: "Erkennt, welche Skills zu einer Freitext-Aufgabe bzw. einem Intent passen. Bewertet den gescannten Skill-Katalog lexikalisch über Name, Aliases, Tags, Kategorie und Beschreibung und gibt die besten Kandidaten mit den getroffenen Begriffen zurück."
+      description: "Erkennt, welche Skills zu einer Aufgabe bzw. einem Intent passen. WICHTIG: mit Stichwörtern/Fachbegriffen abfragen, nicht mit ganzen Sätzen — die Suche ist rein lexikalisch, ganze Sätze werden (noch) nicht semantisch verstanden und ziehen über Füllwörter Fehltreffer an. Bewertet den gescannten Skill-Katalog lexikalisch über Name, Aliases, Tags, Kategorie und Beschreibung und gibt die besten Kandidaten mit den getroffenen Begriffen zurück. Scores sind nur innerhalb einer Abfrage vergleichbar, nicht zwischen Abfragen."
     },
     controlcenter_list_skills: {
       title: "Claude Code Skills listen",
@@ -267,7 +267,7 @@ export const de: Translations = {
     includeToolAssignments: "Wenn true, werden Tool-Bundle-Zuordnungen für gescannte Tools in den Katalog aufgenommen.",
     skillsRoot: "Optionaler Pfad zum deployte Skills-Ordner. Standard ist ~/.claude/skills.",
     sourceSkillsRoot: "Optionaler Pfad zum Quell-Skill-Bibliotheks-Root. Standard ist der lokale .AI/.SKILLS/skills-Ordner.",
-    skillIntent: "Freitext-Aufgabe oder Intent, gegen den der Skill-Katalog gematcht wird.",
+    skillIntent: "Stichwörter/Fachbegriffe zur Aufgabe, gegen die der Skill-Katalog gematcht wird (z. B. \"Bug debuggen Testfehler\" statt \"mein Programm stürzt beim Speichern ab\"). Ganze Sätze werden noch nicht semantisch ausgewertet; Füllwörter führen dann zu Fehltreffern.",
     skillFinderLimit: "Maximale Anzahl gerankter Skill-Kandidaten. Standard: 5.",
     stacksRoot: "Optionaler Pfad zum Ordner mit stacks.catalog.json. Standard ist der lokale .AI/.STACKS-Ordner.",
     stackId: "Stabile Stack-ID aus stacks.catalog.json.",

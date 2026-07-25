@@ -223,7 +223,7 @@ export const ja: Translations = {
     },
     controlcenter_find_skill: {
       title: "一致するスキルを検索",
-      description: "自由文テキストのタスクまたは意図にどのスキルが該当するかを認識します。スキャン済みスキルカタログを名前・エイリアス・タグ・カテゴリ・説明への字句的一致でランク付けし、一致した語とともに最良の候補を返します。"
+      description: "タスクまたは意図にどのスキルが該当するかを認識します。重要: 文章ではなくキーワード・専門用語で問い合わせてください。照合は純粋に字句的であり、文章全体はまだ意味的に解釈されず、助詞などの機能語によって誤検出を招きます。スキャン済みスキルカタログを名前・エイリアス・タグ・カテゴリ・説明への字句的一致でランク付けし、一致した語とともに最良の候補を返します。スコアは同一クエリ内でのみ比較可能で、クエリ間では比較できません。"
     },
     controlcenter_list_skills: {
       title: "Claude Code Skills を一覧表示",
@@ -267,7 +267,7 @@ export const ja: Translations = {
     includeToolAssignments: "true の場合、スキャンされたツールの tool bundle 割り当てを追加します。",
     skillsRoot: "デプロイ済み Claude Code skills フォルダーへの任意のパス。既定は ~/.claude/skills です。",
     sourceSkillsRoot: "skills ソースライブラリルートへの任意のパス。既定はローカルの .AI/.SKILLS/skills フォルダーです。",
-    skillIntent: "スキルカタログと照合する自由文テキストのタスクまたは意図。",
+    skillIntent: "スキルカタログと照合するタスクのキーワード・専門用語（例: 「保存時にプログラムが落ちる」ではなく「バグ デバッグ テスト失敗」）。文章全体はまだ意味的に評価されず、機能語が誤検出の原因になります。",
     skillFinderLimit: "返すランク付けされたスキル候補の最大数。既定値: 5。",
     stacksRoot: "stacks.catalog.json を含むディレクトリへの任意のパス。既定はローカルの .AI/.STACKS フォルダーです。",
     stackId: "stacks.catalog.json の安定したスタック ID。",

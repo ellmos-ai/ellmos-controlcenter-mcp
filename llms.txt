@@ -35,7 +35,7 @@ It is useful for local MCP stack visibility and profile management. It is not a 
 - `controlcenter_audit_profile`: run initial profile policy checks.
 - `controlcenter_build_catalog`: build a JSON catalog of local MCP servers, optionally including tool probes.
 - `controlcenter_list_skills`: inventory deployed Claude Code skills and the source skills library.
-- `controlcenter_find_skill`: match a free-text task or intent against the scanned skill catalogue and return ranked candidates.
+- `controlcenter_find_skill`: match a task or intent against the scanned skill catalogue and return ranked candidates. Query with KEYWORDS/technical terms, not whole sentences — matching is purely lexical (no semantic search yet), so filler words in a natural-language sentence can outrank the correct hit. Scores are comparable only within one query.
 - `controlcenter_list_plugins`: inventory installed Claude Code plugins and local ellmos modules.
 
 ## Install

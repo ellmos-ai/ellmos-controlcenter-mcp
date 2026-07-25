@@ -52,8 +52,30 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 | `controlcenter_audit_profile` | Erste Policy-Prüfungen gegen ein Profil ausführen |
 | `controlcenter_build_catalog` | JSON-Katalog der lokalen MCP-Server erzeugen, optional inklusive Tool-Probes |
 | `controlcenter_list_skills` | Inventar deployted Skills (`~/.claude/skills` als Standard; Claude-Code-Konvention, Override via `ELLMOS_SKILLS_ROOT`) und der Quell-Skill-Bibliothek |
-| `controlcenter_find_skill` | Freitext-Aufgabe bzw. Intent gegen den gescannten Skill-Katalog matchen und gerankte Kandidaten zurückgeben |
+| `controlcenter_find_skill` | **Stichwörter** zu einer Aufgabe bzw. einem Intent gegen den gescannten Skill-Katalog matchen und gerankte Kandidaten zurückgeben — siehe [Skill-Suche richtig abfragen](#skill-suche-richtig-abfragen) |
 | `controlcenter_list_plugins` | Inventar installierter Plugins (`~/.claude/plugins` als Standard; Claude-Code-Konvention, Override via `ELLMOS_PLUGINS_ROOT`) und lokaler ellmos-Module |
+
+## Skill-Suche richtig abfragen
+
+`controlcenter_find_skill` matcht **rein lexikalisch** über Name, Aliases, Tags, Kategorie und
+Beschreibung. Eine semantische Suche (Embeddings) gibt es **noch nicht** — deshalb mit
+**Stichwörtern und Fachbegriffen** abfragen, nicht mit ganzen Sätzen. Ein natürlichsprachiger Satz
+schleppt Füllwörter mit, und die können den richtigen Treffer überstimmen.
+
+| | Abfrage | Bester Treffer |
+|---|---|---|
+| ❌ | `Mein Programm stürzt beim Speichern ab und ich weiß nicht warum` | `mcp-config-sync` (Score 6 — getroffen auf *beim*, *nicht*, *warum*) |
+| ✅ | `Bug systematisch debuggen Testfehler` | `bugfix-protocol` (Score 5 — getroffen auf *bug*, *systematisch*) |
+
+Zwei Konsequenzen:
+
+- **Scores sind nur innerhalb einer Abfrage vergleichbar.** Im Beispiel oben lag der falsche
+  Treffer *höher* als der richtige einer anderen Abfrage. Die Zahl ist kein Konfidenzmaß.
+- **Ruft ein LLM auf, übersetzt es die Nutzerformulierung zuerst in Stichwörter.** Der Schritt
+  kostet nichts und macht aus dem schwächsten Fall den stärksten.
+
+Solange keine semantische Suche unterstützt wird (vorgemerkt in `TODO.md`), sind Stichwort-Abfragen
+die vorgesehene Nutzung — kein Workaround.
 
 ## Dashboard
 

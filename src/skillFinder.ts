@@ -3,12 +3,21 @@ import type { SkillSummary } from "./skills.js";
 /**
  * Skill recognition / skill-finder.
  *
- * Matches a free-text task/intent against a scanned skill catalogue and returns
- * ranked candidates with the trigger reason (which intent terms matched in which
+ * Matches a task/intent against a scanned skill catalogue and returns ranked
+ * candidates with the trigger reason (which intent terms matched in which
  * fields). The matching is LEXICAL at its core — keyword/alias overlap over
  * name + aliases + tags + category + description — which is zero-dependency and
  * deterministic, consistent with the credential-/dependency-free design of the
  * ellmos servers.
+ *
+ * CALLERS MUST PASS KEYWORDS, NOT WHOLE SENTENCES. Because scoring is lexical and
+ * currently has no stop-word filter, a natural-language sentence contributes its
+ * filler words to the score and can outrank the correct hit. Measured 2026-07-25:
+ * "Mein Programm stürzt beim Speichern ab und ich weiß nicht warum" ranked
+ * `mcp-config-sync` first at score 6 (matched on "beim"/"nicht"/"warum"), while
+ * "Bug systematisch debuggen Testfehler" correctly ranked `bugfix-protocol` at
+ * only score 5 — i.e. scores are comparable WITHIN one query, never across
+ * queries. Stop-word filtering + score normalisation are tracked in TODO.md (P1).
  *
  * SKILL.md `description` fields are authored as trigger phrases ("Aktiviert sich
  * bei …"), so they carry strong matching signal; `tags` and `aliases` add

@@ -50,6 +50,27 @@
 - Schreibender Profilmanager
 - Optionaler Restart-/Hinweis-Workflow für Claude Code
 
+## P1 — Nachtrag Skill-Suche [2026-07-25]
+
+- **Semantische Skill-Suche für `controlcenter_find_skill` (Stretch-Goal aus 2026-06-27 konkretisieren).**
+  Empirisch belegt am 2026-07-25: Die rein lexikalische Suche kippt bei natürlichsprachigen Sätzen,
+  weil **Stoppwörter mitzählen**. Messung:
+  - `"Mein Programm stürzt beim Speichern ab und ich weiß nicht warum"` → Top-Treffer
+    `mcp-config-sync` **Score 6**, getroffen auf *beim* / *nicht* / *warum*. Kein Debugging-Skill in den Top 3.
+  - `"Bug systematisch debuggen Testfehler"` → korrekt `bugfix-protocol`, aber nur **Score 5**.
+  - Der Fehltreffer skorte also **höher** als der richtige Treffer einer anderen Abfrage →
+    Scores sind zwischen Abfragen nicht vergleichbar und taugen nicht als Konfidenzmaß.
+  **Umsetzungsstufen (aufsteigender Aufwand, jede für sich nützlich):**
+  1. **Stoppwortliste je Sprache** (de/en/es/ja/ru/zh) vor dem Scoring abziehen — zero-dependency,
+     würde allein schon den Fehltreffer oben verhindern. Billigster Hebel, sollte zuerst kommen.
+  2. **Score normalisieren** (relativ zur Zahl der Inhaltsbegriffe der Abfrage), damit Werte
+     zwischen Abfragen vergleichbar werden und ein Schwellwert „kein Treffer" möglich wird.
+  3. **Optionales Embedding-Ranking hinter Konfiguration** (lokales Modell, konsistent zum
+     credential-/dependency-freien Design; nur zuschaltbar, nie Default).
+  **Bis dahin dokumentiert:** README/README_de (Abschnitt „Skill-Suche richtig abfragen"), `llms.txt`
+  und die Tool-/Parameter-Beschreibungen in allen 6 i18n-Sprachen weisen aktiv auf Stichwort-Nutzung hin.
+  Diese Doku-Hinweise sind bei Umsetzung von Stufe 1–3 wieder zurückzunehmen.
+
 ## P2
 
 > **Status 2026-07-23:** Die folgenden Punkte (virtueller Gateway + adapter-gesteuerte Ausführung, ROADMAP Phase 4 / Plan P3+P4) bleiben offen und sind **große, freigabepflichtige Ausbaustufen** — nicht autonom umgesetzt. Der Gateway (P4) hängt an P3 (Adapterschema + Policy-Klassen + Audit-Log). Stack-`policies` sind heute free-form Strings (keine feste Sensitivitäts-Taxonomie); ein strenger Policy-Validator wird deshalb nicht vor einem definierten Policy-Klassen-Modell eingeführt.

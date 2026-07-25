@@ -52,8 +52,30 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 | `controlcenter_audit_profile` | Run initial policy checks against a profile |
 | `controlcenter_build_catalog` | Build a JSON catalog of local MCP servers, optionally including tool probes |
 | `controlcenter_list_skills` | Inventory deployed skills (`~/.claude/skills` by default; Claude Code convention, override with `ELLMOS_SKILLS_ROOT`) and the source skills library |
-| `controlcenter_find_skill` | Match a free-text task or intent against the scanned skill catalogue and return ranked candidates |
+| `controlcenter_find_skill` | Match **keywords** for a task or intent against the scanned skill catalogue and return ranked candidates — see [Querying skill search](#querying-skill-search) |
 | `controlcenter_list_plugins` | Inventory installed plugins (`~/.claude/plugins` by default; Claude Code convention, override with `ELLMOS_PLUGINS_ROOT`) and local ellmos modules |
+
+## Querying skill search
+
+`controlcenter_find_skill` matches **purely lexically** over name, aliases, tags, category and
+description. It does **not** yet do semantic/embedding search, so **query with keywords and
+technical terms, not with whole sentences.** A natural-language sentence drags in filler words,
+and those can outrank the correct hit.
+
+| | Query | Top result |
+|---|---|---|
+| ❌ | `My program crashes when saving and I don't know why` | `mcp-config-sync` (score 6 — matched on *when*, *know*, *why*) |
+| ✅ | `debug bug test failure` | `bugfix-protocol` (score 5 — matched on *bug*, *debug*) |
+
+Two consequences:
+
+- **Scores are only comparable within a single query.** In the example above the wrong hit scored
+  *higher* than the right one in a different query. Never treat the number as a confidence measure.
+- **If the caller is an LLM, translate the user's phrasing into keywords first.** That step is
+  cheap and turns the weakest case into the strongest one.
+
+Until semantic search is supported (tracked in `TODO.md`), keyword queries are the intended usage —
+not a workaround.
 
 ## Dashboard
 

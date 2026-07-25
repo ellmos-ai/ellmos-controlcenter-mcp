@@ -223,7 +223,7 @@ export const es: Translations = {
     },
     controlcenter_find_skill: {
       title: "Encontrar skills coincidentes",
-      description: "Reconoce qué skills aplican a una tarea o intención en texto libre. Clasifica el catálogo de skills escaneado por coincidencia léxica sobre nombre, alias, etiquetas, categoría y descripción, y devuelve los mejores candidatos con los términos coincidentes."
+      description: "Reconoce qué skills aplican a una tarea o intención. IMPORTANTE: consulta con palabras clave/términos técnicos, no con frases completas — la coincidencia es puramente léxica, las frases completas todavía no se interpretan semánticamente y atraen falsos positivos a través de palabras vacías. Clasifica el catálogo de skills escaneado por coincidencia léxica sobre nombre, alias, etiquetas, categoría y descripción, y devuelve los mejores candidatos con los términos coincidentes. Las puntuaciones solo son comparables dentro de una misma consulta, no entre consultas."
     },
     controlcenter_list_skills: {
       title: "Listar skills de Claude Code",
@@ -267,7 +267,7 @@ export const es: Translations = {
     includeToolAssignments: "Si es true, se añaden asignaciones de herramientas a bundles para las herramientas escaneadas.",
     skillsRoot: "Ruta opcional a la carpeta de skills desplegados de Claude Code. Por defecto es ~/.claude/skills.",
     sourceSkillsRoot: "Ruta opcional al root de la biblioteca de skills fuente. Por defecto es la carpeta .AI/.SKILLS/skills local.",
-    skillIntent: "Tarea o intención en texto libre para comparar con el catálogo de skills.",
+    skillIntent: "Palabras clave/términos técnicos de la tarea para comparar con el catálogo de skills (p. ej. \"depurar bug fallo de test\" en lugar de \"mi programa se bloquea al guardar\"). Las frases completas aún no se evalúan semánticamente; las palabras vacías provocan entonces falsos positivos.",
     skillFinderLimit: "Número máximo de candidatos de skills clasificados a devolver. Predeterminado: 5.",
     stacksRoot: "Ruta opcional al directorio que contiene stacks.catalog.json. Por defecto es la carpeta local .AI/.STACKS.",
     stackId: "ID estable del stack en stacks.catalog.json.",

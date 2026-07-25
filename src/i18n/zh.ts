@@ -223,7 +223,7 @@ export const zh: Translations = {
     },
     controlcenter_find_skill: {
       title: "查找匹配的技能",
-      description: "识别哪些技能适用于自由文本任务或意图。按对名称、别名、标签、类别和描述的词法匹配对已扫描的技能目录排序，并返回最佳候选及匹配到的词语。"
+      description: "识别哪些技能适用于某个任务或意图。重要提示：请使用关键词/专业术语查询，而非完整句子——匹配完全基于词法，完整句子尚不能被语义理解，虚词会引入误匹配。按对名称、别名、标签、类别和描述的词法匹配对已扫描的技能目录排序，并返回最佳候选及匹配到的词语。分数仅在同一次查询内可比，不可跨查询比较。"
     },
     controlcenter_list_skills: {
       title: "列出 Claude Code Skills",
@@ -267,7 +267,7 @@ export const zh: Translations = {
     includeToolAssignments: "为 true 时为扫描到的工具加入工具 bundle 分配。",
     skillsRoot: "已部署 Claude Code skills 文件夹的可选路径。默认为 ~/.claude/skills。",
     sourceSkillsRoot: "skills 源库根目录的可选路径。默认为本地 .AI/.SKILLS/skills 文件夹。",
-    skillIntent: "用于与技能目录匹配的自由文本任务或意图。",
+    skillIntent: "用于与技能目录匹配的任务关键词/专业术语（例如用「调试 bug 测试失败」而非「我的程序保存时崩溃」）。完整句子尚未做语义评估，虚词会导致误匹配。",
     skillFinderLimit: "返回的已排序技能候选的最大数量。默认值：5。",
     stacksRoot: "包含 stacks.catalog.json 的目录的可选路径。默认为本地 .AI/.STACKS 文件夹。",
     stackId: "stacks.catalog.json 中的稳定堆栈 ID。",

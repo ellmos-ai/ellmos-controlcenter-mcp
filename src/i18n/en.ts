@@ -223,7 +223,7 @@ export const en: Translations = {
     },
     controlcenter_find_skill: {
       title: "Find Matching Skills",
-      description: "Recognizes which skills apply to a free-text task or intent. Ranks the scanned skill catalogue by lexical match over name, aliases, tags, category, and description, and returns the best candidates with the matched terms."
+      description: "Recognizes which skills apply to a task or intent. IMPORTANT: query with keywords/technical terms, not full sentences — matching is purely lexical, whole sentences are not (yet) understood semantically and pull in false hits via filler words. Ranks the scanned skill catalogue by lexical match over name, aliases, tags, category, and description, and returns the best candidates with the matched terms. Scores are comparable only within one query, not across queries."
     },
     controlcenter_list_skills: {
       title: "List Claude Code Skills",
@@ -267,7 +267,7 @@ export const en: Translations = {
     includeToolAssignments: "When true, tool bundle assignments are added for scanned tools.",
     skillsRoot: "Optional path to the deployed Claude Code skills folder. Defaults to ~/.claude/skills.",
     sourceSkillsRoot: "Optional path to the source skills library root. Defaults to the local .AI/.SKILLS/skills folder.",
-    skillIntent: "Free-text task or intent to match against the skill catalogue.",
+    skillIntent: "Keywords/technical terms describing the task, matched against the skill catalogue (e.g. \"debug bug test failure\" rather than \"my program crashes when saving\"). Whole sentences are not yet evaluated semantically; filler words then cause false hits.",
     skillFinderLimit: "Maximum number of ranked skill candidates to return. Default: 5.",
     stacksRoot: "Optional path to the directory containing stacks.catalog.json. Defaults to the local .AI/.STACKS folder.",
     stackId: "Stable stack ID from stacks.catalog.json.",
