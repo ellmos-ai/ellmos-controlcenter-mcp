@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3 - 2026-07-25
+
+### Security & Maintenance
+- Remediate `postcss <=8.5.17` high-severity vulnerability (`GHSA-r28c-9q8g-f849`), `fast-uri`, `body-parser`, and `hono` security findings via dependency updates.
+- Synchronize version string 0.2.3 across `package.json`, `package-lock.json`, `server.json`, `glama.json`, and `src/index.ts`.
+- Verify full test suite (70 tests passing).
+
 ## 0.2.2 - 2026-07-24
 
 ### Fixed
