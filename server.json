@@ -3,7 +3,7 @@
   "name": "io.github.ellmos-ai/ellmos-controlcenter-mcp",
   "version": "0.2.2",
   "title": "ellmos ControlCenter",
-  "description": "MCP control plane for local server discovery, MCP profile inspection, and profile recommendation. Works with any MCP-capable client; profile defaults target Claude Code conventions and are overridable.",
+  "description": "MCP control plane: local server discovery, profiles, capability bundles, and policy audits.",
   "websiteUrl": "https://github.com/ellmos-ai/ellmos-controlcenter-mcp",
   "repository": {
     "url": "https://github.com/ellmos-ai/ellmos-controlcenter-mcp",
