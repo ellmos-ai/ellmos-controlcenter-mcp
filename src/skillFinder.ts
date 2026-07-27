@@ -29,6 +29,8 @@ import type { SkillSummary } from "./skills.js";
 export interface SkillMatch {
   skill: SkillSummary;
   score: number;
+  /** Score normalized relative to the number of content terms in the query. */
+  normalizedScore: number;
   /** Intent terms that matched somewhere in the skill. */
   matchedTerms: string[];
   /** Skill fields that contributed matches (name, aliases, tags, category, description). */
@@ -37,23 +39,44 @@ export interface SkillMatch {
   reason: string;
 }
 
-// Small German + English stopword set so common filler words do not create noise.
+// Multi-language stopword set (de, en, es, ja, ru, zh) so common filler words do not create noise.
 const STOPWORDS = new Set([
+  // English
   "the", "a", "an", "and", "or", "to", "of", "for", "in", "on", "with", "my", "me",
   "is", "it", "this", "that", "how", "do", "can", "please", "need", "want", "help",
-  "use", "using", "set", "make", "get", "create",
-  "der", "die", "das", "und", "oder", "zu", "fuer", "für", "im", "mit", "mein",
-  "meine", "ich", "ist", "es", "wie", "ein", "eine", "einen", "bitte", "brauche",
-  "will", "hilf", "nutze", "mach", "machen", "soll", "den", "dem", "auf"
+  "use", "using", "set", "make", "get", "create", "from", "by", "as", "at",
+  // German
+  "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "einer",
+  "und", "oder", "aber", "zu", "fuer", "für", "im", "in", "mit", "mein", "meine",
+  "ich", "du", "er", "sie", "es", "wir", "ihr", "ist", "sind", "war", "wie", "bitte",
+  "brauche", "braucht", "will", "hilf", "hilft", "nutze", "nutz", "mach", "machen",
+  "macht", "soll", "auf", "aus", "bei", "beim", "vom", "von", "an", "als", "am", "um",
+  "ueber", "über", "vor", "nach", "durch", "ohne", "gegen", "unter", "bis", "zum",
+  "zur", "nicht", "warum", "ab", "weiss", "weiß",
+  // Spanish
+  "el", "la", "los", "las", "un", "una", "unos", "unas", "y", "o", "pero", "a", "de",
+  "en", "para", "por", "favor", "con", "sin", "su", "sus", "mi", "mis", "yo", "es", "son",
+  "fue", "como", "necesito", "quiero", "ayuda", "usar", "hace", "hacer", "sobre",
+  // Japanese (romaji & common transliterated particles)
+  "no", "wa", "ga", "de", "ni", "wo", "to", "ka", "mo", "kara", "node", "desu", "masu",
+  "kudasai", "suru", "shite",
+  // Russian (Cyrillic & transliterated)
+  "и", "в", "не", "на", "я", "с", "что", "это", "как", "для", "по", "но", "из", "к",
+  "у", "за", "от", "о", "мы", "вы", "да", "так", "если", "или", "а", "мне", "меня",
+  "мой", "моя", "мое", "моим", "пожалуйста", "помоги", "нужно",
+  // Chinese (structural/filler characters)
+  "的", "了", "和", "是", "就", "都", "而", "及", "與", "著", "或", "一", "在", "我",
+  "你", "他", "她", "它", "這", "那", "有", "也", "為", "上", "個", "用", "請", "幫",
+  "需", "要"
 ]);
 
-/** Lowercase, split on non-alphanumeric (keeping German umlauts), drop stopwords and 1-char tokens. */
+/** Lowercase, split on non-alphanumeric (keeping German umlauts, CJK, Cyrillic), drop stopwords and 1-char latin tokens. */
 export function tokenize(value: string): string[] {
   return value
     .toLowerCase()
-    .split(/[^a-z0-9äöüß]+/i)
+    .split(/[^a-z0-9äöüß\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\u0400-\u04ff]+/i)
     .map((token) => token.trim())
-    .filter((token) => token.length >= 2 && !STOPWORDS.has(token));
+    .filter((token) => token.length > 0 && !STOPWORDS.has(token) && (token.length >= 2 || /[\u3400-\u4dbf\u4e00-\u9fff]/.test(token)));
 }
 
 interface WeightedField {
@@ -102,7 +125,7 @@ function buildReason(matchedTerms: string[], matchedFields: string[]): string {
 
 /**
  * Returns skills ranked by lexical relevance to the intent. Skills with zero
- * matches are excluded. Ties break by number of distinct matched terms, then
+ * matches are excluded. Ties break by normalized score, raw score, matched terms,
  * deployed status, then name.
  */
 export function findSkills(intent: string, skills: SkillSummary[], limit = 5): SkillMatch[] {
@@ -113,9 +136,11 @@ export function findSkills(intent: string, skills: SkillSummary[], limit = 5): S
   for (const skill of skills) {
     const { score, matchedTerms, matchedFields } = scoreSkill(intentTokens, skill);
     if (score <= 0) continue;
+    const normalizedScore = Number((score / intentTokens.length).toFixed(2));
     matches.push({
       skill,
       score,
+      normalizedScore,
       matchedTerms,
       matchedFields,
       reason: buildReason(matchedTerms, matchedFields)
@@ -124,6 +149,7 @@ export function findSkills(intent: string, skills: SkillSummary[], limit = 5): S
 
   matches.sort(
     (a, b) =>
+      b.normalizedScore - a.normalizedScore ||
       b.score - a.score ||
       b.matchedTerms.length - a.matchedTerms.length ||
       Number(b.skill.deployed) - Number(a.skill.deployed) ||
