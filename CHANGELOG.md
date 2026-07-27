@@ -2,10 +2,15 @@
 
 ## 0.2.3 - 2026-07-25
 
+### Maintenance & Hygiene (2026-07-27)
+- Refresh `llms.txt` header index (`Last-checked: 2026-07-27`) and verify unit test suite state (70/70 tests passing).
+- Align status version string `0.2.3` in `README.md` and `README_de.md` to match package version.
+
 ### Security & Maintenance
 - Remediate `postcss <=8.5.17` high-severity vulnerability (`GHSA-r28c-9q8g-f849`), `fast-uri`, `body-parser`, and `hono` security findings via dependency updates.
 - Synchronize version string 0.2.3 across `package.json`, `package-lock.json`, `server.json`, `glama.json`, and `src/index.ts`.
 - Verify full test suite (70 tests passing).
+
 
 ## 0.2.2 - 2026-07-24
 
