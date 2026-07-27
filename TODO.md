@@ -61,15 +61,10 @@
   - Der Fehltreffer skorte also **höher** als der richtige Treffer einer anderen Abfrage →
     Scores sind zwischen Abfragen nicht vergleichbar und taugen nicht als Konfidenzmaß.
   **Umsetzungsstufen (aufsteigender Aufwand, jede für sich nützlich):**
-  1. **Stoppwortliste je Sprache** (de/en/es/ja/ru/zh) vor dem Scoring abziehen — zero-dependency,
-     würde allein schon den Fehltreffer oben verhindern. Billigster Hebel, sollte zuerst kommen.
-  2. **Score normalisieren** (relativ zur Zahl der Inhaltsbegriffe der Abfrage), damit Werte
-     zwischen Abfragen vergleichbar werden und ein Schwellwert „kein Treffer" möglich wird.
+  1. [x] **Stoppwortliste je Sprache (de/en/es/ja/ru/zh)** vor dem Scoring abziehen — zero-dependency (ERLEDIGT 2026-07-27).
+  2. [x] **Score normalisieren (`normalizedScore`)** relativ zur Zahl der Inhaltsbegriffe der Abfrage (ERLEDIGT 2026-07-27).
   3. **Optionales Embedding-Ranking hinter Konfiguration** (lokales Modell, konsistent zum
      credential-/dependency-freien Design; nur zuschaltbar, nie Default).
-  **Bis dahin dokumentiert:** README/README_de (Abschnitt „Skill-Suche richtig abfragen"), `llms.txt`
-  und die Tool-/Parameter-Beschreibungen in allen 6 i18n-Sprachen weisen aktiv auf Stichwort-Nutzung hin.
-  Diese Doku-Hinweise sind bei Umsetzung von Stufe 1–3 wieder zurückzunehmen.
 
 ## P2
 

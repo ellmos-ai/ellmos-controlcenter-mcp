@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.4 - 2026-07-27
+
+### Enhanced
+- Multi-language stopword filtering (`de`, `en`, `es`, `ja`, `ru`, `zh`) in `controlcenter_find_skill` (Stage 1).
+- Normalized relevance scoring (`normalizedScore` relative to content terms) in `controlcenter_find_skill` (Stage 2).
+- Expanded Vitest test suite (72/72 tests passing).
+
+### Security & Maintenance
+- Dependency security audit & overrides updated (0 vulnerabilities across ecosystem).
+- Synchronize version string 0.2.4 across `package.json`, `package-lock.json`, `server.json`, `glama.json`, and `src/index.ts`.
+
 ## 0.2.3 - 2026-07-25
 
 ### Maintenance & Hygiene (2026-07-27)
