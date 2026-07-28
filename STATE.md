@@ -6,7 +6,7 @@
 - TypeScript MCP scaffold in place
 - Initial discovery and profile tools implemented
 - Tests for core logic available
-- Version `0.1.0-alpha.6` prepared for GitHub/npm release
+- Version `0.2.4` prepared for GitHub/npm release
 
 ## What the MVP Can Do
 

@@ -1186,6 +1186,30 @@ describe("skill finder", () => {
     expect(namedScore).toBeGreaterThan(describedScore);
   });
 
+  it("tokenizes and drops multi-language stopwords (de, en, es, zh)", () => {
+    const tokens = tokenize("Por favor me ayuda mit dem MCP Server sync und 请帮我");
+    expect(tokens).toContain("mcp");
+    expect(tokens).toContain("server");
+    expect(tokens).toContain("sync");
+    expect(tokens).not.toContain("por");
+    expect(tokens).not.toContain("favor");
+    expect(tokens).not.toContain("ayuda");
+    expect(tokens).not.toContain("mit");
+    expect(tokens).not.toContain("dem");
+    expect(tokens).not.toContain("請");
+    expect(tokens).not.toContain("幫");
+  });
+
+  it("calculates normalizedScore relative to query content terms", () => {
+    const skills = [
+      makeSkill({ name: "mcp-config-sync", description: "Synchronisiert MCP-Server", tags: ["mcp", "sync"] })
+    ];
+    const matches = findSkills("Bitte hilf mir beim MCP Server sync", skills);
+    expect(matches).toHaveLength(1);
+    expect(matches[0].normalizedScore).toBeGreaterThan(0);
+    expect(matches[0].score).toBeGreaterThan(0);
+  });
+
   it("respects the limit and returns [] for no match or empty intent", () => {
     const skills = Array.from({ length: 10 }, (_, i) => makeSkill({ name: `skill-${i}`, tags: ["common"] }));
     expect(findSkills("common", skills, 3)).toHaveLength(3);
