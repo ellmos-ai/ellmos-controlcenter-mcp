@@ -15,7 +15,6 @@
     "data/capability-bundles.json",
     "data/policy-rules.json",
     "server.json",
-    "smithery.yaml",
     "llms.txt",
     "README.md",
     "README_de.md",

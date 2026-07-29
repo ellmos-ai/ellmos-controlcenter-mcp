@@ -10,6 +10,7 @@
 ### Security & Maintenance
 - Dependency security audit & overrides updated (0 vulnerabilities across ecosystem).
 - Synchronize version string 0.2.4 across `package.json`, `package-lock.json`, `server.json`, `glama.json`, and `src/index.ts`.
+- Remove the unverified legacy `smithery.yaml`; current Smithery publication for local stdio servers requires a validated MCPB bundle.
 
 ## 0.2.3 - 2026-07-25
 
