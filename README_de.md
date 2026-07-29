@@ -325,3 +325,22 @@ Unsere Partnerorganisation **[open-bricks](https://github.com/open-bricks)** bü
 ## Lizenz
 
 [MIT](LICENSE) - Lukas Geiger ([ellmos-ai](https://github.com/ellmos-ai))
+
+## Bundles und Partner
+
+ControlCenter MCP bleibt ein eigenständig nutzbarer, veröffentlichter
+MCP-Server. In der V4-Komposition ist er eine optionale **MCP-Zugangsfläche**
+des `ellmos-core-discovery-bundle`: Er macht lokale MCP-Stacks, Profile, Tools
+und Skills für Menschen und MCP-fähige Clients auffindbar. Er ist nicht der
+Funktionsowner von Policies, Entscheidungen, Memory, Automatisierungen,
+Systemkarten oder den Modulen hinter den gefundenen Tools.
+
+Konfigurierte Komponentenregistries, lokale MCP-Server, Profildateien und
+Skill-Bibliotheken sind Discovery-Partner, keine Übertragung fachlicher
+Eigentümerschaft. Die veröffentlichte ControlCenter-Identität und der
+Paketname bleiben unverändert. `ControlRoom` ist ein separater geplanter
+Operator-Stack, keine Umbenennung und kein versteckter Ersatz dieses Servers.
+
+Verbindliche Bundle-Mitgliedschaft, Versionen, Profile und private
+Zusammensetzungsrezepte bleiben in den jeweiligen Bundle-Manifesten. Dieser
+öffentliche Abschnitt dient ausschließlich der Discovery.
