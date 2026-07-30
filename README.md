@@ -1,5 +1,8 @@
 # ellmos ControlCenter MCP
 
+<img src="assets/banner.png" width="100%" alt="Ellmos Controlcenter Mcp banner">
+
+
 <p align="center">
   <img src="assets/controlcenter-logo.jpg" alt="ellmos ControlCenter MCP logo" width="420">
 </p>
