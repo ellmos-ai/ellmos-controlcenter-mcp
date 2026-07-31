@@ -1,10 +1,7 @@
 # ellmos ControlCenter MCP
 
-<img src="assets/banner.png" width="100%" alt="Ellmos Controlcenter Mcp banner">
-
-
 <p align="center">
-  <img src="assets/controlcenter-logo.jpg" alt="ellmos ControlCenter MCP logo" width="420">
+  <img src="https://raw.githubusercontent.com/ellmos-ai/.github/master/profile/ellmos-logo.jpg" alt="ellmos emblem" width="300">
 </p>
 
 **DE [Deutsche Version](README_de.md)**
