@@ -1,3 +1,5 @@
+<img src="assets/banner.png" width="100%" alt="ELLMOS ControlCenter MCP Banner">
+
 # ellmos ControlCenter MCP
 
 <p align="center">
