@@ -34,6 +34,7 @@ import {
   type Lang
 } from "./i18n/index.js";
 import { auditResolvedProfile, loadPolicyRules, summarizePolicyFindings } from "./policy.js";
+import { produceActualSelfReceipt, publicActualSelfReceiptError } from "./actualSelfReceipt.js";
 import { buildToolCatalog, scanLocalServerTools, scanProfileServerTools, type ServerToolCatalog } from "./toolCatalog.js";
 import {
   DEFAULT_PROFILE_ROOT,
@@ -45,7 +46,7 @@ import {
 
 const server = new McpServer({
   name: "ellmos-controlcenter-mcp",
-  version: "0.2.4"
+  version: "0.3.0"
 });
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -313,6 +314,27 @@ server.registerTool(
     ].join("\n");
 
     return { content: [{ type: "text", text: output }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_actual_self_receipt",
+  {
+    title: toolText("controlcenter_actual_self_receipt").title,
+    description: toolText("controlcenter_actual_self_receipt").description,
+    inputSchema: {},
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+  },
+  async () => {
+    try {
+      const receipt = await produceActualSelfReceipt();
+      return { content: [{ type: "text", text: JSON.stringify(receipt, null, 2) }] };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [{ type: "text", text: `Actual-self receipt not emitted: ${publicActualSelfReceiptError(error)}` }]
+      };
+    }
   }
 );
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 - 2026-08-01
+
+### Added
+- Add the optional, fail-closed `controlcenter_actual_self_receipt` evidence producer.
+- Probe the package's own MCP `list_tools` surface without executing tools and sign a redacted runtime readback as `ellmos.actual-self-component-receipt.v1`.
+- Pin the host-local Ed25519 private key by SHA-256 and cap receipt TTL at 300 seconds.
+
+### Security
+- Keep producer configuration outside tool inputs, reject foreign host scope, and return no secret, key path, environment, raw tool description, or local path.
+- Leave trust-store provisioning and routing activation explicitly outside ControlCenter.
+
 ## 0.2.4 - 2026-07-27
 
 ### Enhanced
