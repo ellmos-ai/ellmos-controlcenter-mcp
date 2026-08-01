@@ -11,6 +11,7 @@
 - Environment values are not printed by the profile audit.
 - The dashboard binds to `127.0.0.1` by default.
 - `controlcenter_context_pack` reads only the server-configured registered stack root. It excludes absolute paths, arbitrary project files, commands, secrets, live state, and unallowlisted policy values.
+- `controlcenter_actual_self_receipt` is disabled unless an explicit host-local configuration is present. It pins an Ed25519 key file by SHA-256, probes only this package's `list_tools` surface, redacts error details at the MCP boundary, and does not provision trust or authorize execution.
 
 ## Not Yet Implemented
 
@@ -28,6 +29,7 @@
 - Do not expose the dashboard host publicly.
 - Treat `npx`-based MCP servers as less reproducible than pinned local paths.
 - Review generated MCP configs before launching a client with them.
+- Keep the actual-self producer configuration and private key host-local, restrict their file permissions, and rotate the key if its path or contents may have been exposed.
 
 ## Reporting
 

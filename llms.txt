@@ -18,6 +18,7 @@ It is useful for local MCP stack visibility and profile management. It is not a 
 ## Tools
 
 - `controlcenter_status`: show stack, profile, and detected-server status.
+- `controlcenter_actual_self_receipt`: emit a short-lived signed native ControlCenter runtime receipt when host-local configuration is present; no trust or routing activation.
 - `controlcenter_get_language`: show the current ControlCenter output language.
 - `controlcenter_set_language`: set the ControlCenter output language for this running server instance.
 - `controlcenter_list_local_servers`: scan local MCP repositories below the configured MCP root.

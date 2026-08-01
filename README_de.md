@@ -24,7 +24,7 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.2.4`
+- **Version:** `0.3.0`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI-Checks:** `npm run test` und `npm run build`
@@ -36,6 +36,7 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 | Tool | Zweck |
 |---|---|
 | `controlcenter_status` | Stack-, Profil- und Serverstatus anzeigen |
+| `controlcenter_actual_self_receipt` | Einen nativen eigenen `list_tools`-Probe ausführen und bei expliziter Konfiguration ein kurzlebiges signiertes Laufzeit-Receipt erzeugen |
 | `controlcenter_get_language` | Aktuelle ControlCenter-Ausgabesprache anzeigen |
 | `controlcenter_set_language` | ControlCenter-Ausgabesprache für diese laufende Serverinstanz setzen |
 | `controlcenter_list_local_servers` | Lokale MCP-Repositories unterhalb des MCP-Roots scannen |
@@ -202,7 +203,14 @@ Optionale Umgebungsvariablen:
 - `ELLMOS_BUNDLE_CONFIG` überschreibt die Datei mit Capability-Bundle-Definitionen
 - `ELLMOS_POLICY_CONFIG` überschreibt die Datei mit Profil-Audit-Regeln
 - `ELLMOS_LAUNCH_TEMPLATE` überschreibt den erzeugten Profilwechsel-Startbefehl. Nutze `{config}` als Platzhalter für den Pfad zur generierten MCP-Config.
+- `ELLMOS_CONTROLCENTER_ACTUAL_SELF_CONFIG` zeigt auf die hostlokale, fail-closed Actual-Self-Produzentenkonfiguration. Fehlt sie, erzeugt `controlcenter_actual_self_receipt` kein Receipt.
 - `CONTROLCENTER_LANGUAGE` oder `ELLMOS_CONTROLCENTER_LANGUAGE` setzt die initiale Ausgabesprache
+
+### Signierte Actual-Self-Receipts
+
+`controlcenter_actual_self_receipt` ist ein optionaler Evidenzproduzent für System Explorer. Das Tool startet eine fest verdrahtete Kindinstanz dieses Pakets, liest ausschließlich deren MCP-`list_tools`-Oberfläche, hasht eine redigierte Toolzusammenfassung und gibt ein Ed25519-signiertes `ellmos.actual-self-component-receipt.v1` zurück. Es führt kein gemeldetes Tool aus und gibt weder Signaturschlüssel noch Konfigurationspfad, Umgebung, Rohbeschreibungen oder lokale Pfade zurück.
+
+Die hostlokale JSON-Konfiguration muss `ellmos.controlcenter.actual-self-producer.v1` verwenden und neben `schema` exakt `enabled`, `scope`, `registry_binding`, `signer_id`, `private_key_path`, `private_key_sha256` und `ttl_seconds` enthalten. Die TTL ist auf 300 Sekunden begrenzt. Der konfigurierte Host muss dem nativen Hostnamen entsprechen und der private Schlüssel seinem kleingeschriebenen SHA-256-Pin. Trust-Store-Provisionierung und Routing-Aktivierung bleiben bewusst externe Vorgänge; ein erzeugtes Receipt ist nicht automatisch vertrauenswürdig.
 
 Standardmäßig wird der MCP-Root aus der Umgebungsvariable `OneDrive`/`ONEDRIVE` abgeleitet und fällt sonst auf `~/OneDrive/.TOPICS/.AI/.MCP` zurück.
 

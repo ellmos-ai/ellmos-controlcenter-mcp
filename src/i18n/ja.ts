@@ -169,6 +169,10 @@ export const ja: Translations = {
       title: "ControlCenter 状態",
       description: "ローカル MCP stack、ローカルサーバー、Claude プロファイルの概要を表示します。"
     },
+    controlcenter_actual_self_receipt: {
+      title: "署名済み ControlCenter ランタイムレシートを発行",
+      description: "この ControlCenter サーバーをネイティブかつ読み取り専用の list_tools で検査し、短期間有効な Ed25519 署名付き actual-self レシートを発行します。明示的なホストローカル設定が必要で、安全側に失敗します。"
+    },
     controlcenter_get_language: {
       title: "ControlCenter 言語を表示",
       description: "現在の ControlCenter 出力言語と対応している言語コードを表示します。"

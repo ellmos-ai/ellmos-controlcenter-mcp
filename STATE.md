@@ -6,7 +6,8 @@
 - TypeScript MCP scaffold in place
 - Initial discovery and profile tools implemented
 - Tests for core logic available
-- Version `0.2.4` prepared for GitHub/npm release
+- Version `0.3.0` prepared for GitHub/npm review; publication is not implied
+- Optional actual-self producer implemented fail-closed; no host trust store or live routing activation is configured by the package
 
 ## What the MVP Can Do
 

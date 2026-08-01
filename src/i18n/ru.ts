@@ -169,6 +169,10 @@ export const ru: Translations = {
       title: "Статус ControlCenter",
       description: "Показывает обзор локального MCP-stack, локальных серверов и профилей Claude."
     },
+    controlcenter_actual_self_receipt: {
+      title: "Выдать подписанную runtime-квитанцию ControlCenter",
+      description: "Выполняет нативную проверку list_tools этого сервера ControlCenter только для чтения и выдает краткосрочную actual-self-квитанцию с подписью Ed25519. Требует явной локальной конфигурации и безопасно прекращает работу при ошибке."
+    },
     controlcenter_get_language: {
       title: "Показать язык ControlCenter",
       description: "Показывает текущий язык вывода ControlCenter и поддерживаемые языковые коды."
