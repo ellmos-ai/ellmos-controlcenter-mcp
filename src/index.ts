@@ -23,6 +23,7 @@ import { DEFAULT_STACKS_ROOT, describeStack, scanStacks, type StackSummary } fro
 import { DEFAULT_PLUGINS_ROOT, DEFAULT_MODULES_ROOT, scanInstalledPlugins, scanModules, scanPluginsAndModules, type PluginSummary } from "./plugins.js";
 import { DEFAULT_SKILLS_ROOT, DEFAULT_SOURCE_SKILLS_ROOT, scanSkills, type SkillSummary } from "./skills.js";
 import { findSkills, type SkillMatch } from "./skillFinder.js";
+import { buildCapabilityOverview, findCapabilities, loadSelfConsistentResolution } from "./capabilityFinder.js";
 import {
   describeSupportedLanguages,
   getLanguage,
@@ -473,6 +474,51 @@ server.registerTool(
     ].join("\n");
 
     return { content: [{ type: "text", text: output }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_find_capability",
+  {
+    title: toolText("controlcenter_find_capability").title,
+    description: toolText("controlcenter_find_capability").description,
+    inputSchema: {
+      query: z.string().min(1).describe(inputText("capabilityQuery")),
+      resolutionPath: z.string().min(1).describe(inputText("resolutionPath")),
+      limit: z.number().int().positive().max(100).optional().describe(inputText("capabilityLimit"))
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ query, resolutionPath, limit }) => {
+    try {
+      const resolution = await loadSelfConsistentResolution(resolutionPath);
+      const result = findCapabilities(query, resolution, limit);
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "unknown capability resolution error";
+      return { isError: true, content: [{ type: "text", text: `Capability search blocked: ${message}` }] };
+    }
+  }
+);
+
+server.registerTool(
+  "controlcenter_tool_overview",
+  {
+    title: toolText("controlcenter_tool_overview").title,
+    description: toolText("controlcenter_tool_overview").description,
+    inputSchema: {
+      resolutionPath: z.string().min(1).describe(inputText("resolutionPath"))
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ resolutionPath }) => {
+    try {
+      const resolution = await loadSelfConsistentResolution(resolutionPath);
+      return { content: [{ type: "text", text: JSON.stringify(buildCapabilityOverview(resolution), null, 2) }] };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "unknown capability overview error";
+      return { isError: true, content: [{ type: "text", text: `Tool overview blocked: ${message}` }] };
+    }
   }
 );
 

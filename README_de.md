@@ -44,6 +44,8 @@ Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboar
 | `controlcenter_describe_stack` | Typisierte Komponenten, Rollen, Policies und Validierungswarnungen eines Stacks beschreiben |
 | `controlcenter_context_pack` | Begrenztes, manifestbasiertes Übergabepaket für einen registrierten Stack mit `short`, `execution` oder `full` erzeugen |
 | `controlcenter_list_tools` | Lokale oder profildefinierte MCP-Server starten und deren echte `list_tools`-Ausgabe lesen |
+| `controlcenter_find_capability` | Typisierte Native-Binding-Behauptungen einer hash-konsistenten System-Explorer-Auflösung bewerten, ohne Auswahl oder Ausführung |
+| `controlcenter_tool_overview` | Auflösungsgebundene Komponentenbehauptungen anzeigen und deklarierte von tatsächlichen Laufzeitzuständen trennen |
 | `controlcenter_assign_tool_bundles` | Ausgelesene MCP-Tools Capability-Bundles zuordnen |
 | `controlcenter_list_bundles` | Lokale Server nach Capability-Bundles gruppieren |
 | `controlcenter_suggest_bundles` | Passende Bundles für eine Aufgabe empfehlen |
@@ -78,6 +80,19 @@ Zwei Konsequenzen:
 
 Solange keine semantische Suche unterstützt wird (vorgemerkt in `TODO.md`), sind Stichwort-Abfragen
 die vorgesehene Nutzung — kein Workaround.
+
+## Auflösungsgebundene Fähigkeitssuche
+
+`controlcenter_find_capability` und `controlcenter_tool_overview` konsumieren eine explizite
+`system-explorer.resolution.v1`-Datei. Sie brechen geschlossen ab, wenn der Content-Hash nicht
+selbstkonsistent ist oder die Quellenprüfungsbehauptung des Komponentenregisters fehlt. Diese
+Behauptung ist **kein externer Herkunftsnachweis**: Bis System Explorer ein separat vertrauenswürdiges
+Receipt liefert, melden die Ergebnisse ausdrücklich `provenance_verified: false` und
+`identity_verified: false`. Ausgegeben werden nur stabile, typkonsistente Native-Binding-Behauptungen.
+Die Ergebnisse sind als `controlcenter-lexical-candidate` im
+Score-Bereich `controlcenter.lexical.v1` typisiert; sie wählen keinen Träger aus, beweisen keine
+Identität oder Verfügbarkeit und autorisieren keine Ausführung. Semantisches Routing bleibt ein eigener,
+beratender Produzent.
 
 ## Dashboard
 

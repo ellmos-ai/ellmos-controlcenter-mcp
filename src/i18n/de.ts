@@ -189,6 +189,14 @@ export const de: Translations = {
       title: "MCP-Tools listen",
       description: "Startet lokale oder profildefinierte MCP-Server kontrolliert und liest deren echte Tool-Liste per MCP list_tools aus."
     },
+    controlcenter_find_capability: {
+      title: "Auflösungsgebundene Fähigkeitskandidaten finden",
+      description: "Bewertet Native-Binding-Behauptungen einer hash-konsistenten System-Explorer-Auflösung. Die Herkunft bleibt unverifiziert; Ergebnisse sind beratend, rein lesend und autorisieren niemals eine Ausführung."
+    },
+    controlcenter_tool_overview: {
+      title: "Auflösungsgebundene Tool-Übersicht anzeigen",
+      description: "Zeigt Native-Binding-Behauptungen einer selbstkonsistenten Auflösung und trennt deklarierte, installierte, konfigurierte, laufende, gesunde und beobachtete Zustände."
+    },
     controlcenter_assign_tool_bundles: {
       title: "Tools Capability-Bundles zuordnen",
       description: "Ordnet echte MCP-Tools anhand ihrer Metadaten den ControlCenter-Capability-Bundles zu."
@@ -260,6 +268,9 @@ export const de: Translations = {
     simpleServerName: "Optionaler Servername für einen gezielten Scan.",
     timeoutMs: "Timeout pro MCP-Tool-Scan in Millisekunden. Standard: 5000.",
     listToolsTimeoutMs: "Timeout pro Connect- und list_tools-Anfrage in Millisekunden. Standard: 5000.",
+    capabilityQuery: "Stichwörter oder Fähigkeitsbegriffe für ein deterministisches lexikalisches Kandidatenranking.",
+    capabilityLimit: "Maximale Anzahl zurückgegebener Kandidaten. Standard: 10; Maximum: 100.",
+    resolutionPath: "Pfad zu einer hash-konsistenten system-explorer.resolution.v1-JSON-Datei. Die Quellenprüfung darin bleibt bis zu einem externen Receipt eine nicht vertrauenswürdige Behauptung.",
     bundleConfigPath: "Optionaler Pfad zu einer Capability-Bundle-Konfiguration.",
     task: "Aufgabenbeschreibung oder Ziel der Session.",
     outputPath: "Optionaler Ausgabeort für die generierte MCP-Config.",

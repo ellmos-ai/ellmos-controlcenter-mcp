@@ -26,6 +26,8 @@ It is useful for local MCP stack visibility and profile management. It is not a 
 - `controlcenter_describe_stack`: describe the typed components, roles, policies, and warnings of one registered stack.
 - `controlcenter_context_pack`: build a bounded, manifest-only context handoff for one registered stack at short, execution, or full detail; it never starts components or reads secrets or live state.
 - `controlcenter_list_tools`: start local or profile-defined MCP servers and read their real `list_tools` output.
+- `controlcenter_find_capability`: rank stable, type-consistent native-binding claims from a hash-consistent System Explorer resolution; provenance and identity remain explicitly unverified, with no selection or execution authority.
+- `controlcenter_tool_overview`: list resolution-bound claims while preserving separate declared, installed, configured, running, healthy, and observed axes.
 - `controlcenter_assign_tool_bundles`: assign probed MCP tools to capability bundles.
 - `controlcenter_list_bundles`: group local servers by capability bundle.
 - `controlcenter_suggest_bundles`: recommend capability bundles for a task.
