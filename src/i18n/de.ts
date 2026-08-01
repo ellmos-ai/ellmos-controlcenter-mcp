@@ -169,6 +169,10 @@ export const de: Translations = {
       title: "ControlCenter Status",
       description: "Zeigt einen Überblick über den lokalen MCP-Stack, lokale Server und Claude-Profile."
     },
+    controlcenter_actual_self_receipt: {
+      title: "Signiertes ControlCenter-Laufzeit-Receipt erzeugen",
+      description: "Prüft diesen ControlCenter-Server nativ und rein lesend per list_tools und erzeugt ein kurzlebiges Ed25519-signiertes Actual-Self-Receipt. Erfordert eine explizite hostlokale Konfiguration und bricht andernfalls sicher ab."
+    },
     controlcenter_get_language: {
       title: "ControlCenter Sprache anzeigen",
       description: "Zeigt die aktuelle ControlCenter-Ausgabesprache und die unterstützten Sprachcodes."

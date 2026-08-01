@@ -169,6 +169,10 @@ export const zh: Translations = {
       title: "ControlCenter 状态",
       description: "显示本地 MCP stack、本地服务器和 Claude 配置文件的概览。"
     },
+    controlcenter_actual_self_receipt: {
+      title: "生成已签名的 ControlCenter 运行时回执",
+      description: "对此 ControlCenter 服务器执行原生只读 list_tools 探测，并生成短期有效的 Ed25519 签名 actual-self 回执。需要明确的主机本地配置，否则安全失败。"
+    },
     controlcenter_get_language: {
       title: "显示 ControlCenter 语言",
       description: "显示当前 ControlCenter 输出语言和支持的语言代码。"

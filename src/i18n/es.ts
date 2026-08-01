@@ -169,6 +169,10 @@ export const es: Translations = {
       title: "Estado de ControlCenter",
       description: "Muestra una vista general del stack MCP local, los servidores locales y los perfiles de Claude."
     },
+    controlcenter_actual_self_receipt: {
+      title: "Emitir recibo de ejecución firmado de ControlCenter",
+      description: "Ejecuta una prueba nativa y de solo lectura list_tools de este servidor ControlCenter y emite un recibo actual-self Ed25519 de corta duración. Requiere configuración local explícita y falla de forma segura."
+    },
     controlcenter_get_language: {
       title: "Mostrar idioma de ControlCenter",
       description: "Muestra el idioma actual de salida de ControlCenter y los códigos de idioma admitidos."

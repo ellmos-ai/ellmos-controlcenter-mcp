@@ -23,7 +23,7 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.2.4`
+- **Version:** `0.3.0`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI checks:** `npm run test` and `npm run build`
@@ -35,6 +35,7 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 | Tool | Purpose |
 |---|---|
 | `controlcenter_status` | Show stack, profile, and detected-server status |
+| `controlcenter_actual_self_receipt` | Run a native self `list_tools` probe and emit a short-lived signed runtime receipt when explicitly configured |
 | `controlcenter_get_language` | Show the current ControlCenter output language |
 | `controlcenter_set_language` | Set the ControlCenter output language for this running server instance |
 | `controlcenter_list_local_servers` | Scan local MCP repositories below the MCP root |
@@ -201,7 +202,14 @@ Optional environment variables:
 - `ELLMOS_BUNDLE_CONFIG` overrides the capability bundle definition file
 - `ELLMOS_POLICY_CONFIG` overrides the profile audit policy rule file
 - `ELLMOS_LAUNCH_TEMPLATE` overrides the generated profile-switch launch command. Use `{config}` as placeholder for the generated MCP config path.
+- `ELLMOS_CONTROLCENTER_ACTUAL_SELF_CONFIG` points to the host-local, fail-closed actual-self producer configuration. If it is absent, `controlcenter_actual_self_receipt` emits no receipt.
 - `CONTROLCENTER_LANGUAGE` or `ELLMOS_CONTROLCENTER_LANGUAGE` sets the initial output language
+
+### Signed actual-self receipts
+
+`controlcenter_actual_self_receipt` is an optional evidence producer for System Explorer. It starts a fixed child instance of this package, reads only its MCP `list_tools` surface, hashes a redacted tool summary, and returns an Ed25519-signed `ellmos.actual-self-component-receipt.v1`. It never executes a reported tool and never returns the signing key, configuration path, environment, raw descriptions, or local paths.
+
+The host-local JSON configuration must use `ellmos.controlcenter.actual-self-producer.v1` and contain exactly `enabled`, `scope`, `registry_binding`, `signer_id`, `private_key_path`, `private_key_sha256`, and `ttl_seconds` in addition to `schema`. TTL is limited to 300 seconds. The configured host must match the native hostname and the private key must match its lowercase SHA-256 pin. Trust-store provisioning and route activation are deliberately external operations; producing a receipt does not make it trusted.
 
 By default, the MCP repository root is derived from the `OneDrive`/`ONEDRIVE` environment variable and falls back to `~/OneDrive/.TOPICS/.AI/.MCP`.
 

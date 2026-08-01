@@ -4,6 +4,11 @@
 
 Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
 
+- `actualSelfReceipt.ts`
+  - prüft die eigene MCP-Oberfläche fest verdrahtet und rein lesend per `list_tools`
+  - erzeugt nur ein redigiertes, kurzlebiges Ed25519-signiertes Actual-Self-Receipt
+  - liest Scope, Registry-Bindung und Schlüsselreferenz aus einer expliziten hostlokalen Konfiguration
+  - provisioniert keinen Trust, autorisiert keine Ausführung und aktiviert kein Routing
 - `catalog.ts`
   - scannt den lokalen MCP-Root
   - liest `package.json` und optional `server.json`
