@@ -189,6 +189,14 @@ export const es: Translations = {
       title: "Listar herramientas MCP",
       description: "Inicia servidores MCP locales o definidos por perfil de forma controlada y lee su lista real de herramientas mediante MCP list_tools."
     },
+    controlcenter_find_capability: {
+      title: "Buscar candidatos vinculados a una resolución",
+      description: "Clasifica declaraciones de enlaces nativos desde una resolución de System Explorer coherente con su hash. La procedencia no está verificada; los resultados son consultivos y nunca autorizan ejecución."
+    },
+    controlcenter_tool_overview: {
+      title: "Mostrar resumen vinculado a una resolución",
+      description: "Muestra declaraciones de enlaces nativos y separa los estados declarado, instalado, configurado, en ejecución, saludable y observado."
+    },
     controlcenter_assign_tool_bundles: {
       title: "Asignar herramientas a bundles de capacidades",
       description: "Asigna herramientas MCP reales a los bundles de capacidades de ControlCenter usando sus metadatos."
@@ -260,6 +268,9 @@ export const es: Translations = {
     simpleServerName: "Nombre opcional de servidor para un escaneo específico.",
     timeoutMs: "Timeout por escaneo de herramientas MCP en milisegundos. Por defecto: 5000.",
     listToolsTimeoutMs: "Timeout por solicitud de conexión y list_tools en milisegundos. Por defecto: 5000.",
+    capabilityQuery: "Palabras clave o capacidades para la clasificación léxica determinista.",
+    capabilityLimit: "Número máximo de candidatos. Predeterminado: 10; máximo: 100.",
+    resolutionPath: "Ruta a un JSON system-explorer.resolution.v1 coherente con su hash; la verificación de fuente sigue siendo una declaración no confiable sin un recibo externo.",
     bundleConfigPath: "Ruta opcional a una configuración de bundles de capacidades.",
     task: "Descripción de la tarea u objetivo de la sesión.",
     outputPath: "Ubicación de salida opcional para la configuración MCP generada.",

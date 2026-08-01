@@ -43,6 +43,8 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 | `controlcenter_describe_stack` | Describe typed components, roles, policies, and validation warnings for one registered stack |
 | `controlcenter_context_pack` | Build a bounded, manifest-only handoff for a registered stack at `short`, `execution`, or `full` detail |
 | `controlcenter_list_tools` | Start local or profile-defined MCP servers and read their real `list_tools` output |
+| `controlcenter_find_capability` | Rank typed native-binding claims from a hash-consistent System Explorer resolution without selecting or executing one |
+| `controlcenter_tool_overview` | Show resolution-bound component claims while keeping declared and runtime-state axes separate |
 | `controlcenter_assign_tool_bundles` | Assign probed MCP tools to capability bundles |
 | `controlcenter_list_bundles` | Group local servers by capability bundle |
 | `controlcenter_suggest_bundles` | Recommend bundles for a task |
@@ -62,6 +64,18 @@ The first alpha release focuses on **discovery, profile visibility, dashboard wo
 description. It does **not** yet do semantic/embedding search, so **query with keywords and
 technical terms, not with whole sentences.** A natural-language sentence drags in filler words,
 and those can outrank the correct hit.
+
+## Resolution-bound capability search
+
+`controlcenter_find_capability` and `controlcenter_tool_overview` consume an explicit
+`system-explorer.resolution.v1` file. They fail closed unless its content hash is self-consistent and
+its component-registry source-verification claim is present. That claim is **not external provenance**:
+until System Explorer emits a separately trusted receipt, output fields explicitly report
+`provenance_verified: false` and `identity_verified: false`. Only stable, type-consistent native-binding
+claims are returned. Results use
+the method `controlcenter-lexical-candidate` and score domain `controlcenter.lexical.v1`; they never
+select a provider, prove identity or availability, or authorize execution. Semantic routing remains a separate
+advisory producer.
 
 | | Query | Top result |
 |---|---|---|

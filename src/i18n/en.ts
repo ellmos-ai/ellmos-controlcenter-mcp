@@ -189,6 +189,14 @@ export const en: Translations = {
       title: "List MCP Tools",
       description: "Starts local or profile-defined MCP servers in a controlled way and reads their real tool list through MCP list_tools."
     },
+    controlcenter_find_capability: {
+      title: "Find Resolution-Bound Capability Candidates",
+      description: "Ranks native-binding claims from a hash-consistent System Explorer resolution. Provenance remains unverified; results are lexical, advisory, read-only, and never authorize execution."
+    },
+    controlcenter_tool_overview: {
+      title: "Show Resolution-Bound Tool Overview",
+      description: "Shows native-binding claims from a self-consistent resolution while keeping declared, installed, configured, running, healthy, and observed state separate."
+    },
     controlcenter_assign_tool_bundles: {
       title: "Assign Tools To Capability Bundles",
       description: "Assigns real MCP tools to ControlCenter capability bundles using their metadata."
@@ -260,6 +268,9 @@ export const en: Translations = {
     simpleServerName: "Optional server name for a targeted scan.",
     timeoutMs: "Timeout per MCP tool scan in milliseconds. Default: 5000.",
     listToolsTimeoutMs: "Timeout per connect and list_tools request in milliseconds. Default: 5000.",
+    capabilityQuery: "Keywords or capability terms for deterministic lexical candidate ranking.",
+    capabilityLimit: "Maximum number of candidates to return. Default: 10; maximum: 100.",
+    resolutionPath: "Path to a hash-consistent system-explorer.resolution.v1 JSON file. Its source-verification field is treated only as an untrusted claim until an external receipt exists.",
     bundleConfigPath: "Optional path to a capability bundle configuration.",
     task: "Task description or session goal.",
     outputPath: "Optional output location for the generated MCP config.",

@@ -189,6 +189,14 @@ export const ja: Translations = {
       title: "MCP ツールを一覧表示",
       description: "ローカルまたはプロファイル定義の MCP サーバーを制御下で起動し、MCP list_tools で実際のツール一覧を読み取ります。"
     },
+    controlcenter_find_capability: {
+      title: "解決結果に束縛された機能候補を検索",
+      description: "ハッシュ整合性のある System Explorer 解決結果のネイティブバインディング宣言を順位付けします。来歴は未検証で、結果は助言的かつ読み取り専用です。"
+    },
+    controlcenter_tool_overview: {
+      title: "解決結果に束縛されたツール概要を表示",
+      description: "整合性のある解決結果のネイティブバインディング宣言を表示し、宣言済みと各実行状態を分離します。"
+    },
     controlcenter_assign_tool_bundles: {
       title: "ツールを capability bundle に割り当て",
       description: "実際の MCP ツールを、そのメタデータに基づいて ControlCenter capability bundle に割り当てます。"
@@ -260,6 +268,9 @@ export const ja: Translations = {
     simpleServerName: "対象スキャン用の任意のサーバー名。",
     timeoutMs: "MCP ツールスキャンごとのタイムアウト、ミリ秒。既定: 5000。",
     listToolsTimeoutMs: "接続および list_tools リクエストごとのタイムアウト、ミリ秒。既定: 5000。",
+    capabilityQuery: "決定論的な語彙候補ランキングに使うキーワードまたは機能用語。",
+    capabilityLimit: "返す候補の最大数。既定値: 10、最大値: 100。",
+    resolutionPath: "ハッシュ整合性のある system-explorer.resolution.v1 JSON へのパス。外部レシートがない限り、ソース検証は信頼されない宣言です。",
     bundleConfigPath: "Capability bundle 設定への任意のパス。",
     task: "タスク説明またはセッション目標。",
     outputPath: "生成される MCP 設定の任意の出力先。",

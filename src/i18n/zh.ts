@@ -189,6 +189,14 @@ export const zh: Translations = {
       title: "列出 MCP 工具",
       description: "以受控方式启动本地或配置文件定义的 MCP 服务器，并通过 MCP list_tools 读取真实工具列表。"
     },
+    controlcenter_find_capability: {
+      title: "查找解析绑定的能力候选项",
+      description: "对哈希自洽的 System Explorer 解析中的原生绑定声明进行排序。来源尚未验证；结果仅供参考、只读，绝不授权执行。"
+    },
+    controlcenter_tool_overview: {
+      title: "显示解析绑定的工具概览",
+      description: "显示自洽解析中的原生绑定声明，并分别保留已声明、已安装、已配置、运行中、健康和已观测状态。"
+    },
     controlcenter_assign_tool_bundles: {
       title: "将工具分配给能力 bundle",
       description: "根据真实 MCP 工具的元数据，将其分配给 ControlCenter 能力 bundle。"
@@ -260,6 +268,9 @@ export const zh: Translations = {
     simpleServerName: "可选服务器名，用于定向扫描。",
     timeoutMs: "每次 MCP 工具扫描的超时时间，单位毫秒。默认：5000。",
     listToolsTimeoutMs: "每次 connect 和 list_tools 请求的超时时间，单位毫秒。默认：5000。",
+    capabilityQuery: "用于确定性词法候选排序的关键字或能力术语。",
+    capabilityLimit: "返回候选项的最大数量。默认值：10；最大值：100。",
+    resolutionPath: "哈希自洽的 system-explorer.resolution.v1 JSON 文件路径；在有外部回执前，其中的来源验证只是未受信声明。",
     bundleConfigPath: "能力 bundle 配置的可选路径。",
     task: "任务描述或会话目标。",
     outputPath: "生成 MCP 配置的可选输出位置。",

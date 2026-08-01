@@ -35,6 +35,13 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
   - ruft echte MCP-`list_tools`-Antworten ab
   - normalisiert Toolnamen, Titel, Beschreibungen, Input-Schemas und Annotationen
   - begrenzt Probe-Laufzeiten per Timeout und beendet gestartete Prozesse wieder
+- `capabilityFinder.ts`
+  - konsumiert ausschließlich explizite, hash-konsistente `system-explorer.resolution.v1`-Dateien
+  - übernimmt nur stabile, typkonsistente Komponentenreferenzen mit behaupteter nativer Registry-Bindung
+  - kennzeichnet Herkunft und Identität bis zu einem extern vertrauenswürdigen System-Explorer-Receipt ausdrücklich als unverifiziert
+  - liefert einen lexikalischen, beratenden Kandidatenstrom ohne Auswahl- oder Ausführungsautorität
+  - dedupliziert identische Komponentenreferenzen über Bundlegrenzen und trennt deklarierte Sollangaben strikt von installiert, konfiguriert, laufend, gesund und beobachtet
+  - führt keinen parallelen Komponentenindex und keine semantische Bewertung
 - `policy.ts`
   - auditiert aufgelöste Profile
   - meldet erste Risiken wie `npx`-Starts, Env-Secrets und ungültige Server-Konfigurationen

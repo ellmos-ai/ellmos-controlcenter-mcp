@@ -39,7 +39,10 @@
 - Ressourceninventar für Systempfade, installierte Software, ausführbare Dateien, EXE-Dateien, CLI-Apps und Software mit CLI-Schnittstelle planen
 - [x] Stack-Erkennung umgesetzt über den externen `stacks.catalog.json` (Schema `ellmos.stacks.catalog.v1`) + je Stack `ellmos.stack.v2`-Manifest (ERLEDIGT). Vier Stacks (ellmos-stack, agent-ops-stack, sovereign-private, sovereign-hosted) werden mit 0 Warnings erkannt. Das früher als Alternative genannte `controlcenter.stack.json` (`ellmos.controlcenter.stack.v1`) ist damit **abgelöst** und wird bewusst NICHT angelegt (wäre ein Duplikat des bereits registrierten agent-ops-stack). Siehe STACK-CAPABILITY-PLAN.md „Status update (2026-07-23)".
 - [x] MCP-Tools für Stack-Karten: `controlcenter_list_stacks` und `controlcenter_describe_stack` (ERLEDIGT, read-only, inkl. `policies`-Passthrough)
-- Capability-Finder spezifizieren: `controlcenter_find_capability` als Verallgemeinerung von `controlcenter_find_skill` für Tools, Skills, Module, Software, APIs und Stacks
+- [x] Capability-Finder als fail-closed Shadow-Consumer implementieren: `controlcenter_find_capability` bewertet typkonsistente Native-Binding-Behauptungen einer hash-konsistenten System-Explorer-Auflösung; keine zweite Registry, Auswahl oder Ausführung, Herkunft bleibt unverifiziert (2026-08-01)
+- [x] Read-only Tool-Übersicht mit getrennten Zustandsachsen ergänzen: `controlcenter_tool_overview` (2026-08-01)
+- Semantischen Routing-Produzenten separat implementieren und erst nach Policy-/Trust-Gates anbinden
+- Separat vertrauenswürdiges System-Explorer-Resolution-Receipt definieren und erst danach `provenance_verified` beziehungsweise `identity_verified` aktivieren
 - [x] Kontext-Packs als read-only Manifestübergabe umgesetzt: `controlcenter_context_pack` liefert `short`, `execution` und `full` ohne Komponentenstart, Geheimnisse oder Live-Zustand. Für Skill-/Modul-Dateiinhalte bleibt eine spätere, explizit policy-gebundene Erweiterung nötig.
 - Private Stack-Instanzen unterstützen, ohne sie in den Core einzubauen: lokale Roots wie `_control-center` nur über Manifest/Konfiguration registrieren, nicht hardcoden oder automatisch für alle Nutzer anlegen
 - API-Erkennung aus Code, Profilen, Konfigurationen und Tool-Schemas spezifizieren
