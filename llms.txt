@@ -7,7 +7,7 @@ npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
 MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
 License: MIT
 Language: TypeScript
-Runtime: Node.js >=18
+Runtime: Node.js >=20
 
 ## Summary
 
@@ -98,6 +98,6 @@ ellmos-controlcenter-mcp
 - `src/toolCatalog.ts`: MCP client probes for real server tool lists.
 - `src/bundles.ts`: capability bundle definitions, suggestions, and tool assignment helpers.
 - `src/dashboard.ts`: local dashboard server.
-- `test/catalog.test.ts`: unit coverage for catalog, profiles, bundles, and policy rules (72 tests passing).
+- `test/catalog.test.ts`: unit coverage for catalog, profiles, bundles, and policy rules (79 tests passing).
 
 ## Last-checked: 2026-07-27

@@ -11,6 +11,9 @@
 - Keep producer configuration outside tool inputs, reject foreign host scope, and return no secret, key path, environment, raw tool description, or local path.
 - Leave trust-store provisioning and routing activation explicitly outside ControlCenter.
 
+### Maintenance
+- Reconciled the public Node.js requirement to >=20 and updated `llms.txt` from the historical 72-test count to the verified 79-test suite.
+
 ## 0.2.4 - 2026-07-27
 
 ### Enhanced
