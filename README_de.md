@@ -245,6 +245,8 @@ claude --mcp-config ~/.claude/profiles/_generated/software.mcp.json
 
 Mit `write: false` läuft der Wechsel als Vorschau. Mit `write: true` schreibt ControlCenter die generierte Datei. Das erzeugte `mcpServers`-JSON ist von jedem MCP-fähigen Client lesbar. Über den Input `launchTemplate` oder `ELLMOS_LAUNCH_TEMPLATE` kann der zurückgegebene Befehl auf Codex, Gemini oder eigene Starter zeigen, zum Beispiel `codex mcp run --config {config}`.
 
+Ein geplanter optionaler Restart-/Reconnect-Workflow behält diese Grenze bei: Nach einer geschriebenen Profiländerung soll ControlCenter für Claude Code einen Restart-Hinweis und einen kopierbaren Startbefehl ausgeben. Automatische Neuverbindung bleibt hinter einem expliziten, client-spezifischen Adapter und muss fail-closed bleiben, wenn der Zielclient sie nicht sicher unterstützt.
+
 Die Profilauflösung unterstützt einfache Vererbung (`"extends": "base"`), Mehrfachvererbung (`"extends": ["base", "shared"]`) und das Entfernen geerbter Server über `"remove"`, `"disabled"` oder `"disabledServers"`. Fehlende Profile, ungültiges JSON, ungültige Profilnamen und Vererbungszyklen liefern jetzt explizite Profilfehler mit betroffenem Dateipfad oder betroffener Kette.
 
 ## Capability-Bundles

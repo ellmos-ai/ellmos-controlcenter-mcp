@@ -14,6 +14,18 @@ Status: started
 - Surface audit hints
 - Write generated `--mcp-config` files
 
+### Claude Code restart / reconnect hint workflow
+
+Current behavior stays deliberately non-invasive: `controlcenter_switch_profile` prepares a resolved `--mcp-config` file and a launch command, but it does not mutate a running Claude Code session.
+
+Planned optional workflow:
+
+- After a profile change is written, return a structured restart hint alongside the existing launch command. The hint should explain that the running session still uses the old MCP configuration until the client reconnects or restarts with the generated config.
+- In the dashboard, show the same hint as a confirmation step with a copyable command. The dashboard should not kill or restart Claude Code by itself.
+- Keep automatic reconnection behind an explicit adapter contract. A future adapter may expose `hint`, `openCommand`, or `reconnect` modes, but `reconnect` must be opt-in, client-specific, and fail closed when ControlCenter cannot prove that the target client supports it safely.
+- Keep generated MCP configs provider-neutral. Claude Code remains the default launch template, while Codex, Gemini, Cursor, or other clients can still override the command via `launchTemplate` / `ELLMOS_LAUNCH_TEMPLATE`.
+- Test coverage should verify that write-mode profile switching surfaces the hint, preview mode stays read-only, custom launch templates are preserved, and no process-control action runs without an explicit reconnect adapter.
+
 ## Phase 2: Tool Catalog
 
 Status: started

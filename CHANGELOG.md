@@ -9,6 +9,7 @@
 - Add the optional, fail-closed `controlcenter_actual_self_receipt` evidence producer.
 - Probe the package's own MCP `list_tools` surface without executing tools and sign a redacted runtime readback as `ellmos.actual-self-component-receipt.v1`.
 - Pin the host-local Ed25519 private key by SHA-256 and cap receipt TTL at 300 seconds.
+- Document the planned optional Claude Code restart/reconnect hint workflow for written profile changes, keeping automatic reconnection behind an explicit fail-closed adapter.
 
 ### Security
 - Reject content-hash drift, missing registry source-verification claims, declared-only identities, type-prefix mismatches, unstable local-path references, and conflicting duplicate bindings.

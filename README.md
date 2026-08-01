@@ -243,6 +243,8 @@ claude --mcp-config ~/.claude/profiles/_generated/software.mcp.json
 
 With `write: false`, the switch runs as a preview. With `write: true`, ControlCenter writes the generated file. The generated `mcpServers` JSON is readable by any MCP-capable client. Use the `launchTemplate` input or `ELLMOS_LAUNCH_TEMPLATE` to return a Codex, Gemini, or custom launcher command, for example `codex mcp run --config {config}`.
 
+A planned optional restart/reconnect workflow will keep this boundary: after a written profile change, ControlCenter should surface a restart hint and copyable launch command for Claude Code, while automatic reconnection stays behind an explicit, client-specific adapter and must fail closed when unsupported.
+
 Profile resolution supports single inheritance (`"extends": "base"`), multiple inheritance (`"extends": ["base", "shared"]`), and inherited-server removal via `"remove"`, `"disabled"`, or `"disabledServers"`. Missing profiles, invalid JSON, invalid profile names, and inheritance cycles now return explicit profile errors with the affected file path or chain.
 
 ## Capability Bundles

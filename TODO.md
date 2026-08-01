@@ -51,7 +51,7 @@
 - Cluster-Verwaltung planen: automatisch erzeugte Cluster aktivieren/deaktivieren, manuelle Cluster anlegen, Cluster ändern, umbenennen, zusammenführen und aufteilen
 - Policy-Enforcement mit Allow-/Deny-Regeln
 - Schreibender Profilmanager
-- Optionaler Restart-/Hinweis-Workflow für Claude Code
+- [x] Optionaler Restart-/Hinweis-Workflow für Claude Code planen (Plan in `ROADMAP.md`, Abschnitt „Claude Code restart / reconnect hint workflow"; aktuelle Grenze: Hinweis/Launch-Command, automatische Reconnects nur später über expliziten Adapter)
 
 ## P1 — Nachtrag Skill-Suche [2026-07-25]
 

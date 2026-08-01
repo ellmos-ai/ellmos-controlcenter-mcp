@@ -49,3 +49,4 @@
 - Thematic clusters that can be automatically suggested and manually maintained
 - Virtual MCP servers built from curated clusters
 - Policy-gated context packs for arbitrary skill, module, or project content
+- Optional Claude Code restart/reconnect guidance after written profile changes; the workflow is planned, but no live-session mutation is implemented
