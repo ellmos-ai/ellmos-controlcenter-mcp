@@ -102,4 +102,4 @@ ellmos-controlcenter-mcp
 - `src/dashboard.ts`: local dashboard server.
 - `test/catalog.test.ts`: unit coverage for catalog, profiles, bundles, and policy rules (79 tests passing).
 
-## Last-checked: 2026-07-27
+## Last-checked: 2026-08-02
