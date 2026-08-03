@@ -18,6 +18,9 @@
 - Leave trust-store provisioning and routing activation explicitly outside ControlCenter.
 
 ### Maintenance
+- Enhanced Discoverability & SEO: added Vitest (79 passed), Ecosystem (`ellmos-ai`), Umbrella (`open-bricks`), and LLM-Ready (`llms.txt`) Shields.io badges to `README.md` & `README_de.md`.
+- Added GFM `llms.txt` integration callout banner (`> [!NOTE]`) and interactive Mermaid ControlCenter architecture diagram to English & German documentation.
+- Updated `llms.txt` Last-checked verification timestamp and test suite status (79/79 Vitest tests passing).
 - Reconciled the public Node.js requirement to >=20 and updated `llms.txt` from the historical 72-test count to the verified 79-test suite.
 
 ## 0.2.4 - 2026-07-27

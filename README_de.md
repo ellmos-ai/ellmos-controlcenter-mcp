@@ -12,6 +12,13 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
+[![Vitest](https://img.shields.io/badge/Vitest-79%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Ecosystem](https://img.shields.io/badge/Ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
+[![Umbrella](https://img.shields.io/badge/Umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
+[![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-success.svg)](llms.txt)
+
+> [!NOTE]
+> **LLM- / KI-Agenten-Integration:** Dieses Repository stellt eine [`llms.txt`](llms.txt)-Indexdatei für Kontext-Optimierung, RAG-Discovery und Agenten-Navigation bereit.
 
 Ein Alpha-**Model Context Protocol (MCP) Control-Plane-Server** für lokale MCP-Stacks. ControlCenter entdeckt lokale MCP-Server, liest MCP-Profildateien, gruppiert Server in Capability-Bundles, empfiehlt Profile für Aufgaben, erzeugt Kataloge, fragt echte MCP-Toollisten aus lokalen Repos oder Profilen ab, ordnet Tools Capability-Bundles zu und bietet optional ein lokales Dashboard.
 
@@ -20,6 +27,35 @@ Ein Alpha-**Model Context Protocol (MCP) Control-Plane-Server** für lokale MCP-
 Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboard-Workflows, Capability-Bundles, profilfähige Toollisten-Probes, Tool-Bundle-Zuordnung, Internationalisierung und erste Policy-Audits**. Gateway-Modus, technisch erzwungene Tool-Level-Rechte, Authentifizierung und harte Sicherheitsgrenzen sind geplant, aber noch nicht implementiert.
 
 > **Alpha-Hinweis:** Diese Version ist nützlich für lokale Verwaltung und Preview-Tests. Sie ist kein abgesicherter MCP-Gateway und sollte nicht als Schutzschicht für nicht vertrauenswürdige Tools oder fremde Nutzer verwendet werden.
+
+## Systemarchitektur
+
+```mermaid
+graph TD
+    A["Clients (Claude Code, Codex, Gemini, stdio Hosts)"] -->|MCP stdio / JSON-RPC| B["ellmos ControlCenter MCP Server"]
+    
+    subgraph Core ["Control-Plane-Module"]
+        B --> C["Katalog-Scanner (catalog.ts)"]
+        B --> D["Profil-Resolver (profiles.ts)"]
+        B --> E["Bundle-Manager (bundles.ts)"]
+        B --> F["Tool-Prober (toolCatalog.ts)"]
+        B --> G["Policy-Auditor (policy.ts)"]
+        B --> H["Kontext-Packer (contextPack.ts)"]
+        B --> I["i18n-Engine (src/i18n)"]
+    end
+    
+    subgraph Storage ["Lokales System & Umgebung"]
+        C -->|Scanned| S1["Lokale Repos (C:\_Local_DEV\repos)"]
+        D -->|Liest / Löst auf| S2["Claude-Profile (~/.claude/profiles)"]
+        E -->|Lädt & Mapped| S3["Capability-Bundles (data/capability-bundles.json)"]
+        F -->|stdio Probes| S4["Lokale & Profil-MCP-Server"]
+        G -->|Auditiert| S5["Policy-Regeln & Sicherheitsrisiken"]
+    end
+    
+    subgraph UI ["Verwaltungsoberfläche"]
+        B <-->|HTTP / WebSocket (127.0.0.1:3737)| J["Lokales Dashboard (dashboard.ts)"]
+    end
+```
 
 ## Status
 

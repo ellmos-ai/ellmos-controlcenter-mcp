@@ -11,6 +11,13 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
+[![Vitest](https://img.shields.io/badge/Vitest-79%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Ecosystem](https://img.shields.io/badge/Ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
+[![Umbrella](https://img.shields.io/badge/Umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
+[![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-success.svg)](llms.txt)
+
+> [!NOTE]
+> **LLM / AI Agent Integration:** This repository provides an [`llms.txt`](llms.txt) index file for context optimization, RAG discovery, and agent navigation.
 
 An alpha-stage **Model Context Protocol (MCP) control plane** for local MCP stacks. ControlCenter discovers local MCP servers, reads MCP profile files, groups servers into capability bundles, recommends profiles for a task, builds catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, and provides an optional local dashboard.
 
@@ -19,6 +26,35 @@ An alpha-stage **Model Context Protocol (MCP) control plane** for local MCP stac
 The first alpha release focuses on **discovery, profile visibility, dashboard workflows, capability bundles, profile-aware tool-list probes, tool-bundle assignments, internationalization, and initial policy audits**. Gateway mode, enforced tool-level permissions, authentication, and hard security boundaries are planned, but are not implemented yet.
 
 > **Alpha note:** This version is useful for local administration and preview testing. It is not a hardened MCP gateway and should not be used as a security layer for untrusted tools or other users.
+
+## System Architecture
+
+```mermaid
+graph TD
+    A["Clients (Claude Code, Codex, Gemini, stdio Hosts)"] -->|MCP stdio / JSON-RPC| B["ellmos ControlCenter MCP Server"]
+    
+    subgraph Core ["Control Plane Modules"]
+        B --> C["Catalog Scanner (catalog.ts)"]
+        B --> D["Profile Resolver (profiles.ts)"]
+        B --> E["Bundle Manager (bundles.ts)"]
+        B --> F["Tool Prober (toolCatalog.ts)"]
+        B --> G["Policy Auditor (policy.ts)"]
+        B --> H["Context Packer (contextPack.ts)"]
+        B --> I["i18n Engine (src/i18n)"]
+    end
+    
+    subgraph Storage ["Local System & Environment"]
+        C -->|Scans| S1["Local Repos (C:\_Local_DEV\repos)"]
+        D -->|Reads / Resolves| S2["Claude Profiles (~/.claude/profiles)"]
+        E -->|Loads & Maps| S3["Capability Bundles (data/capability-bundles.json)"]
+        F -->|stdio Probes| S4["Local & Profile MCP Servers"]
+        G -->|Audits| S5["Policy Rules & Security Risks"]
+    end
+    
+    subgraph UI ["Management Interface"]
+        B <-->|HTTP / WebSocket (127.0.0.1:3737)| J["Local Dashboard (dashboard.ts)"]
+    end
+```
 
 ## Status
 
