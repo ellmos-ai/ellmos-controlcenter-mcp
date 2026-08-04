@@ -128,8 +128,9 @@ Skill-Inventar. Standard ist `~/.ellmos/controlcenter/routing/semantic-persona-r
 
 Lexikalische Kandidaten bleiben separat gekennzeichnet. Ein Map-Kandidat wird erst dann zu einem
 verifizierten Endpunkt, wenn der Aufrufer ihn als zweites semantisches bzw. Quellen-Signal explizit
-bestätigt und der Skill im Live-Inventar vorhanden ist. Die Route erteilt keine Tool- oder
-Ausführungsberechtigung.
+bestätigt und der Skill eindeutig im deployten Live-Inventar vorhanden ist. Verschachtelte
+Map-Einträge, stabile IDs, Enums, Referenzen und Eindeutigkeit werden fail-closed validiert. Die
+Route erteilt keine Tool- oder Ausführungsberechtigung.
 
 ## Auflösungsgebundene Fähigkeitssuche
 

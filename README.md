@@ -139,7 +139,8 @@ and can be overridden with `ELLMOS_SEMANTIC_ROUTING_MAP` or a tool input.
 
 Lexical candidates remain separately labelled. A routing-map candidate can become a verified
 endpoint only after the caller explicitly confirms it as a second semantic/source signal and the
-skill is present in the live inventory. The route grants no tool or execution authority.
+skill is uniquely present in the deployed live inventory. Nested map records, stable IDs, enums,
+references, and uniqueness are validated fail-closed. The route grants no tool or execution authority.
 
 ## Dashboard
 

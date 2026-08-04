@@ -61,4 +61,56 @@ describe("semantic routing adapter", () => {
     await fs.writeFile(file, JSON.stringify({ ...map, schema: "wrong" }), "utf-8");
     await expect(loadSemanticRoutingMap(file)).rejects.toThrow("semantic-persona-routing.map.v1");
   });
+
+  it("rejects lexical candidates placed in verified endpoints", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "semantic-route-"));
+    const file = path.join(dir, "map.json");
+    const invalid = structuredClone(map) as unknown as Record<string, any>;
+    invalid.roles.experts[0].endpoint_skills[0].resolution = "lexical-candidate";
+    await fs.writeFile(file, JSON.stringify(invalid), "utf-8");
+    await expect(loadSemanticRoutingMap(file)).rejects.toThrow("invalid endpoint_skills resolution");
+  });
+
+  it("rejects malformed nested records and duplicate stable ids", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "semantic-route-"));
+    const malformedFile = path.join(dir, "malformed.json");
+    const malformed = structuredClone(map) as unknown as Record<string, any>;
+    delete malformed.roles.experts[0].description;
+    await fs.writeFile(malformedFile, JSON.stringify(malformed), "utf-8");
+    await expect(loadSemanticRoutingMap(malformedFile)).rejects.toThrow("description");
+
+    const duplicateFile = path.join(dir, "duplicate.json");
+    const duplicate = structuredClone(map) as unknown as Record<string, any>;
+    duplicate.skills.push({ ...duplicate.skills[0] });
+    await fs.writeFile(duplicateFile, JSON.stringify(duplicate), "utf-8");
+    await expect(loadSemanticRoutingMap(duplicateFile)).rejects.toThrow("duplicate skill id");
+  });
+
+  it("keeps source-only skills out of verified live endpoints", () => {
+    const result = resolveSemanticRoute(map, [skill({ deployed: false })], { intent: "tax receipts", selectedExpertId: "tax" });
+    expect(result.status).toBe("gap");
+    expect(result.verified_endpoints).toEqual([]);
+    expect(result.gaps).toContain("no-verified-live-endpoint:tax");
+  });
+
+  it("fails closed on duplicate deployed endpoints", () => {
+    const first = skill({ absolutePath: "C:/skills-a/employee-tax" });
+    const second = skill({ absolutePath: "C:/skills-b/employee-tax" });
+    const result = resolveSemanticRoute(map, [first, second], { intent: "tax receipts", selectedExpertId: "tax" });
+    expect(result.status).toBe("gap");
+    expect(result.verified_endpoints).toEqual([]);
+    expect(result.gaps).toContain("ambiguous-live-endpoint:employee-tax");
+  });
+
+  it("requires confirmed candidates to be uniquely deployed", () => {
+    const candidateMap: SemanticRoutingMap = {
+      ...map,
+      roles: { ...map.roles, experts: [{ ...map.roles.experts[0], endpoint_skills: [], candidate_skills: [{ skill: "employee-tax", resolution: "lexical-candidate" }] }] }
+    };
+    expect(() => resolveSemanticRoute(candidateMap, [skill({ deployed: false })], {
+      intent: "tax receipts",
+      selectedExpertId: "tax",
+      confirmedCandidateSkillId: "employee-tax"
+    })).toThrow("not deployed live");
+  });
 });

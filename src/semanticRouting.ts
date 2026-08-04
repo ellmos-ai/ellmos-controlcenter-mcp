@@ -9,9 +9,14 @@ export const DEFAULT_SEMANTIC_ROUTING_MAP =
   process.env.ELLMOS_SEMANTIC_ROUTING_MAP ??
   path.join(os.homedir(), ".ellmos", "controlcenter", "routing", "semantic-persona-routing-map.v1.json");
 
-interface EndpointRef {
+interface VerifiedEndpointRef {
   skill: string;
-  resolution: string;
+  resolution: "explicit" | "provenance";
+}
+
+interface CandidateEndpointRef {
+  skill: string;
+  resolution: "lexical-candidate";
 }
 
 interface Coordinator {
@@ -27,8 +32,8 @@ interface Expert {
   name: string;
   description: string;
   parent_roles: string[];
-  endpoint_skills: EndpointRef[];
-  candidate_skills: EndpointRef[];
+  endpoint_skills: VerifiedEndpointRef[];
+  candidate_skills: CandidateEndpointRef[];
   personas: string[];
 }
 
@@ -83,17 +88,110 @@ function requiredArray(record: Record<string, unknown>, key: string): unknown[] 
   return value;
 }
 
+const STABLE_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function requiredString(record: Record<string, unknown>, key: string): string {
+  const value = record[key];
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error(`routing map ${key} must be a non-empty string`);
+  }
+  return value;
+}
+
+function requiredStableId(record: Record<string, unknown>, key = "id"): string {
+  const value = requiredString(record, key);
+  if (!STABLE_ID.test(value)) throw new Error(`routing map ${key} must be a stable normalized id: ${value}`);
+  return value;
+}
+
+function stringArray(record: Record<string, unknown>, key: string): string[] {
+  const values = requiredArray(record, key);
+  if (values.some((value) => typeof value !== "string" || value.trim().length === 0)) {
+    throw new Error(`routing map ${key} must contain only non-empty strings`);
+  }
+  return values as string[];
+}
+
+function uniqueIds(records: Record<string, unknown>[], kind: string): Set<string> {
+  const ids = new Set<string>();
+  for (const record of records) {
+    const id = requiredStableId(record);
+    if (ids.has(id)) throw new Error(`routing map duplicate ${kind} id: ${id}`);
+    ids.add(id);
+  }
+  return ids;
+}
+
+function recordsArray(record: Record<string, unknown>, key: string): Record<string, unknown>[] {
+  const values = requiredArray(record, key);
+  if (values.some((value) => !isRecord(value))) throw new Error(`routing map ${key} must contain only objects`);
+  return values as Record<string, unknown>[];
+}
+
+function assertRefs(values: string[], allowed: Set<string>, context: string): void {
+  for (const value of values) {
+    if (!STABLE_ID.test(value) || !allowed.has(value)) throw new Error(`routing map unknown ${context} reference: ${value}`);
+  }
+}
+
+function parseEndpointRefs(
+  expert: Record<string, unknown>,
+  key: "endpoint_skills" | "candidate_skills",
+  allowedSkills: Set<string>
+): Array<VerifiedEndpointRef | CandidateEndpointRef> {
+  return recordsArray(expert, key).map((record) => {
+    const skill = requiredStableId(record, "skill");
+    if (!allowedSkills.has(skill)) throw new Error(`routing map unknown ${key} skill reference: ${skill}`);
+    const resolution = requiredString(record, "resolution");
+    const allowed = key === "endpoint_skills" ? ["explicit", "provenance"] : ["lexical-candidate"];
+    if (!allowed.includes(resolution)) throw new Error(`routing map invalid ${key} resolution: ${resolution}`);
+    return { skill, resolution } as VerifiedEndpointRef | CandidateEndpointRef;
+  });
+}
+
 export async function loadSemanticRoutingMap(filePath = DEFAULT_SEMANTIC_ROUTING_MAP): Promise<SemanticRoutingMap> {
   const raw = JSON.parse(await fs.readFile(filePath, "utf-8")) as unknown;
   if (!isRecord(raw) || raw.schema !== SEMANTIC_ROUTING_SCHEMA || !isRecord(raw.roles)) {
     throw new Error(`routing map must use ${SEMANTIC_ROUTING_SCHEMA}`);
   }
-  requiredArray(raw.roles, "coordinators");
-  requiredArray(raw.roles, "experts");
-  requiredArray(raw, "personas");
-  requiredArray(raw, "skills");
-  requiredArray(raw, "gaps");
+  const coordinators = recordsArray(raw.roles, "coordinators");
+  const experts = recordsArray(raw.roles, "experts");
+  const personas = recordsArray(raw, "personas");
+  const skills = recordsArray(raw, "skills");
+  const gaps = recordsArray(raw, "gaps");
   requiredArray(raw, "issues");
+
+  const coordinatorIds = uniqueIds(coordinators, "coordinator");
+  const expertIds = uniqueIds(experts, "expert");
+  const personaIds = uniqueIds(personas, "persona");
+  const skillIds = uniqueIds(skills, "skill");
+  const roleIds = new Set([...coordinatorIds, ...expertIds]);
+
+  for (const coordinator of coordinators) {
+    requiredString(coordinator, "name");
+    requiredString(coordinator, "description");
+    assertRefs(stringArray(coordinator, "experts"), expertIds, "expert");
+    assertRefs(stringArray(coordinator, "personas"), personaIds, "persona");
+  }
+  for (const expert of experts) {
+    requiredString(expert, "name");
+    requiredString(expert, "description");
+    assertRefs(stringArray(expert, "parent_roles"), coordinatorIds, "parent role");
+    assertRefs(stringArray(expert, "personas"), personaIds, "persona");
+    parseEndpointRefs(expert, "endpoint_skills", skillIds);
+    parseEndpointRefs(expert, "candidate_skills", skillIds);
+  }
+  for (const persona of personas) {
+    requiredString(persona, "display_name");
+    assertRefs(stringArray(persona, "roles"), roleIds, "role");
+    assertRefs(stringArray(persona, "skills"), skillIds, "skill");
+  }
+  for (const skill of skills) requiredString(skill, "name");
+  for (const gap of gaps) {
+    const expert = requiredStableId(gap, "expert");
+    if (!expertIds.has(expert)) throw new Error(`routing map unknown gap expert reference: ${expert}`);
+    requiredString(gap, "reason");
+  }
   return raw as unknown as SemanticRoutingMap;
 }
 
@@ -137,10 +235,21 @@ export function resolveSemanticRoute(
   const availableExperts = role
     ? map.roles.experts.filter((item) => role.experts.includes(item.id) || item.parent_roles.includes(role.id))
     : [];
-  const byId = new Map(skills.map((skill) => [normalize(skill.name), skill]));
+  const liveById = new Map<string, SkillSummary[]>();
+  for (const skill of skills) {
+    if (!skill.hasSkillMd || !skill.deployed) continue;
+    const id = normalize(skill.name);
+    liveById.set(id, [...(liveById.get(id) ?? []), skill]);
+  }
+  const ambiguousLiveIds = new Set(
+    [...liveById.entries()].filter(([, matches]) => matches.length > 1).map(([id]) => id)
+  );
+  const verifiedSkills = new Map(
+    [...liveById.entries()].filter(([, matches]) => matches.length === 1).map(([id, matches]) => [id, matches[0]])
+  );
   const verifiedEndpoints: SemanticRouteResult["verified_endpoints"] = (expert?.endpoint_skills ?? []).flatMap((endpoint) => {
-    const live = byId.get(normalize(endpoint.skill));
-    if (!live || !live.hasSkillMd) return [];
+    const live = verifiedSkills.get(normalize(endpoint.skill));
+    if (!live) return [];
     return [{
       skill: live.name,
       deployed: live.deployed,
@@ -152,8 +261,9 @@ export function resolveSemanticRoute(
     const candidateId = normalize(options.confirmedCandidateSkillId);
     const declared = expert.candidate_skills.some((item) => normalize(item.skill) === candidateId);
     if (!declared) throw new Error(`skill ${options.confirmedCandidateSkillId} is not a declared candidate for expert ${expert.id}`);
-    const live = byId.get(candidateId);
-    if (!live || !live.hasSkillMd) throw new Error(`confirmed candidate ${options.confirmedCandidateSkillId} is not live`);
+    if (ambiguousLiveIds.has(candidateId)) throw new Error(`confirmed candidate ${options.confirmedCandidateSkillId} has ambiguous live deployments`);
+    const live = verifiedSkills.get(candidateId);
+    if (!live) throw new Error(`confirmed candidate ${options.confirmedCandidateSkillId} is not deployed live`);
     verifiedEndpoints.push({
       skill: live.name,
       deployed: live.deployed,
@@ -170,6 +280,11 @@ export function resolveSemanticRoute(
     return true;
   }).slice(0, options.limit ?? 5);
   const gaps: string[] = [];
+  if (expert) {
+    for (const endpoint of expert.endpoint_skills) {
+      if (ambiguousLiveIds.has(normalize(endpoint.skill))) gaps.push(`ambiguous-live-endpoint:${endpoint.skill}`);
+    }
+  }
   if (expert && verifiedEndpoints.length === 0) gaps.push(`no-verified-live-endpoint:${expert.id}`);
   if (expert?.candidate_skills.length && !options.confirmedCandidateSkillId) gaps.push(`candidate-skills-require-second-signal:${expert.id}`);
 

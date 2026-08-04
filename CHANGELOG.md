@@ -5,6 +5,7 @@
 ### Added
 - Add `controlcenter_resolve_semantic_route` as a fail-closed adapter between a provider-neutral persona/role map and the current skill inventory.
 - Keep semantic role selection with the caller LLM or user, require an explicit second signal before promoting a map candidate, and preserve visible endpoint gaps.
+- Validate nested routing-map records, enums, stable IDs, references, and uniqueness before use; source-only or ambiguous skill deployments can no longer become verified live endpoints.
 
 ### Security
 - Refresh transitive dependency overrides for `hono`, `fast-uri`, and `ip-address`; `npm audit` reports zero vulnerabilities.
