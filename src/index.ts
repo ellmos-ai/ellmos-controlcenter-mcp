@@ -23,6 +23,7 @@ import { DEFAULT_STACKS_ROOT, describeStack, scanStacks, type StackSummary } fro
 import { DEFAULT_PLUGINS_ROOT, DEFAULT_MODULES_ROOT, scanInstalledPlugins, scanModules, scanPluginsAndModules, type PluginSummary } from "./plugins.js";
 import { DEFAULT_SKILLS_ROOT, DEFAULT_SOURCE_SKILLS_ROOT, scanSkills, type SkillSummary } from "./skills.js";
 import { findSkills, type SkillMatch } from "./skillFinder.js";
+import { DEFAULT_SEMANTIC_ROUTING_MAP, loadSemanticRoutingMap, resolveSemanticRoute } from "./semanticRouting.js";
 import { buildCapabilityOverview, findCapabilities, loadSelfConsistentResolution } from "./capabilityFinder.js";
 import {
   describeSupportedLanguages,
@@ -990,6 +991,43 @@ server.registerTool(
     const skills = await scanSkills(resolvedSkillsRoot, deployedOnly ? "" : resolvedSourceRoot);
     const matches = findSkills(intent, skills, limit);
     return { content: [{ type: "text", text: formatSkillMatches(intent, matches) }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_resolve_semantic_route",
+  {
+    title: "Resolve a semantic role, expert, persona, and live skill route",
+    description: "Validates a caller-selected semantic role/expert/persona against a provider-neutral routing map, then verifies explicit endpoints against the current skill inventory. Semantic selection remains with the caller LLM or user; fuzzy candidates are never promoted automatically and this tool grants no execution authority.",
+    inputSchema: {
+      intent: z.string().min(3).describe("Task intent used only by the separately labelled live lexical skill resolver."),
+      routingMapPath: z.string().optional().describe("Path to semantic-persona-routing.map.v1. Defaults to the host-local ellmos routing map."),
+      selectedRoleId: z.string().optional().describe("Semantic coordinator role selected by the caller LLM or user."),
+      selectedExpertId: z.string().optional().describe("Expert selected by the caller LLM or user."),
+      personaId: z.string().optional().describe("Optional persona overlay; never an authority grant."),
+      confirmedCandidateSkillId: z.string().optional().describe("Candidate skill explicitly confirmed after a second semantic/source signal; it must also exist in the live inventory."),
+      skillsRoot: z.string().optional().describe(inputText("skillsRoot")),
+      sourceSkillsRoot: z.string().optional().describe(inputText("sourceSkillsRoot")),
+      deployedOnly: z.boolean().default(false).describe(inputText("deployedOnly")),
+      limit: z.number().int().positive().max(25).default(5).describe(inputText("skillFinderLimit"))
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ intent, routingMapPath, selectedRoleId, selectedExpertId, personaId, confirmedCandidateSkillId, skillsRoot, sourceSkillsRoot, deployedOnly, limit }) => {
+    const map = await loadSemanticRoutingMap(routingMapPath ?? DEFAULT_SEMANTIC_ROUTING_MAP);
+    const skills = await scanSkills(
+      skillsRoot ?? DEFAULT_SKILLS_ROOT,
+      deployedOnly ? "" : (sourceSkillsRoot ?? DEFAULT_SOURCE_SKILLS_ROOT)
+    );
+    const route = resolveSemanticRoute(map, skills, {
+      intent,
+      selectedRoleId,
+      selectedExpertId,
+      personaId,
+      confirmedCandidateSkillId,
+      limit
+    });
+    return { content: [{ type: "text", text: JSON.stringify(route, null, 2) }] };
   }
 );
 

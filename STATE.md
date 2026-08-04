@@ -36,13 +36,14 @@
 - Scan local plugins from a plugin root and report type, marketplace scope, and sub-component presence
 - List and filter skills and plugins via `controlcenter_list_tools`
 - Match a free-text task or intent against the scanned skill catalogue and return ranked skill candidates with matched terms (`controlcenter_find_skill`)
+- Validate caller-selected semantic coordinator/expert/persona routes against a provider-neutral map and verify endpoint availability against the live skill inventory (`controlcenter_resolve_semantic_route`)
 - Consume hash-consistent System Explorer resolutions for typed lexical capability claims without owning a second registry or granting execution authority; provenance and identity remain unverified (`controlcenter_find_capability`)
 - Show native-bound components while keeping declared and actual runtime-state axes separate (`controlcenter_tool_overview`)
 - Build bounded `short`, `execution`, or `full` context packs for registered stacks without loading arbitrary project files, secrets, commands, or live state (`controlcenter_context_pack`)
 
 ## What Is Still Missing
 
-- A semantic routing producer; the current capability adapter is an explicitly typed lexical fallback only
+- Automatic semantic role selection or an embedding ranker; ControlCenter validates caller-selected routes but does not infer them or grant execution authority
 - A separately trusted System Explorer resolution receipt; current resolution files prove only internal hash consistency
 - Host-trusted availability evidence and policy-gated selection/execution remain outside this package
 - Remote auth and header handling for legacy SSE
