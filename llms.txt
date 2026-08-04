@@ -3,7 +3,7 @@
 > MCP control plane for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, and a local dashboard.
 
 Last-checked: 2026-08-04
-Test status: 95/95 Vitest tests passing (100% green)
+Test status: 97/97 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
 MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
@@ -103,6 +103,6 @@ ellmos-controlcenter-mcp
 - `src/toolCatalog.ts`: MCP client probes for real server tool lists.
 - `src/bundles.ts`: capability bundle definitions, suggestions, and tool assignment helpers.
 - `src/dashboard.ts`: local dashboard server.
-- `test/catalog.test.ts` and `test/semanticRouting.test.ts`: unit coverage for catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, and semantic-route validation (95 tests passing in the full suite).
+- `test/catalog.test.ts` and `test/semanticRouting.test.ts`: unit coverage for catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, and semantic-route validation (97 tests passing in the full suite).
 
 ## Last-checked: 2026-08-02

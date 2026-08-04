@@ -113,4 +113,37 @@ describe("semantic routing adapter", () => {
       confirmedCandidateSkillId: "employee-tax"
     })).toThrow("not deployed live");
   });
+
+  it("rejects duplicate and cross-class endpoint references", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "semantic-route-"));
+    const duplicateFile = path.join(dir, "duplicate-endpoint.json");
+    const duplicate = structuredClone(map) as unknown as Record<string, any>;
+    duplicate.roles.experts[0].endpoint_skills.push({ ...duplicate.roles.experts[0].endpoint_skills[0] });
+    await fs.writeFile(duplicateFile, JSON.stringify(duplicate), "utf-8");
+    await expect(loadSemanticRoutingMap(duplicateFile)).rejects.toThrow("duplicate endpoint_skills skill reference");
+
+    const overlapFile = path.join(dir, "overlap.json");
+    const overlap = structuredClone(map) as unknown as Record<string, any>;
+    overlap.roles.experts[0].candidate_skills.push({ skill: "employee-tax", resolution: "lexical-candidate" });
+    await fs.writeFile(overlapFile, JSON.stringify(overlap), "utf-8");
+    await expect(loadSemanticRoutingMap(overlapFile)).rejects.toThrow("both endpoint and candidate");
+  });
+
+  it("defensively deduplicates verified endpoint output", () => {
+    const duplicateMap: SemanticRoutingMap = {
+      ...map,
+      roles: {
+        ...map.roles,
+        experts: [{
+          ...map.roles.experts[0],
+          endpoint_skills: [
+            { skill: "employee-tax", resolution: "explicit" },
+            { skill: "employee-tax", resolution: "explicit" }
+          ]
+        }]
+      }
+    };
+    const result = resolveSemanticRoute(duplicateMap, [skill()], { intent: "tax receipts", selectedExpertId: "tax" });
+    expect(result.verified_endpoints).toHaveLength(1);
+  });
 });

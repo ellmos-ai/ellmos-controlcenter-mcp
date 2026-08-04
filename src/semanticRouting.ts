@@ -139,9 +139,12 @@ function parseEndpointRefs(
   key: "endpoint_skills" | "candidate_skills",
   allowedSkills: Set<string>
 ): Array<VerifiedEndpointRef | CandidateEndpointRef> {
+  const seen = new Set<string>();
   return recordsArray(expert, key).map((record) => {
     const skill = requiredStableId(record, "skill");
     if (!allowedSkills.has(skill)) throw new Error(`routing map unknown ${key} skill reference: ${skill}`);
+    if (seen.has(skill)) throw new Error(`routing map duplicate ${key} skill reference: ${skill}`);
+    seen.add(skill);
     const resolution = requiredString(record, "resolution");
     const allowed = key === "endpoint_skills" ? ["explicit", "provenance"] : ["lexical-candidate"];
     if (!allowed.includes(resolution)) throw new Error(`routing map invalid ${key} resolution: ${resolution}`);
@@ -178,8 +181,14 @@ export async function loadSemanticRoutingMap(filePath = DEFAULT_SEMANTIC_ROUTING
     requiredString(expert, "description");
     assertRefs(stringArray(expert, "parent_roles"), coordinatorIds, "parent role");
     assertRefs(stringArray(expert, "personas"), personaIds, "persona");
-    parseEndpointRefs(expert, "endpoint_skills", skillIds);
-    parseEndpointRefs(expert, "candidate_skills", skillIds);
+    const endpoints = parseEndpointRefs(expert, "endpoint_skills", skillIds);
+    const candidates = parseEndpointRefs(expert, "candidate_skills", skillIds);
+    const endpointSkills = new Set(endpoints.map((item) => item.skill));
+    for (const candidate of candidates) {
+      if (endpointSkills.has(candidate.skill)) {
+        throw new Error(`routing map skill cannot be both endpoint and candidate: ${candidate.skill}`);
+      }
+    }
   }
   for (const persona of personas) {
     requiredString(persona, "display_name");
@@ -247,9 +256,13 @@ export function resolveSemanticRoute(
   const verifiedSkills = new Map(
     [...liveById.entries()].filter(([, matches]) => matches.length === 1).map(([id, matches]) => [id, matches[0]])
   );
+  const verifiedEndpointIds = new Set<string>();
   const verifiedEndpoints: SemanticRouteResult["verified_endpoints"] = (expert?.endpoint_skills ?? []).flatMap((endpoint) => {
+    const endpointId = normalize(endpoint.skill);
+    if (verifiedEndpointIds.has(endpointId)) return [];
     const live = verifiedSkills.get(normalize(endpoint.skill));
     if (!live) return [];
+    verifiedEndpointIds.add(endpointId);
     return [{
       skill: live.name,
       deployed: live.deployed,
@@ -264,12 +277,15 @@ export function resolveSemanticRoute(
     if (ambiguousLiveIds.has(candidateId)) throw new Error(`confirmed candidate ${options.confirmedCandidateSkillId} has ambiguous live deployments`);
     const live = verifiedSkills.get(candidateId);
     if (!live) throw new Error(`confirmed candidate ${options.confirmedCandidateSkillId} is not deployed live`);
-    verifiedEndpoints.push({
-      skill: live.name,
-      deployed: live.deployed,
-      load_reference: path.join(live.absolutePath, "SKILL.md"),
-      resolution: "verified-candidate-live"
-    });
+    if (!verifiedEndpointIds.has(candidateId)) {
+      verifiedEndpointIds.add(candidateId);
+      verifiedEndpoints.push({
+        skill: live.name,
+        deployed: live.deployed,
+        load_reference: path.join(live.absolutePath, "SKILL.md"),
+        resolution: "verified-candidate-live"
+      });
+    }
   }
   const rawCandidates = findSkills(options.intent, skills, Math.max(options.limit ?? 5, skills.length));
   const seenCandidates = new Set<string>();
