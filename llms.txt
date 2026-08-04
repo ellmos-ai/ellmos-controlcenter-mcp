@@ -3,7 +3,7 @@
 > MCP control plane for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, and a local dashboard.
 
 Last-checked: 2026-08-04
-Test status: 79/79 Vitest tests passing (100% green)
+Test status: 90/90 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
 MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
@@ -41,6 +41,7 @@ It is useful for local MCP stack visibility and profile management. It is not a 
 - `controlcenter_build_catalog`: build a JSON catalog of local MCP servers, optionally including tool probes.
 - `controlcenter_list_skills`: inventory deployed Claude Code skills and the source skills library.
 - `controlcenter_find_skill`: match a task or intent against the scanned skill catalogue and return ranked candidates. Query with KEYWORDS/technical terms, not whole sentences — matching is purely lexical (no semantic search yet), so filler words in a natural-language sentence can outrank the correct hit. Scores are comparable only within one query.
+- `controlcenter_resolve_semantic_route`: validate a caller-selected semantic role, expert, and persona against a provider-neutral map, verify endpoints against the live skill inventory, and preserve unresolved candidates as non-authoritative gaps.
 - `controlcenter_list_plugins`: inventory installed Claude Code plugins and local ellmos modules.
 
 ## Install
@@ -102,6 +103,6 @@ ellmos-controlcenter-mcp
 - `src/toolCatalog.ts`: MCP client probes for real server tool lists.
 - `src/bundles.ts`: capability bundle definitions, suggestions, and tool assignment helpers.
 - `src/dashboard.ts`: local dashboard server.
-- `test/catalog.test.ts`: unit coverage for catalog, profiles, bundles, and policy rules (79 tests passing).
+- `test/catalog.test.ts` and `test/semanticRouting.test.ts`: unit coverage for catalog, profiles, bundles, policy rules, and semantic-route validation (90 tests passing in the full suite).
 
 ## Last-checked: 2026-08-02

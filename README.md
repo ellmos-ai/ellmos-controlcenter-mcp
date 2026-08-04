@@ -92,6 +92,7 @@ graph TD
 | `controlcenter_build_catalog` | Build a JSON catalog of local MCP servers, optionally including tool probes |
 | `controlcenter_list_skills` | Inventory deployed skills (`~/.claude/skills` by default; Claude Code convention, override with `ELLMOS_SKILLS_ROOT`) and the source skills library |
 | `controlcenter_find_skill` | Match **keywords** for a task or intent against the scanned skill catalogue and return ranked candidates — see [Querying skill search](#querying-skill-search) |
+| `controlcenter_resolve_semantic_route` | Validate an LLM/user-selected role, expert and persona against a provider-neutral map and verify endpoints against the live skill inventory |
 | `controlcenter_list_plugins` | Inventory installed plugins (`~/.claude/plugins` by default; Claude Code convention, override with `ELLMOS_PLUGINS_ROOT`) and local ellmos modules |
 
 ## Querying skill search
@@ -127,6 +128,18 @@ Two consequences:
 
 Until semantic search is supported (tracked in `TODO.md`), keyword queries are the intended usage —
 not a workaround.
+
+## Semantic role and skill routing
+
+`controlcenter_resolve_semantic_route` keeps semantic role selection with the caller LLM or the
+user, validates the selected coordinator/expert/persona edges against a
+`semantic-persona-routing.map.v1` file, and checks explicit skill endpoints against the current
+skill inventory. The default map is `~/.ellmos/controlcenter/routing/semantic-persona-routing-map.v1.json`
+and can be overridden with `ELLMOS_SEMANTIC_ROUTING_MAP` or a tool input.
+
+Lexical candidates remain separately labelled. A routing-map candidate can become a verified
+endpoint only after the caller explicitly confirms it as a second semantic/source signal and the
+skill is present in the live inventory. The route grants no tool or execution authority.
 
 ## Dashboard
 

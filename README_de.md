@@ -93,6 +93,7 @@ graph TD
 | `controlcenter_build_catalog` | JSON-Katalog der lokalen MCP-Server erzeugen, optional inklusive Tool-Probes |
 | `controlcenter_list_skills` | Inventar deployted Skills (`~/.claude/skills` als Standard; Claude-Code-Konvention, Override via `ELLMOS_SKILLS_ROOT`) und der Quell-Skill-Bibliothek |
 | `controlcenter_find_skill` | **Stichwörter** zu einer Aufgabe bzw. einem Intent gegen den gescannten Skill-Katalog matchen und gerankte Kandidaten zurückgeben — siehe [Skill-Suche richtig abfragen](#skill-suche-richtig-abfragen) |
+| `controlcenter_resolve_semantic_route` | Eine durch LLM/Nutzer gewählte Rolle, Expertin bzw. Experten und Persona gegen eine providerneutrale Map prüfen und Endpunkte im Live-Skill-Inventar verifizieren |
 | `controlcenter_list_plugins` | Inventar installierter Plugins (`~/.claude/plugins` als Standard; Claude-Code-Konvention, Override via `ELLMOS_PLUGINS_ROOT`) und lokaler ellmos-Module |
 
 ## Skill-Suche richtig abfragen
@@ -116,6 +117,19 @@ Zwei Konsequenzen:
 
 Solange keine semantische Suche unterstützt wird (vorgemerkt in `TODO.md`), sind Stichwort-Abfragen
 die vorgesehene Nutzung — kein Workaround.
+
+## Semantisches Rollen- und Skill-Routing
+
+`controlcenter_resolve_semantic_route` lässt die semantische Rollenwahl beim aufrufenden LLM oder
+beim Nutzer, validiert die gewählten Rollen-/Experten-/Persona-Kanten gegen eine
+`semantic-persona-routing.map.v1`-Datei und prüft explizite Skill-Endpunkte gegen das aktuelle
+Skill-Inventar. Standard ist `~/.ellmos/controlcenter/routing/semantic-persona-routing-map.v1.json`;
+überschrieben werden kann der Pfad über `ELLMOS_SEMANTIC_ROUTING_MAP` oder den Tool-Input.
+
+Lexikalische Kandidaten bleiben separat gekennzeichnet. Ein Map-Kandidat wird erst dann zu einem
+verifizierten Endpunkt, wenn der Aufrufer ihn als zweites semantisches bzw. Quellen-Signal explizit
+bestätigt und der Skill im Live-Inventar vorhanden ist. Die Route erteilt keine Tool- oder
+Ausführungsberechtigung.
 
 ## Auflösungsgebundene Fähigkeitssuche
 
