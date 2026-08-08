@@ -1,8 +1,8 @@
 # ellmos ControlCenter MCP
 
-> MCP control plane for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, and a local dashboard.
+> Read-mostly MCP administration server for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, and a local dashboard. It prepares configuration; it does not change running sessions, proxy other servers, or enforce permissions.
 
-Last-checked: 2026-08-04
+Last-checked: 2026-08-08
 Test status: 97/97 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
@@ -16,6 +16,8 @@ Runtime: Node.js >=20
 ellmos ControlCenter MCP is an alpha-stage Model Context Protocol server for local MCP administration. It discovers local MCP repositories and registered stack compositions, reads MCP profile files, resolves inherited profile configurations, recommends profiles and capability bundles for tasks, runs initial profile policy audits, builds local server catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, supports maintained output text sets for `de`, `en`, `es`, `zh`, `ja`, and `ru`, and can start a local dashboard.
 
 It is useful for local MCP stack visibility and profile management. It is not a hardened security gateway. Gateway mode, enforced tool-level permissions, authentication, and hard isolation are planned but not implemented.
+
+Scope boundary: ControlCenter is read-mostly. Its write actions are limited to generating an MCP configuration file, writing a catalog file, and — via the dashboard, with confirmation and backup — toggling servers in a profile file. It never changes a running session, never sits in the request path, never executes a tool on another MCP server, and enforces no permissions. It owns no domain data: policies, decisions, memory, tasks, tickets, and automations belong to other components.
 
 ## Tools
 
@@ -33,8 +35,8 @@ It is useful for local MCP stack visibility and profile management. It is not a 
 - `controlcenter_assign_tool_bundles`: assign probed MCP tools to capability bundles.
 - `controlcenter_list_bundles`: group local servers by capability bundle.
 - `controlcenter_suggest_bundles`: recommend capability bundles for a task.
-- `controlcenter_list_profiles`: list Claude profile files.
-- `controlcenter_suggest_profile`: recommend a Claude profile for a task.
+- `controlcenter_list_profiles`: list MCP profile files from the profile root (defaults to `~/.claude/profiles`, override with `ELLMOS_PROFILE_ROOT`).
+- `controlcenter_suggest_profile`: recommend a profile for a task.
 - `controlcenter_resolve_profile`: resolve profile inheritance, removals, and disabled servers.
 - `controlcenter_switch_profile`: generate a resolved `--mcp-config` file and launch command.
 - `controlcenter_audit_profile`: run initial profile policy checks.
@@ -105,4 +107,4 @@ ellmos-controlcenter-mcp
 - `src/dashboard.ts`: local dashboard server.
 - `test/catalog.test.ts` and `test/semanticRouting.test.ts`: unit coverage for catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, and semantic-route validation (97 tests passing in the full suite).
 
-## Last-checked: 2026-08-02
+## Last-checked: 2026-08-08

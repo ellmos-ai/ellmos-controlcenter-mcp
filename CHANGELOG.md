@@ -7,6 +7,14 @@
 - Keep semantic role selection with the caller LLM or user, require an explicit second signal before promoting a map candidate, and preserve visible endpoint gaps.
 - Validate nested routing-map records, enums, stable IDs, references, and uniqueness before use; source-only or ambiguous skill deployments can no longer become verified live endpoints.
 
+### Documentation
+- Align the public description with what the code actually does. The headline noun changes from "MCP control plane" to "MCP administration server" in `README.md`, `README_de.md`, `llms.txt`, `package.json`, `server.json`, and `glama.json`, and each one-line registry description now carries the qualifier that was previously only in the README body: ControlCenter prepares configuration, and does not change running sessions, sit in the request path, execute another server's tools, or enforce permissions.
+- Add an explicit scope-boundary paragraph to `README.md`, `README_de.md`, and `llms.txt` that names the write actions and states that ControlCenter owns no domain data.
+- Correct the tool count from 20 to 24 in the ecosystem tables of `README.md` and `README_de.md` and in `glama.json` (`tools.count`); 24 tools are registered in `src/index.ts`.
+- Correct the Vitest badge in `README.md` and `README_de.md` from 79 to the verified full-suite count.
+- Refresh `Last-checked` in `llms.txt` to 2026-08-08.
+- Describe `controlcenter_list_profiles` and `controlcenter_suggest_profile` in `llms.txt` as provider-neutral, matching the `ELLMOS_PROFILE_ROOT` behaviour already documented in the README.
+
 ### Security
 - Refresh transitive dependency overrides for `hono`, `fast-uri`, and `ip-address`; `npm audit` reports zero vulnerabilities.
 

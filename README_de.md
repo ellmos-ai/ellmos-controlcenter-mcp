@@ -12,7 +12,7 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-79%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-97%20passed-brightgreen.svg)](https://vitest.dev/)
 [![Ecosystem](https://img.shields.io/badge/Ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
 [![Umbrella](https://img.shields.io/badge/Umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
 [![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-success.svg)](llms.txt)
@@ -20,7 +20,11 @@
 > [!NOTE]
 > **LLM- / KI-Agenten-Integration:** Dieses Repository stellt eine [`llms.txt`](llms.txt)-Indexdatei für Kontext-Optimierung, RAG-Discovery und Agenten-Navigation bereit.
 
-Ein Alpha-**Model Context Protocol (MCP) Control-Plane-Server** für lokale MCP-Stacks. ControlCenter entdeckt lokale MCP-Server, liest MCP-Profildateien, gruppiert Server in Capability-Bundles, empfiehlt Profile für Aufgaben, erzeugt Kataloge, fragt echte MCP-Toollisten aus lokalen Repos oder Profilen ab, ordnet Tools Capability-Bundles zu und bietet optional ein lokales Dashboard.
+Ein Alpha-**Model Context Protocol (MCP) Administrationsserver** für lokale MCP-Stacks. ControlCenter entdeckt lokale MCP-Server, liest MCP-Profildateien, gruppiert Server in Capability-Bundles, empfiehlt Profile für Aufgaben, erzeugt Kataloge, fragt echte MCP-Toollisten aus lokalen Repos oder Profilen ab, ordnet Tools Capability-Bundles zu und bietet optional ein lokales Dashboard.
+
+> **Was „Steuerung" hier bedeutet — bitte vor dem Einsatz lesen.** ControlCenter ist eine **überwiegend lesende Administrationsfläche**. Es liest, inventarisiert, löst auf, auditiert und *erzeugt Konfiguration*. Die einzigen schreibenden Aktionen sind das Erzeugen einer MCP-Konfigurationsdatei (`controlcenter_switch_profile`) und das Schreiben eines Katalogs (`controlcenter_build_catalog`); das Dashboard kann zusätzlich Server in einer Profildatei umschalten — mit Rückfrage und Backup.
+>
+> Es ändert **keine** laufende Sitzung, liegt nicht im Anfragepfad, proxyt oder führt keine Tools fremder Server aus und erzwingt keine Rechte. In der ellmos-Typologie ist es eine *Control-Plane* im engen Sinn — es verwaltet MCP-Server, Profile und Stacks, ohne Fachdaten zu besitzen — und **kein** Gateway.
 
 > **Anbieterhinweis:** ControlCenter funktioniert mit jedem MCP-fähigen Client (Claude Code, Codex, Gemini oder beliebiger stdio-basierter MCP-Host). Die Profilverwaltungs-Tools lesen standardmäßig das Profilverzeichnis von Claude Code (`~/.claude/profiles`), akzeptieren aber beliebige Verzeichnisse über `ELLMOS_PROFILE_ROOT`. Skill- und Plugin-Inventar-Tools folgen standardmäßig Claude-Code-Konventionen; die Umgebungsvariablen unten ermöglichen Overrides.
 
@@ -64,7 +68,7 @@ graph TD
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI-Checks:** `npm run test` und `npm run build`
-- **Ziel:** Lokale MCP-Stacks sichtbar, prüfbar und leichter steuerbar machen
+- **Ziel:** Lokale MCP-Stacks sichtbar, prüfbar und reproduzierbar konfigurierbar machen
 - **Schwerpunkt:** Kataloge, Profilübersicht, Profilempfehlung, Bundle-Empfehlung, profilfähige Toollisten-Probes, Tool-Bundle-Zuordnung, i18n und erste Audits
 
 ## Tools
@@ -376,7 +380,7 @@ Dieser MCP-Server ist Teil des **[ellmos-ai](https://github.com/ellmos-ai)**-Ök
 | [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 22 | Code-Analyse, JSON-Reparatur, Imports, Diffs, Regex | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
 | [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | Dateireparatur, Formatkonvertierung, Batch-Operationen | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n-Workflow-Verwaltung über KI-Assistenten | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **20** | **MCP-Stack-Discovery, Profilverwaltung, Control Plane** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **24** | **MCP-Stack-, Tool- und Skill-Discovery; Profilauflösung, Audit und Konfigurationserzeugung** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 | [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 45 | Local-first LLM-Gedächtnis, Wissen, Zustand, Routing, Schwarm-Orchestrierung | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
 | [ServerCommander](https://github.com/ellmos-ai/ellmos-servercommander-mcp) | 8 | Server-Operationen: Health-Checks, Log-Analyse, Deploy-Dry-Runs, Mail-Diagnose | [`ellmos-servercommander-mcp`](https://www.npmjs.com/package/ellmos-servercommander-mcp) (alpha) |
 | [Blender Use](https://github.com/ellmos-ai/ellmos-blender-use-mcp) | 3 | Headless Blender-Asset-QA und FBX-Reimport-Verifikation | [`ellmos-blender-use-mcp`](https://www.npmjs.com/package/ellmos-blender-use-mcp) (alpha) |
