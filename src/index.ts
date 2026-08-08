@@ -35,6 +35,16 @@ import {
   t,
   type Lang
 } from "./i18n/index.js";
+import {
+  checkLock,
+  evaluatePermission,
+  formatDecisions,
+  formatLockCheck,
+  formatLockList,
+  formatPermission,
+  listDecisions,
+  listLocks
+} from "./controlroom.js";
 import { auditResolvedProfile, loadPolicyRules, summarizePolicyFindings } from "./policy.js";
 import { produceActualSelfReceipt, publicActualSelfReceiptError } from "./actualSelfReceipt.js";
 import { buildToolCatalog, scanLocalServerTools, scanProfileServerTools, type ServerToolCatalog } from "./toolCatalog.js";
@@ -1082,6 +1092,107 @@ server.registerTool(
     ].join("\n");
 
     return { content: [{ type: "text", text: output }] };
+  }
+);
+
+// ---------------------------------------------------------------------------
+// Host registers: locks, permissions, open decisions (read-only)
+//
+// These answer "what applies on THIS machine right now". They read the host's
+// canonical registers and never write: no lock is set or released, no decision is
+// answered. When a register is unconfigured or unreadable they report "unknown"
+// and never "free" — a lock checker that guesses in the reassuring direction is
+// more dangerous than none at all.
+// ---------------------------------------------------------------------------
+
+server.registerTool(
+  "controlcenter_list_locks",
+  {
+    title: "List active project locks on this host",
+    description:
+      "Lists every active LOCK*.txt across the configured roots: path, type, scope, owner and remaining time. " +
+      "Read-only — it never creates, renews or releases a lock. A full scan over cloud-synced storage takes minutes, " +
+      "so the scan runs under a wall-clock budget and reports explicitly when roots were left unscanned; an incomplete " +
+      "scan says nothing about the roots it never reached. Requires ELLMOS_LOCK_SCRIPTS; without it the tool is inert. " +
+      "For a single path use controlcenter_check_lock, which is far faster and also sees inherited locks.",
+    inputSchema: {
+      budgetSeconds: z.number().int().positive().max(600).default(60)
+        .describe("Wall-clock budget, checked between roots: a root already being scanned runs to completion, " +
+          "so the total can overshoot. Roots not started within the budget are reported as unscanned."),
+      rootsFile: z.string().optional()
+        .describe("Path to lock_roots.json. Defaults to ELLMOS_LOCK_ROOTS, then the file beside the lock scripts.")
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ budgetSeconds, rootsFile }) => {
+    const result = await listLocks({ budgetSeconds, rootsFile });
+    return { content: [{ type: "text", text: formatLockList(result) }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_check_lock",
+  {
+    title: "Check whether a specific path is locked",
+    description:
+      "Answers whether one path may be modified, counting locks inherited from any parent directory — a LOCK.txt " +
+      "in a parent locks everything beneath it. Reports the effective lock with its type, scope and expiry: " +
+      "LOCK.user.* and LOCK.condition.* never expire on time. Read-only. Fails closed: if the path is unreadable, " +
+      "the configuration is missing or the check errors, the verdict is 'unknown' and safe-to-proceed is false — " +
+      "it never reports a path as free on a guess.",
+    inputSchema: {
+      path: z.string().min(1).describe("Absolute path to the file or directory that is about to be modified.")
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ path: targetPath }) => {
+    const result = await checkLock(targetPath);
+    return { content: [{ type: "text", text: formatLockCheck(result) }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_evaluate_permission",
+  {
+    title: "Evaluate an action against the nearest permission register",
+    description:
+      "Reports what a LOCK.permissions register allows an agent to do at a path, using the nearest register found in " +
+      "the path or any parent, with precedence deny > ask > allow > default. This is a report, not enforcement: it " +
+      "grants no authority and blocks nothing. If no register exists anywhere up the chain, the answer is 'unknown' " +
+      "rather than 'allow' — the absence of a rule is not a permission.",
+    inputSchema: {
+      path: z.string().min(1).describe("Absolute path the action would touch."),
+      agent: z.string().min(1).describe("Agent identity as used in applies_to_agents, e.g. claude, codex, gemini."),
+      action: z.string().min(1)
+        .describe("Action in register syntax, e.g. Read(a.txt), Write(**/CREDENTIALS/**), Bash(rm:*), mcp__vendor__tool.")
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ path: targetPath, agent, action }) => {
+    const result = await evaluatePermission(targetPath, agent, action);
+    return { content: [{ type: "text", text: formatPermission(result) }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_list_decisions",
+  {
+    title: "List open user decisions",
+    description:
+      "Lists pending decisions from the host's decision register — identifier, date, title, status and scope only. " +
+      "Question texts, options and recommendations are deliberately not returned; read those in the register itself. " +
+      "Read-only: it cannot answer or close a decision. Reports when its index is older than the source files, and " +
+      "when the register is unconfigured it says so rather than reporting zero open decisions.",
+    inputSchema: {
+      status: z.string().default("OFFEN")
+        .describe("Status class to filter by, e.g. OFFEN, ENTSCHIEDEN_UMSETZUNG_OFFEN, DONE, ARCHIVIERT, or ALL."),
+      limit: z.number().int().positive().max(200).default(50).describe("Maximum number of entries to return.")
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ status, limit }) => {
+    const result = await listDecisions({ status, limit });
+    return { content: [{ type: "text", text: formatDecisions(result) }] };
   }
 );
 

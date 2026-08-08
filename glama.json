@@ -21,7 +21,7 @@
     "mcp-server"
   ],
   "tools": {
-    "count": 24
+    "count": 28
   },
   "features": [
     "Profile management",
@@ -29,6 +29,7 @@
     "Local server discovery",
     "Skill catalog",
     "Stack descriptions",
-    "Policy audits"
+    "Policy audits",
+    "Host lock and permission registers (read-only)"
   ]
 }

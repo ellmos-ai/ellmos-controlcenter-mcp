@@ -3,6 +3,14 @@
 ## Unreleased
 
 ### Added
+- Add four read-only tools for this host's own registers: `controlcenter_list_locks`, `controlcenter_check_lock`, `controlcenter_evaluate_permission`, and `controlcenter_list_decisions`. They answer "what applies on this machine right now" — project locks, agent-neutral permissions, and pending user decisions — a question no other tool in the family covered.
+- Resolve locks along the whole ancestor chain in `controlcenter_check_lock`: a `LOCK.txt` in a parent directory locks everything beneath it, so the effective lock is reported with its inheritance distance rather than only a file in the same folder. The canonical scanner has no path-scoped query at all, and an ancestor walk answers in milliseconds where a full scan takes minutes.
+- Delegate every lock rule — expiry, protected `LOCK.user.*` and `LOCK.condition.*` types that never expire on time, scope parsing, and permission precedence `deny > ask > allow > default` — to the host's canonical Python modules through a thin bridge script, instead of reimplementing them in TypeScript. A second implementation of the lock rules would drift from the spec on its next change, and a lock checker that is quietly wrong is worse than none.
+- Fail closed throughout: a missing configuration, absent interpreter, unreadable path, timeout, or unparseable answer yields `unknown` with safe-to-proceed `false`, never a reassuring `clear`. Absence of a permission register yields `unknown` rather than `allow`, because the absence of a rule is not a permission.
+- Report an incomplete lock scan as incomplete and name the roots it never reached, rather than presenting a partial result as the full picture. `controlcenter_list_locks` runs under a wall-clock budget checked between roots.
+- Report when the decision index is older than its source files, so a stale list is visibly stale.
+- Return only identifier, date, title, status, and scope from `controlcenter_list_decisions`; question texts, options, and recommendations stay in the register because they can describe personal circumstances.
+- Keep all four tools inert until configured via `ELLMOS_LOCK_SCRIPTS`, `ELLMOS_LOCK_ROOTS`, `ELLMOS_DECISIONS_ROOT`, and `ELLMOS_PYTHON`. On a machine without these registers they report "not configured" instead of guessing or crashing.
 - Add `controlcenter_resolve_semantic_route` as a fail-closed adapter between a provider-neutral persona/role map and the current skill inventory.
 - Keep semantic role selection with the caller LLM or user, require an explicit second signal before promoting a map candidate, and preserve visible endpoint gaps.
 - Validate nested routing-map records, enums, stable IDs, references, and uniqueness before use; source-only or ambiguous skill deployments can no longer become verified live endpoints.
@@ -10,8 +18,9 @@
 ### Documentation
 - Align the public description with what the code actually does. The headline noun changes from "MCP control plane" to "MCP administration server" in `README.md`, `README_de.md`, `llms.txt`, `package.json`, `server.json`, and `glama.json`, and each one-line registry description now carries the qualifier that was previously only in the README body: ControlCenter prepares configuration, and does not change running sessions, sit in the request path, execute another server's tools, or enforce permissions.
 - Add an explicit scope-boundary paragraph to `README.md`, `README_de.md`, and `llms.txt` that names the write actions and states that ControlCenter owns no domain data.
-- Correct the tool count from 20 to 24 in the ecosystem tables of `README.md` and `README_de.md` and in `glama.json` (`tools.count`); 24 tools are registered in `src/index.ts`.
-- Correct the Vitest badge in `README.md` and `README_de.md` from 79 to the verified full-suite count.
+- Correct the tool count from 20 to 24 in the ecosystem tables of `README.md` and `README_de.md` and in `glama.json` (`tools.count`), then to 28 with the host-register tools; 28 tools are registered in `src/index.ts`.
+- Correct the Vitest badge in `README.md` and `README_de.md` from 79 to the verified full-suite count, now 124.
+- Document the host registers in `README.md`, `README_de.md`, and `llms.txt`: what they read, that they never write, how they fail closed, the four environment variables, what `controlcenter_list_decisions` deliberately withholds, and why a full lock scan is expensive.
 - Refresh `Last-checked` in `llms.txt` to 2026-08-08.
 - Describe `controlcenter_list_profiles` and `controlcenter_suggest_profile` in `llms.txt` as provider-neutral, matching the `ELLMOS_PROFILE_ROOT` behaviour already documented in the README.
 

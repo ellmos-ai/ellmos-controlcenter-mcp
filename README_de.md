@@ -12,7 +12,7 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-97%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-124%20passed-brightgreen.svg)](https://vitest.dev/)
 [![Ecosystem](https://img.shields.io/badge/Ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
 [![Umbrella](https://img.shields.io/badge/Umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
 [![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-success.svg)](llms.txt)
@@ -99,6 +99,64 @@ graph TD
 | `controlcenter_find_skill` | **Stichwörter** zu einer Aufgabe bzw. einem Intent gegen den gescannten Skill-Katalog matchen und gerankte Kandidaten zurückgeben — siehe [Skill-Suche richtig abfragen](#skill-suche-richtig-abfragen) |
 | `controlcenter_resolve_semantic_route` | Eine durch LLM/Nutzer gewählte Rolle, Expertin bzw. Experten und Persona gegen eine providerneutrale Map prüfen und Endpunkte im Live-Skill-Inventar verifizieren |
 | `controlcenter_list_plugins` | Inventar installierter Plugins (`~/.claude/plugins` als Standard; Claude-Code-Konvention, Override via `ELLMOS_PLUGINS_ROOT`) und lokaler ellmos-Module |
+| `controlcenter_list_locks` | Listet aktive `LOCK*.txt`-Projektsperren über die konfigurierten Wurzeln — siehe [Host-Register](#host-register-sperren-rechte-entscheidungen) |
+| `controlcenter_check_lock` | Prüft, ob ein Pfad gesperrt ist — einschließlich der aus Elternordnern geerbten Sperren |
+| `controlcenter_evaluate_permission` | Meldet, was das nächstgelegene `LOCK.permissions`-Register einem Agenten an diesem Pfad erlaubt |
+| `controlcenter_list_decisions` | Listet offene Nutzerentscheidungen mit Kennung, Datum, Titel und Status |
+
+## Host-Register: Sperren, Rechte, Entscheidungen
+
+Die vier Werkzeuge oben beantworten eine andere Frage als der Rest dieses Servers: nicht
+*„Was kann ich konfigurieren?"*, sondern *„Was gilt auf dieser Maschine gerade?"* Sie lesen drei
+host-lokale Register — Projektsperren, ein agent-neutrales Rechteregister und die Liste offener
+Entscheidungen.
+
+Sie sind **rein lesend**. Keine Sperre wird gesetzt, erneuert oder gelöst, keine Entscheidung
+beantwortet. Insbesondere `LOCK.user.*` entfernt ausschließlich der Nutzer; nichts hier kann sie
+anfassen.
+
+**Sie fallen zur sicheren Seite.** Ist ein Register nicht konfiguriert, ein Pfad unlesbar, der
+Interpreter nicht vorhanden oder die Prüfung fehlerhaft, lautet das Urteil `unknown` und
+*safe to proceed* ist `no` — niemals ein beruhigendes „frei". Ein Sperrprüfer, der im Zweifel in
+die beruhigende Richtung rät, ist gefährlicher als gar keiner.
+
+**Vererbung wird berücksichtigt.** Eine `LOCK.txt` in einem Elternordner sperrt alles darunter;
+`controlcenter_check_lock` läuft deshalb die gesamte Elternkette hoch und meldet die *wirksame*
+Sperre samt Abstand — nicht bloß eine Datei im selben Ordner.
+
+**Die Sperr-Semantik wird hier nicht nachgebaut.** Ein kleines Brückenskript delegiert jede Regel
+— Verfall, geschützte Sperrtypen, Scope-Zerlegung, Rechte-Präzedenz `deny > ask > allow > default`
+— an die kanonischen Python-Module des Hosts. Eine zweite Implementierung würde bei der nächsten
+Änderung der Spezifikation auseinanderlaufen. Dies ist die einzige Stelle, an der der Server
+Python aufruft; fehlt ein Interpreter, fallen die Werkzeuge zur sicheren Seite wie bei jeder
+anderen unerfüllten Voraussetzung.
+
+### Konfiguration
+
+Die Werkzeuge sind **ohne Konfiguration still inaktiv** — auf einer Maschine, die diese Register
+nicht eingerichtet hat, gibt es sie schlicht nicht:
+
+| Variable | Zweck |
+|---|---|
+| `ELLMOS_LOCK_SCRIPTS` | Verzeichnis mit den kanonischen `lock_utils.py`, `permissions.py` und `lock_scan.py`. Pflicht für die drei Sperr- und Rechte-Werkzeuge. |
+| `ELLMOS_LOCK_ROOTS` | Optionaler Pfad zu `lock_roots.json`. Standard ist die Datei neben den Lock-Skripten. |
+| `ELLMOS_DECISIONS_ROOT` | Verzeichnis mit der Entscheidungskette und ihrem generierten Index. Pflicht für `controlcenter_list_decisions`. |
+| `ELLMOS_PYTHON` | Interpreter für die Brücke. Standard `python`, Rückfall auf `python3`. |
+
+### Was diese Werkzeuge bewusst nicht zurückgeben
+
+`controlcenter_list_decisions` liefert Kennung, Datum, Titel, Status und Scope — **nicht** den
+Fragetext, die Optionen oder die Empfehlung, die persönliche Umstände enthalten können. Die
+stehen im Register selbst.
+
+### Was ein Vollscan kostet
+
+`controlcenter_list_locks` läuft über jede konfigurierte Wurzel. Über cloud-synchronisierten
+Speicher dauert das Minuten, deshalb läuft der Scan unter einem Zeitbudget, das **zwischen** den
+Wurzeln geprüft wird. Reicht es nicht, wird das Ergebnis als **unvollständig** markiert und nennt
+die Wurzeln, die nie erreicht wurden — ein unvollständiger Scan beweist über sie nichts. Für einen
+einzelnen Pfad ist `controlcenter_check_lock` das richtige Werkzeug und antwortet in
+Millisekunden.
 
 ## Skill-Suche richtig abfragen
 
@@ -380,7 +438,7 @@ Dieser MCP-Server ist Teil des **[ellmos-ai](https://github.com/ellmos-ai)**-Ök
 | [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 22 | Code-Analyse, JSON-Reparatur, Imports, Diffs, Regex | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
 | [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | Dateireparatur, Formatkonvertierung, Batch-Operationen | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n-Workflow-Verwaltung über KI-Assistenten | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **24** | **MCP-Stack-, Tool- und Skill-Discovery; Profilauflösung, Audit und Konfigurationserzeugung** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **28** | **MCP-Stack-, Tool- und Skill-Discovery; Profilauflösung und Audit; Host-Register für Sperren, Rechte und Entscheidungen** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 | [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 45 | Local-first LLM-Gedächtnis, Wissen, Zustand, Routing, Schwarm-Orchestrierung | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
 | [ServerCommander](https://github.com/ellmos-ai/ellmos-servercommander-mcp) | 8 | Server-Operationen: Health-Checks, Log-Analyse, Deploy-Dry-Runs, Mail-Diagnose | [`ellmos-servercommander-mcp`](https://www.npmjs.com/package/ellmos-servercommander-mcp) (alpha) |
 | [Blender Use](https://github.com/ellmos-ai/ellmos-blender-use-mcp) | 3 | Headless Blender-Asset-QA und FBX-Reimport-Verifikation | [`ellmos-blender-use-mcp`](https://www.npmjs.com/package/ellmos-blender-use-mcp) (alpha) |

@@ -12,6 +12,7 @@
   "files": [
     "dist/",
     "assets/",
+    "scripts/controlroom_bridge.py",
     "data/capability-bundles.json",
     "data/policy-rules.json",
     "server.json",

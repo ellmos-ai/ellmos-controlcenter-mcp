@@ -11,7 +11,7 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-97%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-124%20passed-brightgreen.svg)](https://vitest.dev/)
 [![Ecosystem](https://img.shields.io/badge/Ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
 [![Umbrella](https://img.shields.io/badge/Umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
 [![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-success.svg)](llms.txt)
@@ -98,6 +98,62 @@ graph TD
 | `controlcenter_find_skill` | Match **keywords** for a task or intent against the scanned skill catalogue and return ranked candidates — see [Querying skill search](#querying-skill-search) |
 | `controlcenter_resolve_semantic_route` | Validate an LLM/user-selected role, expert and persona against a provider-neutral map and verify endpoints against the live skill inventory |
 | `controlcenter_list_plugins` | Inventory installed plugins (`~/.claude/plugins` by default; Claude Code convention, override with `ELLMOS_PLUGINS_ROOT`) and local ellmos modules |
+| `controlcenter_list_locks` | List active `LOCK*.txt` project locks across the configured roots — see [Host registers](#host-registers-locks-permissions-decisions) |
+| `controlcenter_check_lock` | Check whether one path is locked, including locks inherited from parent directories |
+| `controlcenter_evaluate_permission` | Report what the nearest `LOCK.permissions` register allows an agent to do at a path |
+| `controlcenter_list_decisions` | List pending user decisions by identifier, date, title and status |
+
+## Host registers: locks, permissions, decisions
+
+The four tools above answer a different question from the rest of this server: not
+*"what can I configure?"* but *"what applies on this machine right now?"* They read three
+host-local registers — project locks, an agent-neutral permission register, and a pending
+decision list.
+
+They are **read-only**. No lock is created, renewed or released; no decision is answered.
+`LOCK.user.*` locks in particular are removed by the user alone, and nothing here can touch
+them.
+
+**They fail closed.** If a register is unconfigured, a path is unreadable, the interpreter is
+missing or a check errors, the verdict is `unknown` and *safe to proceed* is `no` — never a
+reassuring "clear". A lock checker that guesses in the reassuring direction is more dangerous
+than none at all.
+
+**Inheritance is respected.** A `LOCK.txt` in a parent directory locks everything beneath it,
+so `controlcenter_check_lock` walks the whole ancestor chain and reports the effective lock
+with its distance, not just a file sitting in the same folder.
+
+**Lock semantics are not reimplemented here.** A small bridge script delegates every rule —
+expiry, protected lock types, scope parsing, permission precedence `deny > ask > allow > default`
+— to the host's canonical Python modules. A second implementation would drift from the spec on
+the next change to it. This is the one place where the server calls Python; if no interpreter is
+available the tools fail closed like any other unmet precondition.
+
+### Configuration
+
+These tools are **inert until configured**, because these registers do not exist on a
+machine that has not set them up:
+
+| Variable | Purpose |
+|---|---|
+| `ELLMOS_LOCK_SCRIPTS` | Directory holding the canonical `lock_utils.py`, `permissions.py` and `lock_scan.py`. Required by the three lock and permission tools. |
+| `ELLMOS_LOCK_ROOTS` | Optional path to `lock_roots.json`. Defaults to the file beside the lock scripts. |
+| `ELLMOS_DECISIONS_ROOT` | Directory holding the decision chain and its generated index. Required by `controlcenter_list_decisions`. |
+| `ELLMOS_PYTHON` | Interpreter to run the bridge with. Defaults to `python`, falling back to `python3`. |
+
+### What these tools deliberately do not return
+
+`controlcenter_list_decisions` returns identifiers, dates, titles, status and scope — not the
+question texts, options or recommendations, which can describe personal circumstances. Read
+those in the register itself.
+
+### Cost of a full scan
+
+`controlcenter_list_locks` walks every configured root. Over cloud-synced storage that takes
+minutes, so the scan runs under a wall-clock budget, checked between roots. If the budget runs
+out, the result is marked **incomplete** and names the roots that were never reached — an
+incomplete scan proves nothing about them. For a single path, `controlcenter_check_lock` is the
+right tool and answers in milliseconds.
 
 ## Querying skill search
 
@@ -377,7 +433,7 @@ This MCP server is part of the **[ellmos-ai](https://github.com/ellmos-ai)** eco
 | [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 22 | Code analysis, JSON repair, imports, diffs, regex | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
 | [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | File repair, format conversion, batch operations | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n workflow management via AI assistants | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **24** | **MCP stack, tool and skill discovery; profile resolution, audit, and config generation** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **28** | **MCP stack, tool and skill discovery; profile resolution and audit; host lock, permission and decision registers** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 | [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 45 | Local-first LLM memory, knowledge, state, routing, swarm orchestration | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
 | [ServerCommander](https://github.com/ellmos-ai/ellmos-servercommander-mcp) | 8 | Server operations: health checks, log analysis, deploy dry-runs, mail diagnostics | [`ellmos-servercommander-mcp`](https://www.npmjs.com/package/ellmos-servercommander-mcp) (alpha) |
 | [Blender Use](https://github.com/ellmos-ai/ellmos-blender-use-mcp) | 3 | Headless Blender asset QA and FBX reimport verification | [`ellmos-blender-use-mcp`](https://www.npmjs.com/package/ellmos-blender-use-mcp) (alpha) |
