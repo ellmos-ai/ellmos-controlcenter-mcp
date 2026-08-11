@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Security (2026-08-11)
+- Close all open Dependabot advisories in lockfile (`express-rate-limit` ^8.6.2, `nanoid` ^3.3.17, `fast-uri` ^3.1.5, `hono` ^4.13.0). `npm audit` reports 0 vulnerabilities.
+
 ### Added
 - Add four read-only tools for this host's own registers: `controlcenter_list_locks`, `controlcenter_check_lock`, `controlcenter_evaluate_permission`, and `controlcenter_list_decisions`. They answer "what applies on this machine right now" — project locks, agent-neutral permissions, and pending user decisions — a question no other tool in the family covered.
 - Resolve locks along the whole ancestor chain in `controlcenter_check_lock`: a `LOCK.txt` in a parent directory locks everything beneath it, so the effective lock is reported with its inheritance distance rather than only a file in the same folder. The canonical scanner has no path-scoped query at all, and an ancestor walk answers in milliseconds where a full scan takes minutes.
