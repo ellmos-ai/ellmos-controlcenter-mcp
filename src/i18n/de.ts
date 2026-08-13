@@ -57,6 +57,8 @@ export const de: Translations = {
       version: "Version",
       tools: "Tools",
       serverJson: "server.json",
+      kind: "Art",
+      persistentState: "Eigener Zustand",
       path: "Pfad"
     },
     profile: {
@@ -122,7 +124,9 @@ export const de: Translations = {
     deployedSkills: (count) => `## Deployte Skills (${count})`,
     sourceOnlySkills: (count) => `## Nur-Quell-Skills (${count})`,
     claudeCodePlugins: (count) => `## Claude Code Plugins (${count})`,
-    localModules: (count) => `## Lokale Module (${count})`
+    localModules: (count) => `## Lokale Module (${count})`,
+    catalogOnlyServers: (count) => `## Nur im Katalog, kein Verzeichnis (${count})`,
+    mcpStateOwner: "Zustandshoheit"
   },
   messages: {
     sourceLocalRepos: (root) => `Lokale MCP-Repos in ${root}`,
@@ -154,7 +158,19 @@ export const de: Translations = {
     skillsTotal: (total, deployed, sourceOnly) => `Gesamt: ${total} (${deployed} deployt, ${sourceOnly} nur-Quelle)`,
     pluginsTotal: (total, plugins, modules) => `Gesamt: ${total} (${plugins} Plugins, ${modules} Module)`,
     noSkills: "Keine Skills gefunden.",
-    noPlugins: "Keine Plugins oder Module gefunden."
+    noPlugins: "Keine Plugins oder Module gefunden.",
+    mcpCatalogOk: (catalogPath, count, updated) => `MCP-Katalog: ${count} Einträge aus ${catalogPath}${updated ? ` (Stand ${updated})` : ""}`,
+    mcpCatalogMissing: (catalogPath) => `MCP-Katalog nicht gefunden (${catalogPath}) - Art und Zustandshoheit bleiben leer.`,
+    mcpCatalogUnreadable: (catalogPath) => `MCP-Katalog nicht lesbar (${catalogPath}) - Art und Zustandshoheit bleiben leer.`,
+    mcpCatalogSchemaMismatch: (catalogPath, schema) => `MCP-Katalog hat ein fremdes Schema (${catalogPath}, gefunden: ${schema}, erwartet: ellmos.mcps.v1) - Art und Zustandshoheit bleiben leer.`,
+    mcpRootUnreadable: (root) => `MCP-Root nicht lesbar: ${root}`,
+    mcpServerUnknown: (serverId, root) => `MCP-Server '${serverId}' ist weder unter ${root} noch im Katalog bekannt.`,
+    mcpServerCatalogOnly: (root) => `Nur im Katalog geführt, kein Verzeichnis unter ${root}.`,
+    mcpServerNotInCatalog: (serverId) => `Kein Katalogeintrag für '${serverId}' - Art, Zustandshoheit und Komposition unbekannt.`,
+    mcpWraps: "Umhüllt",
+    mcpWrapsTarget: "Umhüllungsziel",
+    mcpTargetKind: "Zielart",
+    mcpComposition: "Komposition"
   },
   policy: {
     invalidServerConfig: "Server-Konfiguration ist kein Objekt.",
@@ -184,6 +200,10 @@ export const de: Translations = {
     controlcenter_list_local_servers: {
       title: "Lokale MCP-Server listen",
       description: "Scannt den lokalen MCP-Root und listet gefundene MCP-Repos mit Metadaten auf."
+    },
+    controlcenter_describe_mcp: {
+      title: "MCP-Server beschreiben",
+      description: "Beschreibt einen lokalen MCP-Server aus mcps.catalog.v1.json: Art, Namensraum, Zustandshoheit, Umhüllung und Komposition."
     },
     controlcenter_list_tools: {
       title: "MCP-Tools listen",
@@ -285,6 +305,7 @@ export const de: Translations = {
     skillIntent: "Stichwörter/Fachbegriffe zur Aufgabe, gegen die der Skill-Katalog gematcht wird (z. B. \"Bug debuggen Testfehler\" statt \"mein Programm stürzt beim Speichern ab\"). Ganze Sätze werden noch nicht semantisch ausgewertet; Füllwörter führen dann zu Fehltreffern.",
     skillFinderLimit: "Maximale Anzahl gerankter Skill-Kandidaten. Standard: 5.",
     stacksRoot: "Optionaler Pfad zum Ordner mit stacks.catalog.json. Standard ist der lokale .AI/.STACKS-Ordner.",
+    serverId: "Verzeichnisname, Katalog-ID oder npm-Paketname des MCP-Servers.",
     stackId: "Stabile Stack-ID aus stacks.catalog.json.",
     contextPackLevel: "Umfang des Kontextpakets: short, execution oder full.",
     pluginsRoot: "Optionaler Pfad zum Claude Code Plugins-Ordner. Standard ist ~/.claude/plugins.",

@@ -17,7 +17,13 @@ import {
   type BundleToolAssignment,
   type CapabilityBundle
 } from "./bundles.js";
-import { DEFAULT_MCP_ROOT, scanLocalServers } from "./catalog.js";
+import { DEFAULT_MCP_ROOT, scanLocalServers, type LocalServerSummary } from "./catalog.js";
+import {
+  describeMcpServer,
+  scanLocalServerLandscape,
+  type McpCatalog,
+  type McpCatalogEntry
+} from "./mcpCatalog.js";
 import { buildStackContextPack, CONTEXT_PACK_LEVELS } from "./contextPack.js";
 import { DEFAULT_STACKS_ROOT, describeStack, scanStacks, type StackSummary } from "./stacks.js";
 import { DEFAULT_PLUGINS_ROOT, DEFAULT_MODULES_ROOT, scanInstalledPlugins, scanModules, scanPluginsAndModules, type PluginSummary } from "./plugins.js";
@@ -58,29 +64,52 @@ import {
 
 const server = new McpServer({
   name: "ellmos-controlcenter-mcp",
-  version: "0.3.0"
+  version: "0.4.0"
 });
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-function formatServerTable(serverRows: Awaited<ReturnType<typeof scanLocalServers>>): string {
+function formatServerTable(
+  serverRows: ReadonlyArray<LocalServerSummary & { catalog?: McpCatalogEntry | null }>
+): string {
   const labels = t();
   if (serverRows.length === 0) {
     return labels.common.noLocalServers;
   }
 
   const lines = [
-    `| ${labels.tables.server.repo} | ${labels.tables.server.version} | ${labels.tables.server.tools} | ${labels.tables.server.serverJson} | ${labels.tables.server.path} |`,
-    "|---|---:|---:|---|---|"
+    `| ${labels.tables.server.repo} | ${labels.tables.server.version} | ${labels.tables.server.kind} | ${labels.tables.server.persistentState} | ${labels.tables.server.tools} | ${labels.tables.server.serverJson} | ${labels.tables.server.path} |`,
+    "|---|---:|---|---|---:|---|---|"
   ];
 
   for (const row of serverRows) {
+    const entry = row.catalog ?? null;
+    const persistentState =
+      entry?.persistentState === true
+        ? labels.common.yes
+        : entry?.persistentState === false
+          ? labels.common.no
+          : labels.common.notAvailable;
     lines.push(
-      `| ${row.directoryName} | ${row.version ?? labels.common.notAvailable} | ${row.toolCount ?? labels.common.notAvailable} | ${row.hasServerJson ? labels.common.yes : labels.common.no} | ${row.absolutePath} |`
+      `| ${row.directoryName} | ${row.version ?? labels.common.notAvailable} | ${entry?.mcpKind ?? labels.common.notAvailable} | ${persistentState} | ${row.toolCount ?? labels.common.notAvailable} | ${row.hasServerJson ? labels.common.yes : labels.common.no} | ${row.absolutePath} |`
     );
   }
 
   return lines.join("\n");
+}
+
+function formatCatalogNote(catalog: McpCatalog): string {
+  const labels = t();
+  switch (catalog.status) {
+    case "ok":
+      return labels.messages.mcpCatalogOk(catalog.catalogPath, catalog.entries.length, catalog.updated);
+    case "missing":
+      return labels.messages.mcpCatalogMissing(catalog.catalogPath);
+    case "unreadable":
+      return labels.messages.mcpCatalogUnreadable(catalog.catalogPath);
+    case "schema_mismatch":
+      return labels.messages.mcpCatalogSchemaMismatch(catalog.catalogPath, catalog.schema ?? "-");
+  }
 }
 
 function formatProfileTable(profileRows: Awaited<ReturnType<typeof listMcpProfiles>>): string {
@@ -301,10 +330,11 @@ server.registerTool(
   },
   async () => {
     const labels = t();
-    const [servers, profiles] = await Promise.all([
-      scanLocalServers(DEFAULT_MCP_ROOT),
+    const [landscape, profiles] = await Promise.all([
+      scanLocalServerLandscape(DEFAULT_MCP_ROOT),
       listMcpProfiles(DEFAULT_PROFILE_ROOT)
     ]);
+    const servers = landscape.servers;
     const bundles = await loadCapabilityBundles(servers);
 
     const output = [
@@ -314,6 +344,7 @@ server.registerTool(
       `- ${labels.messages.profileRoot}: ${DEFAULT_PROFILE_ROOT}`,
       `- ${labels.messages.localRepoCount}: ${servers.length}`,
       `- ${labels.messages.profileCount}: ${profiles.length}`,
+      `- ${formatCatalogNote(landscape.catalog)}`,
       "",
       labels.headings.localRepos,
       formatServerTable(servers),
@@ -363,15 +394,102 @@ server.registerTool(
   async ({ mcpRoot }) => {
     const labels = t();
     const resolvedRoot = mcpRoot ?? DEFAULT_MCP_ROOT;
-    const servers = await scanLocalServers(resolvedRoot);
+    const landscape = await scanLocalServerLandscape(resolvedRoot);
 
-    const output = [
-      labels.headings.localServers(resolvedRoot),
+    const lines = [labels.headings.localServers(resolvedRoot), ""];
+    if (!landscape.rootReadable) {
+      lines.push(labels.messages.mcpRootUnreadable(resolvedRoot), "");
+    }
+    lines.push(formatCatalogNote(landscape.catalog), "", formatServerTable(landscape.servers));
+
+    if (landscape.catalogOnly.length > 0) {
+      lines.push(
+        "",
+        labels.headings.catalogOnlyServers(landscape.catalogOnly.length),
+        ...landscape.catalogOnly.map(
+          (entry) => `- ${entry.id} (${entry.mcpKind ?? labels.common.notAvailable})`
+        )
+      );
+    }
+
+    return { content: [{ type: "text", text: lines.join("\n") }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_describe_mcp",
+  {
+    title: toolText("controlcenter_describe_mcp").title,
+    description: toolText("controlcenter_describe_mcp").description,
+    inputSchema: {
+      serverId: z.string().min(1).describe(inputText("serverId")),
+      mcpRoot: z.string().optional().describe(inputText("mcpRoot"))
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ serverId, mcpRoot }) => {
+    const labels = t();
+    const resolvedRoot = mcpRoot ?? DEFAULT_MCP_ROOT;
+    const description = await describeMcpServer(serverId, resolvedRoot);
+
+    if (!description) {
+      return {
+        isError: true,
+        content: [{ type: "text", text: labels.messages.mcpServerUnknown(serverId, resolvedRoot) }]
+      };
+    }
+
+    const { server: local, entry, catalog } = description;
+    const lines = [`# ${entry?.id ?? local?.directoryName ?? serverId}`, ""];
+
+    lines.push(`- ${labels.common.source}: ${formatCatalogNote(catalog)}`);
+    if (local) {
+      lines.push(
+        `- ${labels.tables.server.repo}: ${local.directoryName}`,
+        `- ${labels.tables.server.version}: ${local.version ?? labels.common.notAvailable}`,
+        `- ${labels.common.details}: ${local.absolutePath}`
+      );
+      if (local.description) lines.push(`- ${labels.tables.tool.description}: ${local.description}`);
+    } else {
+      lines.push(`- ${labels.messages.mcpServerCatalogOnly(resolvedRoot)}`);
+    }
+
+    if (!entry) {
+      lines.push("", labels.messages.mcpServerNotInCatalog(serverId));
+      return { content: [{ type: "text", text: lines.join("\n") }] };
+    }
+
+    lines.push(
       "",
-      formatServerTable(servers)
-    ].join("\n");
+      `- ${labels.tables.server.kind}: ${entry.mcpKind ?? labels.common.notAvailable}`,
+      `- ${labels.common.keywords}: ${entry.namespace ?? labels.common.notAvailable}`,
+      `- npm: ${entry.npm ?? labels.common.notAvailable}`,
+      `- ${labels.tables.server.persistentState}: ${
+        entry.persistentState === true
+          ? labels.common.yes
+          : entry.persistentState === false
+            ? labels.common.no
+            : labels.common.notAvailable
+      }`
+    );
 
-    return { content: [{ type: "text", text: output }] };
+    if (entry.wraps) lines.push(`- ${labels.messages.mcpWraps}: ${entry.wraps}`);
+    if (entry.wrapsTarget) lines.push(`- ${labels.messages.mcpWrapsTarget}: ${entry.wrapsTarget}`);
+    if (entry.targetKind) lines.push(`- ${labels.messages.mcpTargetKind}: ${entry.targetKind}`);
+    if (entry.composition) lines.push(`- ${labels.messages.mcpComposition}: ${entry.composition}`);
+    if (entry.source) lines.push(`- ${labels.common.source}: ${entry.source}`);
+
+    const stateOwners = Object.entries(entry.stateOwner);
+    if (stateOwners.length > 0) {
+      lines.push("", `## ${labels.headings.mcpStateOwner}`, "");
+      for (const [namespace, owner] of stateOwners) {
+        lines.push(`- \`${namespace}\`: ${owner}`);
+      }
+    }
+
+    if (entry.note) lines.push("", `> ${entry.note}`);
+
+    return { content: [{ type: "text", text: lines.join("\n") }] };
   }
 );
 

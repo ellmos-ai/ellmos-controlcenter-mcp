@@ -11,7 +11,7 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-124%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-134%20passed-brightgreen.svg)](https://vitest.dev/)
 [![Ecosystem](https://img.shields.io/badge/Ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
 [![Umbrella](https://img.shields.io/badge/Umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
 [![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-success.svg)](llms.txt)
@@ -78,7 +78,8 @@ graph TD
 | `controlcenter_actual_self_receipt` | Run a native self `list_tools` probe and emit a short-lived signed runtime receipt when explicitly configured |
 | `controlcenter_get_language` | Show the current ControlCenter output language |
 | `controlcenter_set_language` | Set the ControlCenter output language for this running server instance |
-| `controlcenter_list_local_servers` | Scan local MCP repositories below the MCP root |
+| `controlcenter_list_local_servers` | Scan local MCP repositories below the MCP root and enrich them with kind and state ownership from `mcps.catalog.v1.json` |
+| `controlcenter_describe_mcp` | Describe one MCP server from `mcps.catalog.v1.json`: kind, namespace, state ownership, wrapping, and composition |
 | `controlcenter_list_stacks` | Read registered stacks from `stacks.catalog.json` and validate their `ellmos.stack.v2` manifests |
 | `controlcenter_describe_stack` | Describe typed components, roles, policies, and validation warnings for one registered stack |
 | `controlcenter_context_pack` | Build a bounded, manifest-only handoff for a registered stack at `short`, `execution`, or `full` detail |
@@ -102,6 +103,20 @@ graph TD
 | `controlcenter_check_lock` | Check whether one path is locked, including locks inherited from parent directories |
 | `controlcenter_evaluate_permission` | Report what the nearest `LOCK.permissions` register allows an agent to do at a path |
 | `controlcenter_list_decisions` | List pending user decisions by identifier, date, title and status |
+
+## Catalog discovery
+
+ControlCenter reads three hand-curated catalogs instead of hard-coding individual paths. Each root is configurable, and each catalog is optional.
+
+| Catalog | Schema | Root (env override) | Used by |
+|---|---|---|---|
+| `modules.catalog.json` | `ellmos.modules-catalog.v1` | `.AI/.MODULES` (`ELLMOS_MODULES_ROOT`) | `controlcenter_list_plugins` |
+| `stacks.catalog.json` | `ellmos.stacks.catalog.v1` | `.AI/.STACKS` (`ELLMOS_STACKS_ROOT`) | `controlcenter_list_stacks`, `controlcenter_describe_stack`, `controlcenter_context_pack` |
+| `mcps.catalog.v1.json` | `ellmos.mcps.v1` | `.AI/.MCP` (`ELLMOS_MCP_CATALOG`) | `controlcenter_list_local_servers`, `controlcenter_describe_mcp`, `controlcenter_status` |
+
+The MCP catalog contributes what a directory scan cannot see: `mcp_kind` (`tool`, `adapter`, `stack`, `control-plane`), whether a server keeps persistent state, and which component owns that state per namespace. The directory scan stays the source for what is actually installed, so both directions are reported: a scanned server without a catalog entry keeps empty catalog fields, and a catalog entry without a directory is listed separately rather than dropped. Entries are joined on the catalog `id` first and on the npm package name second, because a server may publish under a different name than its directory.
+
+A missing, unreadable, or foreign-schema catalog never fails a tool call. The enriched fields degrade to empty and the output names the reason, so an absent catalog is distinguishable from a server that genuinely holds no state. An unreadable MCP root is likewise reported as unreadable instead of as an empty result.
 
 ## Host registers: locks, permissions, decisions
 
@@ -320,6 +335,8 @@ Optional environment variables:
 
 - `ELLMOS_MCP_ROOT` overrides the default MCP repository root
 - `ELLMOS_STACKS_ROOT` overrides the stack catalog root (default: local `.AI/.STACKS`)
+- `ELLMOS_MCP_CATALOG` overrides the MCP catalog file (default: `mcps.catalog.v1.json` inside the MCP root)
+- `ELLMOS_MODULES_ROOT` overrides the module catalog root (default: local `.AI/.MODULES`)
 - `ELLMOS_PROFILE_ROOT` overrides the profile directory (default: `~/.claude/profiles`)
 - `ELLMOS_SKILLS_ROOT` overrides the deployed skills directory (default: `~/.claude/skills`)
 - `ELLMOS_PLUGINS_ROOT` overrides the plugins directory (default: `~/.claude/plugins`)
@@ -433,7 +450,7 @@ This MCP server is part of the **[ellmos-ai](https://github.com/ellmos-ai)** eco
 | [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 22 | Code analysis, JSON repair, imports, diffs, regex | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
 | [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | File repair, format conversion, batch operations | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n workflow management via AI assistants | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **28** | **MCP stack, tool and skill discovery; profile resolution and audit; host lock, permission and decision registers** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **29** | **MCP stack, tool and skill discovery; profile resolution and audit; host lock, permission and decision registers** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 | [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 45 | Local-first LLM memory, knowledge, state, routing, swarm orchestration | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
 | [ServerCommander](https://github.com/ellmos-ai/ellmos-servercommander-mcp) | 8 | Server operations: health checks, log analysis, deploy dry-runs, mail diagnostics | [`ellmos-servercommander-mcp`](https://www.npmjs.com/package/ellmos-servercommander-mcp) (alpha) |
 | [Blender Use](https://github.com/ellmos-ai/ellmos-blender-use-mcp) | 3 | Headless Blender asset QA and FBX reimport verification | [`ellmos-blender-use-mcp`](https://www.npmjs.com/package/ellmos-blender-use-mcp) (alpha) |

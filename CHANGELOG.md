@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Catalog discovery (2026-08-13)
+- Read the hand-curated MCP catalog `mcps.catalog.v1.json` (schema `ellmos.mcps.v1`) in a new `src/mcpCatalog.ts`. It was the one catalog of the three the server did not know: module and stack discovery already ran off `modules.catalog.json` and `stacks.catalog.json`, but the MCP root was only ever directory-scanned, so `mcp_kind`, persistent state, and per-namespace state ownership were invisible.
+- Enrich `controlcenter_list_local_servers` and `controlcenter_status` with two new table columns, kind and own state. Both stay scalar on purpose; the nested fields would not survive a table cell.
+- Add `controlcenter_describe_mcp` for the nested facts a table cannot carry: per-namespace state ownership, wrapping, wrap target, target kind, composition, namespace, and npm name. It resolves a server by directory name, catalog id, or npm package name. No existing tool was changed in shape or name.
+- Join on the catalog id first and the npm package name second, because a server may publish under a different name than its directory carries — `blender-use-mcp` publishes as `ellmos-blender-use-mcp`.
+- Report both join directions instead of silently dropping either side: a scanned server without a catalog entry keeps empty catalog fields, and a catalog entry without a directory is listed separately.
+- Degrade instead of failing when a catalog is missing, corrupt, or carries a foreign schema. The output names the reason, so an absent catalog is distinguishable from a server that genuinely holds no state.
+- Fix a latent crash: `discoverLocalServerDirectories` called `fs.readdir` without a guard, so a non-existent MCP root threw out of `controlcenter_list_local_servers` and `controlcenter_status`. An unreadable root is now reported as unreadable rather than as an empty result, matching the behaviour the host-register tools already had.
+- Make the catalog file configurable through `ELLMOS_MCP_CATALOG`; the default stays `mcps.catalog.v1.json` inside the existing, already configurable MCP root.
+- Add `test/mcpCatalog.test.ts` with 10 tests covering enrichment, the absent/corrupt/foreign-schema catalog, both join directions, the npm-name fallback, the unreadable root, the path override, and single-server resolution. Full suite: 134 tests.
+
 ### Security (2026-08-11)
 - Close all open Dependabot advisories in lockfile (`express-rate-limit` ^8.6.2, `nanoid` ^3.3.17, `fast-uri` ^3.1.5, `hono` ^4.13.0). `npm audit` reports 0 vulnerabilities.
 

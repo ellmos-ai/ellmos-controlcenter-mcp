@@ -57,6 +57,8 @@ export const ja: Translations = {
       version: "バージョン",
       tools: "ツール",
       serverJson: "server.json",
+      kind: "種別",
+      persistentState: "自身の状態",
       path: "パス"
     },
     profile: {
@@ -122,7 +124,9 @@ export const ja: Translations = {
     deployedSkills: (count) => `## デプロイ済み Skills (${count})`,
     sourceOnlySkills: (count) => `## ソースのみ Skills (${count})`,
     claudeCodePlugins: (count) => `## Claude Code プラグイン (${count})`,
-    localModules: (count) => `## ローカルモジュール (${count})`
+    localModules: (count) => `## ローカルモジュール (${count})`,
+    catalogOnlyServers: (count) => `## カタログのみ、ディレクトリなし (${count})`,
+    mcpStateOwner: "状態の所有者"
   },
   messages: {
     sourceLocalRepos: (root) => `${root} のローカル MCP リポジトリ`,
@@ -154,7 +158,19 @@ export const ja: Translations = {
     skillsTotal: (total, deployed, sourceOnly) => `合計: ${total}（${deployed} デプロイ済み, ${sourceOnly} ソースのみ）`,
     pluginsTotal: (total, plugins, modules) => `合計: ${total}（${plugins} プラグイン, ${modules} モジュール）`,
     noSkills: "Skills が見つかりません。",
-    noPlugins: "プラグインまたはモジュールが見つかりません。"
+    noPlugins: "プラグインまたはモジュールが見つかりません。",
+    mcpCatalogOk: (catalogPath, count, updated) => `MCP カタログ: ${catalogPath} から ${count} 件${updated ? `（${updated} 時点）` : ""}`,
+    mcpCatalogMissing: (catalogPath) => `MCP カタログが見つかりません (${catalogPath}) — 種別と状態の所有者は空のままです。`,
+    mcpCatalogUnreadable: (catalogPath) => `MCP カタログを読み取れません (${catalogPath}) — 種別と状態の所有者は空のままです。`,
+    mcpCatalogSchemaMismatch: (catalogPath, schema) => `MCP カタログのスキーマが異なります (${catalogPath}、検出: ${schema}、想定: ellmos.mcps.v1) — 種別と状態の所有者は空のままです。`,
+    mcpRootUnreadable: (root) => `MCP ルートを読み取れません: ${root}`,
+    mcpServerUnknown: (serverId, root) => `MCP サーバー '${serverId}' は ${root} にもカタログにも存在しません。`,
+    mcpServerCatalogOnly: (root) => `カタログのみに登録され、${root} にディレクトリがありません。`,
+    mcpServerNotInCatalog: (serverId) => `'${serverId}' のカタログ項目がありません — 種別、状態の所有者、構成は不明です。`,
+    mcpWraps: "ラップ対象",
+    mcpWrapsTarget: "ラップ先",
+    mcpTargetKind: "対象の種別",
+    mcpComposition: "構成"
   },
   policy: {
     invalidServerConfig: "サーバー設定がオブジェクトではありません。",
@@ -184,6 +200,10 @@ export const ja: Translations = {
     controlcenter_list_local_servers: {
       title: "ローカル MCP サーバーを一覧表示",
       description: "ローカル MCP ルートをスキャンし、検出した MCP リポジトリをメタデータ付きで一覧表示します。"
+    },
+    controlcenter_describe_mcp: {
+      title: "MCP サーバーを説明",
+      description: "mcps.catalog.v1.json からローカル MCP サーバーを説明します: 種別、名前空間、状態の所有者、ラップ、構成。"
     },
     controlcenter_list_tools: {
       title: "MCP ツールを一覧表示",
@@ -285,6 +305,7 @@ export const ja: Translations = {
     skillIntent: "スキルカタログと照合するタスクのキーワード・専門用語（例: 「保存時にプログラムが落ちる」ではなく「バグ デバッグ テスト失敗」）。文章全体はまだ意味的に評価されず、機能語が誤検出の原因になります。",
     skillFinderLimit: "返すランク付けされたスキル候補の最大数。既定値: 5。",
     stacksRoot: "stacks.catalog.json を含むディレクトリへの任意のパス。既定はローカルの .AI/.STACKS フォルダーです。",
+    serverId: "MCP サーバーのディレクトリ名、カタログ ID、または npm パッケージ名。",
     stackId: "stacks.catalog.json の安定したスタック ID。",
     contextPackLevel: "コンテキストパックの詳細レベル: short、execution、full。",
     pluginsRoot: "Claude Code プラグインフォルダーへの任意のパス。既定は ~/.claude/plugins です。",

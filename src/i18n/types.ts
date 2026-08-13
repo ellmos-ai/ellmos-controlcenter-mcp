@@ -62,6 +62,8 @@ export interface Translations {
     server: {
       repo: string;
       version: string;
+      kind: string;
+      persistentState: string;
       tools: string;
       serverJson: string;
       path: string;
@@ -130,6 +132,8 @@ export interface Translations {
     sourceOnlySkills: (count: number) => string;
     claudeCodePlugins: (count: number) => string;
     localModules: (count: number) => string;
+    catalogOnlyServers: (count: number) => string;
+    mcpStateOwner: string;
   };
   messages: {
     sourceLocalRepos: (root: string) => string;
@@ -162,6 +166,18 @@ export interface Translations {
     pluginsTotal: (total: number, plugins: number, modules: number) => string;
     noSkills: string;
     noPlugins: string;
+    mcpCatalogOk: (catalogPath: string, count: number, updated: string | null) => string;
+    mcpCatalogMissing: (catalogPath: string) => string;
+    mcpCatalogUnreadable: (catalogPath: string) => string;
+    mcpCatalogSchemaMismatch: (catalogPath: string, schema: string) => string;
+    mcpRootUnreadable: (root: string) => string;
+    mcpServerUnknown: (serverId: string, root: string) => string;
+    mcpServerCatalogOnly: (root: string) => string;
+    mcpServerNotInCatalog: (serverId: string) => string;
+    mcpWraps: string;
+    mcpWrapsTarget: string;
+    mcpTargetKind: string;
+    mcpComposition: string;
   };
   policy: {
     invalidServerConfig: string;

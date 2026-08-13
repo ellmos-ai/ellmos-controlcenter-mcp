@@ -57,6 +57,8 @@ export const es: Translations = {
       version: "Versión",
       tools: "Herramientas",
       serverJson: "server.json",
+      kind: "Tipo",
+      persistentState: "Estado propio",
       path: "Ruta"
     },
     profile: {
@@ -122,7 +124,9 @@ export const es: Translations = {
     deployedSkills: (count) => `## Skills desplegados (${count})`,
     sourceOnlySkills: (count) => `## Skills solo-fuente (${count})`,
     claudeCodePlugins: (count) => `## Plugins de Claude Code (${count})`,
-    localModules: (count) => `## Módulos locales (${count})`
+    localModules: (count) => `## Módulos locales (${count})`,
+    catalogOnlyServers: (count) => `## Solo en el catálogo, sin directorio (${count})`,
+    mcpStateOwner: "Propiedad del estado"
   },
   messages: {
     sourceLocalRepos: (root) => `Repositorios MCP locales en ${root}`,
@@ -154,7 +158,19 @@ export const es: Translations = {
     skillsTotal: (total, deployed, sourceOnly) => `Total: ${total} (${deployed} desplegados, ${sourceOnly} solo-fuente)`,
     pluginsTotal: (total, plugins, modules) => `Total: ${total} (${plugins} plugins, ${modules} módulos)`,
     noSkills: "No se encontraron skills.",
-    noPlugins: "No se encontraron plugins ni módulos."
+    noPlugins: "No se encontraron plugins ni módulos.",
+    mcpCatalogOk: (catalogPath, count, updated) => `Catálogo MCP: ${count} entradas de ${catalogPath}${updated ? ` (actualizado ${updated})` : ""}`,
+    mcpCatalogMissing: (catalogPath) => `Catálogo MCP no encontrado (${catalogPath}): el tipo y la propiedad del estado quedan vacíos.`,
+    mcpCatalogUnreadable: (catalogPath) => `Catálogo MCP ilegible (${catalogPath}): el tipo y la propiedad del estado quedan vacíos.`,
+    mcpCatalogSchemaMismatch: (catalogPath, schema) => `El catálogo MCP usa un esquema ajeno (${catalogPath}, encontrado: ${schema}, esperado: ellmos.mcps.v1): el tipo y la propiedad del estado quedan vacíos.`,
+    mcpRootUnreadable: (root) => `Raíz MCP ilegible: ${root}`,
+    mcpServerUnknown: (serverId, root) => `El servidor MCP '${serverId}' no se conoce ni en ${root} ni en el catálogo.`,
+    mcpServerCatalogOnly: (root) => `Solo consta en el catálogo, sin directorio en ${root}.`,
+    mcpServerNotInCatalog: (serverId) => `Sin entrada de catálogo para '${serverId}': tipo, propiedad del estado y composición desconocidos.`,
+    mcpWraps: "Envuelve",
+    mcpWrapsTarget: "Objetivo envuelto",
+    mcpTargetKind: "Tipo de destino",
+    mcpComposition: "Composición"
   },
   policy: {
     invalidServerConfig: "La configuración del servidor no es un objeto.",
@@ -184,6 +200,10 @@ export const es: Translations = {
     controlcenter_list_local_servers: {
       title: "Listar servidores MCP locales",
       description: "Escanea el MCP root local y lista los repositorios MCP encontrados con metadatos."
+    },
+    controlcenter_describe_mcp: {
+      title: "Describir servidor MCP",
+      description: "Describe un servidor MCP local desde mcps.catalog.v1.json: tipo, espacio de nombres, propiedad del estado, envoltura y composición."
     },
     controlcenter_list_tools: {
       title: "Listar herramientas MCP",
@@ -285,6 +305,7 @@ export const es: Translations = {
     skillIntent: "Palabras clave/términos técnicos de la tarea para comparar con el catálogo de skills (p. ej. \"depurar bug fallo de test\" en lugar de \"mi programa se bloquea al guardar\"). Las frases completas aún no se evalúan semánticamente; las palabras vacías provocan entonces falsos positivos.",
     skillFinderLimit: "Número máximo de candidatos de skills clasificados a devolver. Predeterminado: 5.",
     stacksRoot: "Ruta opcional al directorio que contiene stacks.catalog.json. Por defecto es la carpeta local .AI/.STACKS.",
+    serverId: "Nombre del directorio, ID del catálogo o nombre del paquete npm del servidor MCP.",
     stackId: "ID estable del stack en stacks.catalog.json.",
     contextPackLevel: "Nivel de detalle del paquete de contexto: short, execution o full.",
     pluginsRoot: "Ruta opcional a la carpeta de plugins de Claude Code. Por defecto es ~/.claude/plugins.",

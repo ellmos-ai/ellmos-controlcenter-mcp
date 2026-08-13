@@ -1,6 +1,6 @@
 {
   "name": "ellmos-controlcenter-mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "mcpName": "io.github.ellmos-ai/ellmos-controlcenter-mcp",
   "description": "Read-mostly MCP administration: local server, tool and skill discovery, capability bundles, dashboard, policy audits, and MCP profile resolution and config generation. Prepares configuration; does not change running sessions or enforce permissions",
   "type": "module",

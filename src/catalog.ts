@@ -83,7 +83,14 @@ async function readJsonFile(filePath: string): Promise<unknown | null> {
 }
 
 export async function discoverLocalServerDirectories(mcpRoot: string = DEFAULT_MCP_ROOT): Promise<string[]> {
-  const entries = await fs.readdir(mcpRoot, { withFileTypes: true });
+  let entries: import("fs").Dirent[];
+  try {
+    entries = await fs.readdir(mcpRoot, { withFileTypes: true });
+  } catch {
+    // An unreadable root yields no servers; callers that need to tell "empty"
+    // from "unreadable" apart use scanLocalServerLandscape in mcpCatalog.ts.
+    return [];
+  }
   return entries
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)

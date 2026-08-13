@@ -13,6 +13,12 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
   - scannt den lokalen MCP-Root
   - liest `package.json` und optional `server.json`
   - erzeugt strukturierte Server-Zusammenfassungen
+- `mcpCatalog.ts`
+  - liest den handgepflegten MCP-Katalog `mcps.catalog.v1.json` (Schema `ellmos.mcps.v1`) aus dem MCP-Root oder aus `ELLMOS_MCP_CATALOG`
+  - verknüpft Katalogeinträge mit dem Verzeichnis-Scan zuerst über die Katalog-`id`, danach über den npm-Paketnamen
+  - meldet beide Richtungen: gescannte Server ohne Katalogeintrag und Katalogeinträge ohne Verzeichnis
+  - ergänzt Art (`mcp_kind`), eigenen Zustand, Zustandshoheit je Namensraum, Umhüllung und Komposition
+  - wirft nie: fehlender, unlesbarer oder schemafremder Katalog wird über einen Status gemeldet, ein unlesbarer Root als unlesbar statt als leeres Ergebnis
 - `profiles.ts`
   - liest Claude-Profile aus `~/.claude/profiles`
   - extrahiert Servernamen und Profilbeziehungen

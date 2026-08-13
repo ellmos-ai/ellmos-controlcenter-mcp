@@ -57,6 +57,8 @@ export const zh: Translations = {
       version: "版本",
       tools: "工具",
       serverJson: "server.json",
+      kind: "类型",
+      persistentState: "自有状态",
       path: "路径"
     },
     profile: {
@@ -122,7 +124,9 @@ export const zh: Translations = {
     deployedSkills: (count) => `## 已部署 Skills (${count})`,
     sourceOnlySkills: (count) => `## 仅源码 Skills (${count})`,
     claudeCodePlugins: (count) => `## Claude Code 插件 (${count})`,
-    localModules: (count) => `## 本地模块 (${count})`
+    localModules: (count) => `## 本地模块 (${count})`,
+    catalogOnlyServers: (count) => `## 仅在清单中，无本地文件夹 (${count})`,
+    mcpStateOwner: "状态归属"
   },
   messages: {
     sourceLocalRepos: (root) => `${root} 中的本地 MCP 仓库`,
@@ -154,7 +158,19 @@ export const zh: Translations = {
     skillsTotal: (total, deployed, sourceOnly) => `共计: ${total}（${deployed} 已部署，${sourceOnly} 仅源码）`,
     pluginsTotal: (total, plugins, modules) => `共计: ${total}（${plugins} 插件，${modules} 模块）`,
     noSkills: "未找到 Skills。",
-    noPlugins: "未找到插件或模块。"
+    noPlugins: "未找到插件或模块。",
+    mcpCatalogOk: (catalogPath, count, updated) => `MCP 清单：来自 ${catalogPath} 的 ${count} 条记录${updated ? `（截至 ${updated}）` : ""}`,
+    mcpCatalogMissing: (catalogPath) => `未找到 MCP 清单 (${catalogPath}) — 类型与状态归属留空。`,
+    mcpCatalogUnreadable: (catalogPath) => `MCP 清单无法读取 (${catalogPath}) — 类型与状态归属留空。`,
+    mcpCatalogSchemaMismatch: (catalogPath, schema) => `MCP 清单使用了其他架构 (${catalogPath}，实际：${schema}，期望：ellmos.mcps.v1) — 类型与状态归属留空。`,
+    mcpRootUnreadable: (root) => `MCP 根目录无法读取：${root}`,
+    mcpServerUnknown: (serverId, root) => `MCP 服务器 '${serverId}' 在 ${root} 和清单中均不存在。`,
+    mcpServerCatalogOnly: (root) => `仅登记在清单中，${root} 下没有对应文件夹。`,
+    mcpServerNotInCatalog: (serverId) => `没有 '${serverId}' 的清单条目 — 类型、状态归属与组合未知。`,
+    mcpWraps: "封装",
+    mcpWrapsTarget: "封装目标",
+    mcpTargetKind: "目标类型",
+    mcpComposition: "组合"
   },
   policy: {
     invalidServerConfig: "服务器配置不是对象。",
@@ -184,6 +200,10 @@ export const zh: Translations = {
     controlcenter_list_local_servers: {
       title: "列出本地 MCP 服务器",
       description: "扫描本地 MCP 根目录，并列出发现的 MCP 仓库及其元数据。"
+    },
+    controlcenter_describe_mcp: {
+      title: "描述 MCP 服务器",
+      description: "根据 mcps.catalog.v1.json 描述本地 MCP 服务器：类型、命名空间、状态归属、封装与组合。"
     },
     controlcenter_list_tools: {
       title: "列出 MCP 工具",
@@ -285,6 +305,7 @@ export const zh: Translations = {
     skillIntent: "用于与技能目录匹配的任务关键词/专业术语（例如用「调试 bug 测试失败」而非「我的程序保存时崩溃」）。完整句子尚未做语义评估，虚词会导致误匹配。",
     skillFinderLimit: "返回的已排序技能候选的最大数量。默认值：5。",
     stacksRoot: "包含 stacks.catalog.json 的目录的可选路径。默认为本地 .AI/.STACKS 文件夹。",
+    serverId: "MCP 服务器的文件夹名称、清单 ID 或 npm 包名。",
     stackId: "stacks.catalog.json 中的稳定堆栈 ID。",
     contextPackLevel: "上下文包详情级别：short、execution 或 full。",
     pluginsRoot: "Claude Code 插件文件夹的可选路径。默认为 ~/.claude/plugins。",

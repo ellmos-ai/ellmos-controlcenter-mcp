@@ -57,6 +57,8 @@ export const ru: Translations = {
       version: "Версия",
       tools: "Инструменты",
       serverJson: "server.json",
+      kind: "Тип",
+      persistentState: "Собственное состояние",
       path: "Путь"
     },
     profile: {
@@ -122,7 +124,9 @@ export const ru: Translations = {
     deployedSkills: (count) => `## Развёрнутые Skills (${count})`,
     sourceOnlySkills: (count) => `## Только-исходные Skills (${count})`,
     claudeCodePlugins: (count) => `## Плагины Claude Code (${count})`,
-    localModules: (count) => `## Локальные модули (${count})`
+    localModules: (count) => `## Локальные модули (${count})`,
+    catalogOnlyServers: (count) => `## Только в каталоге, без папки (${count})`,
+    mcpStateOwner: "Владелец состояния"
   },
   messages: {
     sourceLocalRepos: (root) => `Локальные MCP-репозитории в ${root}`,
@@ -154,7 +158,19 @@ export const ru: Translations = {
     skillsTotal: (total, deployed, sourceOnly) => `Всего: ${total} (${deployed} развёрнуто, ${sourceOnly} только-исходные)`,
     pluginsTotal: (total, plugins, modules) => `Всего: ${total} (${plugins} плагинов, ${modules} модулей)`,
     noSkills: "Skills не найдены.",
-    noPlugins: "Плагины или модули не найдены."
+    noPlugins: "Плагины или модули не найдены.",
+    mcpCatalogOk: (catalogPath, count, updated) => `Каталог MCP: ${count} записей из ${catalogPath}${updated ? ` (по состоянию на ${updated})` : ""}`,
+    mcpCatalogMissing: (catalogPath) => `Каталог MCP не найден (${catalogPath}) — тип и владелец состояния остаются пустыми.`,
+    mcpCatalogUnreadable: (catalogPath) => `Каталог MCP нечитаем (${catalogPath}) — тип и владелец состояния остаются пустыми.`,
+    mcpCatalogSchemaMismatch: (catalogPath, schema) => `У каталога MCP чужая схема (${catalogPath}, найдено: ${schema}, ожидалось: ellmos.mcps.v1) — тип и владелец состояния остаются пустыми.`,
+    mcpRootUnreadable: (root) => `Корень MCP нечитаем: ${root}`,
+    mcpServerUnknown: (serverId, root) => `Сервер MCP '${serverId}' не найден ни в ${root}, ни в каталоге.`,
+    mcpServerCatalogOnly: (root) => `Есть только в каталоге, папки в ${root} нет.`,
+    mcpServerNotInCatalog: (serverId) => `Нет записи каталога для '${serverId}' — тип, владелец состояния и состав неизвестны.`,
+    mcpWraps: "Оборачивает",
+    mcpWrapsTarget: "Цель обёртки",
+    mcpTargetKind: "Тип цели",
+    mcpComposition: "Состав"
   },
   policy: {
     invalidServerConfig: "Конфигурация сервера не является объектом.",
@@ -184,6 +200,10 @@ export const ru: Translations = {
     controlcenter_list_local_servers: {
       title: "Список локальных MCP-серверов",
       description: "Сканирует локальный MCP root и выводит найденные MCP-репозитории с метаданными."
+    },
+    controlcenter_describe_mcp: {
+      title: "Описать сервер MCP",
+      description: "Описывает локальный сервер MCP из mcps.catalog.v1.json: тип, пространство имён, владельца состояния, обёртку и состав."
     },
     controlcenter_list_tools: {
       title: "Список MCP-инструментов",
@@ -285,6 +305,7 @@ export const ru: Translations = {
     skillIntent: "Ключевые слова и специальные термины задачи для сопоставления с каталогом skills (например, «отладка баг ошибка теста» вместо «моя программа падает при сохранении»). Целые предложения пока не оцениваются семантически; служебные слова тогда приводят к ложным совпадениям.",
     skillFinderLimit: "Максимальное число ранжированных кандидатов skills для возврата. По умолчанию: 5.",
     stacksRoot: "Необязательный путь к каталогу с stacks.catalog.json. По умолчанию локальная папка .AI/.STACKS.",
+    serverId: "Имя папки, ID каталога или имя npm-пакета сервера MCP.",
     stackId: "Стабильный ID стека из stacks.catalog.json.",
     contextPackLevel: "Уровень детализации пакета контекста: short, execution или full.",
     pluginsRoot: "Необязательный путь к папке плагинов Claude Code. По умолчанию ~/.claude/plugins.",

@@ -2,8 +2,8 @@
 
 > Read-mostly MCP administration server for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, and a local dashboard. It prepares configuration; it does not change running sessions, proxy other servers, or enforce permissions.
 
-Last-checked: 2026-08-08
-Test status: 124/124 Vitest tests passing (100% green)
+Last-checked: 2026-08-13
+Test status: 134/134 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
 MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
@@ -27,7 +27,8 @@ Scope boundary: ControlCenter is read-mostly. Its write actions are limited to g
 - `controlcenter_actual_self_receipt`: emit a short-lived signed native ControlCenter runtime receipt when host-local configuration is present; no trust or routing activation.
 - `controlcenter_get_language`: show the current ControlCenter output language.
 - `controlcenter_set_language`: set the ControlCenter output language for this running server instance.
-- `controlcenter_list_local_servers`: scan local MCP repositories below the configured MCP root.
+- `controlcenter_list_local_servers`: scan local MCP repositories below the configured MCP root and enrich each with kind and persistent-state facts from `mcps.catalog.v1.json`.
+- `controlcenter_describe_mcp`: describe one MCP server from `mcps.catalog.v1.json` — kind, namespace, npm name, per-namespace state ownership, wrapping, and composition; degrades to directory data when the catalog is absent.
 - `controlcenter_list_stacks`: read registered stacks from `stacks.catalog.json` and validate their `ellmos.stack.v2` manifests.
 - `controlcenter_describe_stack`: describe the typed components, roles, policies, and warnings of one registered stack.
 - `controlcenter_context_pack`: build a bounded, manifest-only context handoff for one registered stack at short, execution, or full detail; it never starts components or reads secrets or live state.
@@ -109,8 +110,9 @@ ellmos-controlcenter-mcp
 - `src/index.ts`: MCP server entrypoint and tool definitions.
 - `src/i18n/`: ControlCenter text sets and language switching.
 - `src/toolCatalog.ts`: MCP client probes for real server tool lists.
+- `src/mcpCatalog.ts`: reads `mcps.catalog.v1.json` and joins it onto the directory scan; fail-soft on a missing, unreadable, or foreign-schema catalog.
 - `src/bundles.ts`: capability bundle definitions, suggestions, and tool assignment helpers.
 - `src/dashboard.ts`: local dashboard server.
-- `test/catalog.test.ts` and `test/semanticRouting.test.ts`: unit coverage for catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, and semantic-route validation (97 tests passing in the full suite).
+- `test/catalog.test.ts` and `test/semanticRouting.test.ts`: unit coverage for catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, and semantic-route validation (134 tests passing in the full suite, including `test/mcpCatalog.test.ts` for catalog discovery and enrichment).
 
-## Last-checked: 2026-08-08
+## Last-checked: 2026-08-13

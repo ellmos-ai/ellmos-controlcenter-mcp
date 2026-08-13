@@ -12,7 +12,7 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-124%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-134%20passed-brightgreen.svg)](https://vitest.dev/)
 [![Ecosystem](https://img.shields.io/badge/Ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
 [![Umbrella](https://img.shields.io/badge/Umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
 [![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-success.svg)](llms.txt)
@@ -79,7 +79,8 @@ graph TD
 | `controlcenter_actual_self_receipt` | Einen nativen eigenen `list_tools`-Probe ausführen und bei expliziter Konfiguration ein kurzlebiges signiertes Laufzeit-Receipt erzeugen |
 | `controlcenter_get_language` | Aktuelle ControlCenter-Ausgabesprache anzeigen |
 | `controlcenter_set_language` | ControlCenter-Ausgabesprache für diese laufende Serverinstanz setzen |
-| `controlcenter_list_local_servers` | Lokale MCP-Repositories unterhalb des MCP-Roots scannen |
+| `controlcenter_list_local_servers` | Lokale MCP-Repositories unterhalb des MCP-Roots scannen und mit Art und Zustandshoheit aus `mcps.catalog.v1.json` anreichern |
+| `controlcenter_describe_mcp` | Einen MCP-Server aus `mcps.catalog.v1.json` beschreiben: Art, Namensraum, Zustandshoheit, Umhüllung und Komposition |
 | `controlcenter_list_stacks` | Registrierte Stacks aus `stacks.catalog.json` lesen und ihre `ellmos.stack.v2`-Manifeste prüfen |
 | `controlcenter_describe_stack` | Typisierte Komponenten, Rollen, Policies und Validierungswarnungen eines Stacks beschreiben |
 | `controlcenter_context_pack` | Begrenztes, manifestbasiertes Übergabepaket für einen registrierten Stack mit `short`, `execution` oder `full` erzeugen |
@@ -103,6 +104,20 @@ graph TD
 | `controlcenter_check_lock` | Prüft, ob ein Pfad gesperrt ist — einschließlich der aus Elternordnern geerbten Sperren |
 | `controlcenter_evaluate_permission` | Meldet, was das nächstgelegene `LOCK.permissions`-Register einem Agenten an diesem Pfad erlaubt |
 | `controlcenter_list_decisions` | Listet offene Nutzerentscheidungen mit Kennung, Datum, Titel und Status |
+
+## Katalog-Discovery
+
+ControlCenter liest drei handgepflegte Kataloge, statt einzelne Pfade fest zu verdrahten. Jeder Root ist konfigurierbar, jeder Katalog ist optional.
+
+| Katalog | Schema | Root (ENV-Override) | Genutzt von |
+|---|---|---|---|
+| `modules.catalog.json` | `ellmos.modules-catalog.v1` | `.AI/.MODULES` (`ELLMOS_MODULES_ROOT`) | `controlcenter_list_plugins` |
+| `stacks.catalog.json` | `ellmos.stacks.catalog.v1` | `.AI/.STACKS` (`ELLMOS_STACKS_ROOT`) | `controlcenter_list_stacks`, `controlcenter_describe_stack`, `controlcenter_context_pack` |
+| `mcps.catalog.v1.json` | `ellmos.mcps.v1` | `.AI/.MCP` (`ELLMOS_MCP_CATALOG`) | `controlcenter_list_local_servers`, `controlcenter_describe_mcp`, `controlcenter_status` |
+
+Der MCP-Katalog liefert, was ein Verzeichnis-Scan nicht sehen kann: die Art (`mcp_kind`: `tool`, `adapter`, `stack`, `control-plane`), ob ein Server eigenen Zustand hält, und welche Komponente diesen Zustand je Namensraum besitzt. Der Verzeichnis-Scan bleibt die Quelle dafür, was tatsächlich installiert ist; deshalb werden beide Richtungen gemeldet: Ein gescannter Server ohne Katalogeintrag behält leere Katalogfelder, ein Katalogeintrag ohne Verzeichnis wird gesondert ausgewiesen statt verschluckt. Verknüpft wird zuerst über die Katalog-`id`, danach über den npm-Paketnamen — ein Server kann unter einem anderen Namen veröffentlicht sein als sein Verzeichnis heißt.
+
+Ein fehlender, unlesbarer oder schemafremder Katalog lässt keinen Tool-Aufruf scheitern. Die angereicherten Felder bleiben dann leer, und die Ausgabe benennt den Grund; so ist ein fehlender Katalog von einem Server unterscheidbar, der wirklich keinen Zustand hält. Ein unlesbarer MCP-Root wird ebenso als unlesbar gemeldet statt als leeres Ergebnis.
 
 ## Host-Register: Sperren, Rechte, Entscheidungen
 
@@ -325,6 +340,8 @@ Optionale Umgebungsvariablen:
 
 - `ELLMOS_MCP_ROOT` überschreibt den Standard-MCP-Root
 - `ELLMOS_STACKS_ROOT` überschreibt den Stack-Katalog-Root (Standard: lokales `.AI/.STACKS`)
+- `ELLMOS_MCP_CATALOG` überschreibt die MCP-Katalogdatei (Standard: `mcps.catalog.v1.json` im MCP-Root)
+- `ELLMOS_MODULES_ROOT` überschreibt den Modul-Katalog-Root (Standard: lokales `.AI/.MODULES`)
 - `ELLMOS_PROFILE_ROOT` überschreibt den Profilordner (Standard: `~/.claude/profiles`)
 - `ELLMOS_SKILLS_ROOT` überschreibt den Skills-Ordner (Standard: `~/.claude/skills`)
 - `ELLMOS_PLUGINS_ROOT` überschreibt den Plugins-Ordner (Standard: `~/.claude/plugins`)
@@ -438,7 +455,7 @@ Dieser MCP-Server ist Teil des **[ellmos-ai](https://github.com/ellmos-ai)**-Ök
 | [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 22 | Code-Analyse, JSON-Reparatur, Imports, Diffs, Regex | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
 | [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | Dateireparatur, Formatkonvertierung, Batch-Operationen | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 18 | n8n-Workflow-Verwaltung über KI-Assistenten | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **28** | **MCP-Stack-, Tool- und Skill-Discovery; Profilauflösung und Audit; Host-Register für Sperren, Rechte und Entscheidungen** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **29** | **MCP-Stack-, Tool- und Skill-Discovery; Profilauflösung und Audit; Host-Register für Sperren, Rechte und Entscheidungen** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 | [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 45 | Local-first LLM-Gedächtnis, Wissen, Zustand, Routing, Schwarm-Orchestrierung | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
 | [ServerCommander](https://github.com/ellmos-ai/ellmos-servercommander-mcp) | 8 | Server-Operationen: Health-Checks, Log-Analyse, Deploy-Dry-Runs, Mail-Diagnose | [`ellmos-servercommander-mcp`](https://www.npmjs.com/package/ellmos-servercommander-mcp) (alpha) |
 | [Blender Use](https://github.com/ellmos-ai/ellmos-blender-use-mcp) | 3 | Headless Blender-Asset-QA und FBX-Reimport-Verifikation | [`ellmos-blender-use-mcp`](https://www.npmjs.com/package/ellmos-blender-use-mcp) (alpha) |
