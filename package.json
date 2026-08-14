@@ -16,6 +16,8 @@
     "data/capability-bundles.json",
     "data/policy-rules.json",
     "server.json",
+    "glama.json",
+    "smithery.yaml",
     "llms.txt",
     "README.md",
     "README_de.md",

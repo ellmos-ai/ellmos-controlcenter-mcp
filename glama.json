@@ -1,7 +1,7 @@
 {
   "$schema": "https://glama.ai/mcp/schemas/server.json",
   "name": "ellmos-controlcenter-mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Read-mostly MCP administration for local MCP server, tool and skill discovery, profile resolution and config generation, capability bundles, skill catalogs, and policy audits. Prepares configuration; does not change running sessions or enforce permissions.",
   "maintainers": [
     "lukisch"
