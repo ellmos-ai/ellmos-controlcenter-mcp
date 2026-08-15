@@ -1398,6 +1398,9 @@ server.registerTool(
       mcpRoot,
       timeoutMs
     });
+    // A proxy mirrors the backend's error signal rather than swallowing it, so a
+    // target-error is flagged too. Which side failed is carried by the text body
+    // and by `delivered`, not by this flag.
     return {
       content: [{ type: "text", text: formatGatewayInvocation(result) }],
       isError: result.outcome !== "ok"
