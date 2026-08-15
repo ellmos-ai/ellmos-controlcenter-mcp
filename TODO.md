@@ -79,3 +79,33 @@
 - BACH-Partnerprogramm und BACH-interne Skill-/Tool-Strukturen als Inspirations- und Importquelle prüfen
 - Private Registry Feed
 - Observability und Tool-Trace-Ansicht
+
+## P1 — Fremdmodule, sichere Remote-Adapter und Skill-Kataloge [2026-08-15]
+
+> ControlCenter bleibt Discovery-, Planungs- und Statusschicht. Die folgenden
+> Punkte autorisieren weder Installation noch Ausführung oder Entfernung.
+
+- [ ] Fremdmodul-Felder aus dem `stacks`-Vertrag read-only anzeigen:
+  `candidate/quarantined/adopted/watch/deprecated/removed`, Upstream, gepinnter
+  Commit, Lizenz/NOTICE, letzter/nächster Review, Qualitätsbelege,
+  Capability-Owner und Rückbauplan. Fehlende Pflichtfelder werden Warnungen,
+  keine erfundenen Vertrauensnachweise.
+- [ ] Einen reinen Adoptions-/Entfernungsplan erzeugen, der geplante Änderungen,
+  Policy-Gates und Rollback nennt. Vollzug bleibt bei einem expliziten
+  Installer-Adapter und braucht Operatorfreigabe.
+- [ ] Skilltopia-Learning übernehmen: lokale und optionale Remote-Skillquellen
+  über Provider normalisieren, Dubletten/Versionskonflikte und Ziel-Agenten
+  sichtbar machen. Remote-Metadaten sind unvertrauenswürdig; Inhalte werden
+  nicht automatisch installiert, aktiviert oder als lokal verfügbar gemeldet.
+- [ ] Eigendark-Härtung für künftige Remote-MCP-Prüfungen festschreiben:
+  Geheimnisse nie in Toolargumenten/-resultaten, opake sitzungsgebundene
+  Capabilities, HTTPS-Ziel-Allowlist, keine Redirects, endliche Request-/Response-
+  /Verschachtelungs-/Parallelitätsbudgets, rekursive Redaktion und Kennzeichnung
+  fremder Antworten als unvertrauenswürdige Daten.
+- [ ] HarnessRanger-Learning übernehmen: pro Host-Adapter getrennte,
+  idempotente Operationen `detect`, `status`, `setup --dry-run` und `uninstall`
+  modellieren. `scaffolded`, `installed`, `configured`, `running`, `healthy` und
+  `observed` bleiben getrennte Zustandsachsen.
+- [ ] Für semantisches Ranking Herkunft und Messgrenze ausgeben. Ein Score ist
+  weder Verfügbarkeit noch Berechtigung oder Erfolg; automatische Promotion
+  bleibt ohne versionierten Kandidaten, Offline-Evaluation und Freigabe verboten.
