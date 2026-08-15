@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.5.1 - 2026-08-16
+
+Includes the 0.5.0 gateway release from the same day. 0.5.0 was published to npm before the hardening section below existed - same version string, different content; 0.5.1 closes that drift.
+
 ### Virtual MCP gateway — ROADMAP Phase 4, partially (2026-08-16)
 
 The deferral recorded in `DECISIONS.md` on 2026-07-23 was lifted by the user on 2026-08-16. Version bumped to `0.5.0` because ControlCenter now sits in the request path, which the `0.4.0` description explicitly denied.
