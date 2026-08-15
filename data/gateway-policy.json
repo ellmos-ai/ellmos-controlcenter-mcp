@@ -3,5 +3,9 @@
   "note": "Gate for controlcenter_invoke. mode 'open' allows every tool of a discoverable server; mode 'allowlist' requires a matching allow rule. deny always wins. 'server' and 'tool' accept '*' wildcards. A malformed file refuses every invocation instead of falling back to allow-all.",
   "mode": "open",
   "deny": [],
-  "allow": []
+  "allow": [],
+  "allowedRemoteHostsNote": "Empty means any HTTPS host. Plain HTTP is refused unless the host is loopback, regardless of this list. Entries may start with '*.' to match subdomains.",
+  "allowedRemoteHosts": [],
+  "redactResultsNote": "Recursive redaction of forwarded results. Set to false only if a caller needs byte-exact payloads; that is a deliberate weakening.",
+  "redactResults": true
 }

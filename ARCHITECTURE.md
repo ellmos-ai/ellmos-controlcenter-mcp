@@ -41,6 +41,15 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
   - ruft echte MCP-`list_tools`-Antworten ab
   - normalisiert Toolnamen, Titel, Beschreibungen, Input-Schemas und Annotationen
   - begrenzt Probe-Laufzeiten per Timeout und beendet gestartete Prozesse wieder
+- `gatewayHardening.ts`
+  - setzt die Eigendark-Härtungsvorgaben aus `TODO.md` (P1, 2026-08-15) für den Invoke-Pfad um
+  - redigiert weitergereichte Ergebnisse rekursiv über alle Ebenen: Schlüsselnamen, die ein Geheimnis benennen, und eng gefasste Credential-Muster im Fließtext
+  - hält die Wertmuster bewusst schmal, damit echte Nutzdaten wie Konfigurationen oder Quelltext nicht stillschweigend zerstört werden; die aggressive Maskierung bleibt dem Fehlertext vorbehalten
+  - erzwingt endliche Budgets für Request, Response, Verschachtelungstiefe, Inhaltsblöcke und Parallelität, alle per Umgebungsvariable überschreibbar
+  - lehnt zu große Argumente ab, statt sie zu kürzen, und kürzt zu große Antworten sichtbar, statt sie abzulehnen
+  - ist zyklensicher und tiefenbegrenzt, damit ein feindliches oder schleifendes Backend den Walk nicht endlos laufen lässt
+  - lässt als Remote-Ziel nur HTTPS zu, einfaches HTTP nur auf Loopback, optional zusätzlich über eine Host-Allowlist
+  - liefert das Kennzeichen, mit dem fremde Antworten als unvertrauenswürdige Daten markiert werden
 - `gateway.ts`
   - erreicht Backend-MCP-Server, die der Host **nicht** geladen hat, und leitet einen Toolaufruf dorthin weiter
   - baut auf den Zielen und Transports aus `toolCatalog.ts` auf und führt keine zweite Client-Schicht ein

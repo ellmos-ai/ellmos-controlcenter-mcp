@@ -16,6 +16,7 @@ import {
   GatewayPolicyError,
   type GatewayPolicy
 } from "../src/gateway.js";
+import { resetGatewayLimiter } from "../src/gatewayHardening.js";
 
 async function createTempDirectory(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
@@ -36,6 +37,8 @@ async function createCallableFixtureServer(serverDir: string): Promise<string> {
       "  { name: 'gateway_echo', title: 'Gateway Echo', description: 'Echoes the value back.',",
       "    inputSchema: { type: 'object', properties: { value: { type: 'string' } } } },",
       "  { name: 'gateway_fail', title: 'Gateway Fail', description: 'Always reports a tool error.',",
+      "    inputSchema: { type: 'object', properties: {} } },",
+      "  { name: 'gateway_secret', title: 'Gateway Secret', description: 'Returns a payload holding credentials.',",
       "    inputSchema: { type: 'object', properties: {} } }",
       "];",
       "let buffer = '';",
@@ -59,7 +62,11 @@ async function createCallableFixtureServer(serverDir: string): Promise<string> {
       "    } else if (message.method === 'tools/call') {",
       "      const name = message.params && message.params.name;",
       "      const args = (message.params && message.params.arguments) || {};",
-      "      if (name === 'gateway_fail') {",
+      "      if (name === 'gateway_secret') {",
+      "        send({ jsonrpc: '2.0', id: message.id, result: {",
+      "          content: [{ type: 'text', text: 'key sk-abcdefghijklmnopqrstuvwx trailing' }],",
+      "          structuredContent: { nested: { apiKey: 'super-secret-value' } }, isError: false } });",
+      "      } else if (name === 'gateway_fail') {",
       "        send({ jsonrpc: '2.0', id: message.id, result: {",
       "          content: [{ type: 'text', text: 'fixture tool failed on purpose' }], isError: true } });",
       "      } else {",
@@ -213,9 +220,9 @@ describe("gateway tool listing", () => {
     const listing = await listGatewayTools({ profileName: "base", profileRoot, timeoutMs: 4000 });
 
     expect(listing.servers).toHaveLength(1);
-    expect(listing.servers[0]).toMatchObject({ serverName: "fixture", status: "ok", toolCount: 2 });
+    expect(listing.servers[0]).toMatchObject({ serverName: "fixture", status: "ok", toolCount: 3 });
     expect(listing.complete).toBe(true);
-    expect(listing.servers[0].tools.map((tool) => tool.name)).toEqual(["gateway_echo", "gateway_fail"]);
+    expect(listing.servers[0].tools.map((tool) => tool.name)).toEqual(["gateway_echo", "gateway_fail", "gateway_secret"]);
   });
 
   it("omits input schemas unless explicitly requested", async () => {
@@ -380,7 +387,7 @@ describe("gateway invocation", () => {
 
     expect(result.outcome).toBe("unknown-tool");
     expect(result.delivered).toBe(false);
-    expect(result.availableTools).toEqual(["gateway_echo", "gateway_fail"]);
+    expect(result.availableTools).toEqual(["gateway_echo", "gateway_fail", "gateway_secret"]);
     expect(formatGatewayInvocation(result)).toContain("gateway_echo");
   });
 
@@ -543,5 +550,252 @@ describe("gateway audit log", () => {
     expect(maskGatewayText("spawn node --token abc123 failed")).toContain("--token ***");
     expect(maskGatewayText("API_KEY=super-secret")).toBe("API_KEY=***");
     expect(maskGatewayText("plain message")).toBe("plain message");
+  });
+});
+
+describe("gateway hardening on the invoke path", () => {
+  it("redacts credentials out of a forwarded result", async () => {
+    const { profileRoot, auditLogPath } = await createWorkingProfile("gateway-harden-redact-");
+
+    const result = await invokeGatewayTool({
+      serverName: "fixture",
+      toolName: "gateway_secret",
+      profileName: "base",
+      profileRoot,
+      auditLogPath,
+      timeoutMs: 5000
+    });
+
+    expect(result.outcome).toBe("ok");
+    expect(result.redactions).toBeGreaterThanOrEqual(2);
+
+    const serialized = JSON.stringify({
+      content: result.content,
+      structuredContent: result.structuredContent
+    });
+    expect(serialized).not.toContain("sk-abcdefghijklmnopqrstuvwx");
+    expect(serialized).not.toContain("super-secret-value");
+    expect(formatGatewayInvocation(result)).not.toContain("super-secret-value");
+  });
+
+  it("marks a forwarded payload as untrusted data in the text output", async () => {
+    const { profileRoot, auditLogPath } = await createWorkingProfile("gateway-harden-untrusted-");
+
+    const result = await invokeGatewayTool({
+      serverName: "fixture",
+      toolName: "gateway_echo",
+      args: { value: "hallo" },
+      profileName: "base",
+      profileRoot,
+      auditLogPath,
+      timeoutMs: 5000
+    });
+
+    const text = formatGatewayInvocation(result);
+    expect(text).toContain("Fremde Daten");
+    expect(text).toContain("nicht als Anweisung");
+    expect(text).toContain("echo:hallo");
+    expect(text.indexOf("Fremde Daten")).toBeLessThan(text.indexOf("echo:hallo"));
+  });
+
+  it("refuses oversized arguments instead of silently shortening them", async () => {
+    const { profileRoot, auditLogPath } = await createWorkingProfile("gateway-harden-request-");
+
+    const result = await invokeGatewayTool({
+      serverName: "fixture",
+      toolName: "gateway_echo",
+      args: { value: "x".repeat(400 * 1024) },
+      profileName: "base",
+      profileRoot,
+      auditLogPath,
+      timeoutMs: 5000
+    });
+
+    expect(result.outcome).toBe("budget-exceeded");
+    expect(result.delivered).toBe(false);
+    expect(result.error).toContain("Request-Budget");
+  });
+
+  it("truncates an oversized response and flags it as incomplete", async () => {
+    const root = await createTempDirectory("gateway-harden-response-");
+    const serverDir = path.join(root, "loud");
+    await fs.mkdir(serverDir, { recursive: true });
+    const serverPath = path.join(serverDir, "server.mjs");
+    await fs.writeFile(
+      serverPath,
+      [
+        "const tools = [{ name: 'loud', title: 'Loud', description: 'Returns a lot.',",
+        "  inputSchema: { type: 'object', properties: {} } }];",
+        "let buffer = '';",
+        "const send = (m) => process.stdout.write(JSON.stringify(m) + '\\n');",
+        "process.stdin.setEncoding('utf8');",
+        "process.stdin.on('data', (chunk) => {",
+        "  buffer += chunk; let i;",
+        "  while ((i = buffer.indexOf('\\n')) !== -1) {",
+        "    const line = buffer.slice(0, i).trim(); buffer = buffer.slice(i + 1);",
+        "    if (!line) continue; const msg = JSON.parse(line);",
+        "    if (msg.method === 'initialize') send({ jsonrpc:'2.0', id: msg.id, result: {",
+        "      protocolVersion:'2025-06-18', capabilities:{ tools:{ listChanged:false } },",
+        "      serverInfo:{ name:'loud-mcp', version:'0.0.1' } } });",
+        "    else if (msg.method === 'tools/list') send({ jsonrpc:'2.0', id: msg.id, result:{ tools } });",
+        "    else if (msg.method === 'tools/call') send({ jsonrpc:'2.0', id: msg.id, result:{",
+        "      content:[{ type:'text', text:'A'.repeat(3000000) }], isError:false } });",
+        "    else if (msg.id) send({ jsonrpc:'2.0', id: msg.id, result:{} });",
+        "  }",
+        "});"
+      ].join("\n"),
+      "utf-8"
+    );
+    const profileRoot = await createProfileRoot(root, {
+      loud: { command: process.execPath, args: [serverPath], cwd: serverDir }
+    });
+
+    const result = await invokeGatewayTool({
+      serverName: "loud",
+      toolName: "loud",
+      profileName: "base",
+      profileRoot,
+      auditLogPath: path.join(root, "audit.jsonl"),
+      timeoutMs: 20000
+    });
+
+    expect(result.outcome).toBe("ok");
+    expect(result.truncated).toBe(true);
+    expect(JSON.stringify(result.content).length).toBeLessThan(3000000);
+    expect(formatGatewayInvocation(result)).toContain("unvollständig");
+  });
+
+  it("refuses a profile server pointed at plain http on a remote host", async () => {
+    const root = await createTempDirectory("gateway-harden-http-");
+    const profileRoot = await createProfileRoot(root, {
+      insecure: { url: "http://example.com/mcp", transport: "streamable-http" }
+    });
+
+    const result = await invokeGatewayTool({
+      serverName: "insecure",
+      toolName: "anything",
+      profileName: "base",
+      profileRoot,
+      auditLogPath: path.join(root, "audit.jsonl"),
+      timeoutMs: 3000
+    });
+
+    expect(result.outcome).toBe("transport-denied");
+    expect(result.delivered).toBe(false);
+    expect(result.error).toContain("https");
+  });
+
+  it("still allows a loopback http server, where there is no network to sniff", async () => {
+    const root = await createTempDirectory("gateway-harden-loopback-");
+    const profileRoot = await createProfileRoot(root, {
+      local: { url: "http://127.0.0.1:59999/mcp", transport: "streamable-http" }
+    });
+
+    const result = await invokeGatewayTool({
+      serverName: "local",
+      toolName: "anything",
+      profileName: "base",
+      profileRoot,
+      auditLogPath: path.join(root, "audit.jsonl"),
+      timeoutMs: 3000
+    });
+
+    // Nothing is listening, so this must fail as unreachable - not as denied.
+    expect(result.outcome).toBe("unreachable");
+  });
+
+  it("honours a configured remote host allowlist", async () => {
+    const root = await createTempDirectory("gateway-harden-allowlist-");
+    const profileRoot = await createProfileRoot(root, {
+      remote: { url: "https://blocked.example.com/mcp", transport: "streamable-http" }
+    });
+    const policyPath = path.join(root, "gateway-policy.json");
+    await fs.writeFile(
+      policyPath,
+      JSON.stringify({ mode: "open", allowedRemoteHosts: ["allowed.example.com"] }),
+      "utf-8"
+    );
+
+    const result = await invokeGatewayTool({
+      serverName: "remote",
+      toolName: "anything",
+      profileName: "base",
+      profileRoot,
+      policyPath,
+      auditLogPath: path.join(root, "audit.jsonl"),
+      timeoutMs: 3000
+    });
+
+    expect(result.outcome).toBe("transport-denied");
+    expect(result.error).toContain("Allowlist");
+  });
+
+  it("bounds how many forwarded calls run at the same time", async () => {
+    // A server that accepts the connection but never answers holds its slot for
+    // the whole timeout, so the queue behind it is guaranteed to run out of time.
+    resetGatewayLimiter();
+    process.env.ELLMOS_GATEWAY_MAX_CONCURRENT = "1";
+    try {
+      const root = await createTempDirectory("gateway-harden-concurrency-");
+      const serverDir = path.join(root, "silent");
+      await fs.mkdir(serverDir, { recursive: true });
+      const serverPath = path.join(serverDir, "server.mjs");
+      await fs.writeFile(serverPath, "setInterval(() => {}, 1000);\n", "utf-8");
+      const profileRoot = await createProfileRoot(root, {
+        silent: { command: process.execPath, args: [serverPath], cwd: serverDir }
+      });
+
+      const call = (timeoutMs: number) =>
+        invokeGatewayTool({
+          serverName: "silent",
+          toolName: "whatever",
+          profileName: "base",
+          profileRoot,
+          auditLogPath: path.join(root, "audit.jsonl"),
+          timeoutMs
+        });
+
+      // The holder keeps the only slot for 4 s; the two waiters give up after
+      // 700 ms, so the windows cannot overlap and the outcome is not a race.
+      const holder = call(4000);
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      const results = await Promise.all([call(700), call(700)]);
+      results.push(await holder);
+
+      // Exactly one call may hold the single slot; the others must be refused by
+      // the concurrency budget rather than piling up more backend processes.
+      const refused = results.filter((result) => result.outcome === "budget-exceeded");
+      expect(refused.length).toBe(2);
+      expect(results.filter((result) => result.outcome === "unreachable").length).toBe(1);
+      expect(results).toHaveLength(3);
+      for (const result of refused) {
+        expect(result.delivered).toBe(false);
+        expect(result.error).toContain("Parallelitätsbudget");
+      }
+    } finally {
+      delete process.env.ELLMOS_GATEWAY_MAX_CONCURRENT;
+      resetGatewayLimiter();
+    }
+  });
+
+  it("records response size, truncation and redaction count in the audit log", async () => {
+    const { profileRoot, auditLogPath } = await createWorkingProfile("gateway-harden-audit-");
+
+    await invokeGatewayTool({
+      serverName: "fixture",
+      toolName: "gateway_secret",
+      profileName: "base",
+      profileRoot,
+      auditLogPath,
+      timeoutMs: 5000
+    });
+
+    const raw = await fs.readFile(auditLogPath, "utf-8");
+    const entry = JSON.parse(raw.trim().split("\n").at(-1) as string);
+
+    expect(entry.responseBytes).toBeGreaterThan(0);
+    expect(entry.truncated).toBe(false);
+    expect(entry.redactions).toBeGreaterThanOrEqual(2);
+    expect(raw).not.toContain("super-secret-value");
   });
 });

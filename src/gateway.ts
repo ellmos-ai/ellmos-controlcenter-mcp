@@ -18,6 +18,15 @@ import {
   type ToolCatalogTarget,
   type ToolCatalogTransportKind
 } from "./toolCatalog.js";
+import {
+  applyResponseBudget,
+  checkRemoteTargetUrl,
+  checkRequestBudget,
+  getGatewayLimiter,
+  loadGatewayBudgets,
+  UNTRUSTED_BANNER,
+  type GatewayBudgets
+} from "./gatewayHardening.js";
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -45,6 +54,13 @@ export interface GatewayPolicy {
   mode: GatewayPolicyMode;
   deny: GatewayPolicyRule[];
   allow: GatewayPolicyRule[];
+  /** Empty means "any HTTPS host"; a non-empty list narrows remote targets. */
+  allowedRemoteHosts: string[];
+  /**
+   * Recursive redaction of forwarded results. On by default. Turning it off is a
+   * deliberate weakening for callers that need byte-exact payloads.
+   */
+  redactResults: boolean;
   sourcePath: string;
   /** True when no policy file existed and the built-in default applies. */
   isDefault: boolean;
@@ -73,7 +89,9 @@ export class GatewayPolicyError extends Error {
 export const DEFAULT_GATEWAY_POLICY: Omit<GatewayPolicy, "sourcePath" | "isDefault"> = {
   mode: "open",
   deny: [],
-  allow: []
+  allow: [],
+  allowedRemoteHosts: [],
+  redactResults: true
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -175,10 +193,30 @@ export function parseGatewayPolicy(rawConfig: unknown, configPath: string): Gate
     );
   }
 
+  if (rawConfig.allowedRemoteHosts !== undefined && !Array.isArray(rawConfig.allowedRemoteHosts)) {
+    throw new GatewayPolicyError(
+      `Gateway policy ${configPath}: 'allowedRemoteHosts' must be an array of host names.`,
+      "gateway-policy-schema-invalid",
+      { configPath, fieldName: "allowedRemoteHosts" }
+    );
+  }
+
+  if (rawConfig.redactResults !== undefined && typeof rawConfig.redactResults !== "boolean") {
+    throw new GatewayPolicyError(
+      `Gateway policy ${configPath}: 'redactResults' must be a boolean.`,
+      "gateway-policy-schema-invalid",
+      { configPath, fieldName: "redactResults" }
+    );
+  }
+
   return {
     mode,
     deny: normalizeGatewayRules(rawConfig.deny, configPath, "deny"),
     allow: normalizeGatewayRules(rawConfig.allow, configPath, "allow"),
+    allowedRemoteHosts: Array.isArray(rawConfig.allowedRemoteHosts)
+      ? rawConfig.allowedRemoteHosts.filter((entry): entry is string => typeof entry === "string")
+      : [],
+    redactResults: rawConfig.redactResults !== false,
     sourcePath: configPath,
     isDefault: false
   };
@@ -442,7 +480,9 @@ export type GatewayInvocationOutcome =
   | "policy-denied"
   | "policy-unavailable"
   | "scope-unavailable"
-  | "audit-unavailable";
+  | "audit-unavailable"
+  | "budget-exceeded"
+  | "transport-denied";
 
 export type GatewayAuditStatus = "written" | "disabled" | "failed";
 
@@ -467,6 +507,12 @@ export interface GatewayInvocationResult {
   policyReason: string | null;
   auditStatus: GatewayAuditStatus;
   auditError: string | null;
+  /** True when the response budget shortened what the target actually returned. */
+  truncated: boolean;
+  /** How many values recursive redaction replaced in the forwarded payload. */
+  redactions: number;
+  /** True when a branch of the payload was cut at the nesting limit. */
+  depthExceeded: boolean;
 }
 
 export interface GatewayInvokeOptions extends GatewayScopeOptions {
@@ -493,6 +539,10 @@ export interface GatewayAuditEntry {
   delivered: boolean;
   durationMs: number;
   contentBlocks: number | null;
+  /** Serialized size of the forwarded result. Sizes only, never content. */
+  responseBytes: number | null;
+  truncated: boolean;
+  redactions: number;
   error: string | null;
 }
 
@@ -561,12 +611,20 @@ export async function invokeGatewayTool(options: GatewayInvokeOptions): Promise<
     structuredContent: null,
     availableTools: null,
     knownServers: null,
-    policyReason: null
+    policyReason: null,
+    truncated: false,
+    redactions: 0,
+    depthExceeded: false
   } satisfies Partial<GatewayInvocationResult>;
 
   async function finish(
     partial: Omit<GatewayInvocationResult, "durationMs" | "auditStatus" | "auditError">,
-    auditFields: { command: string | null; url: string | null; contentBlocks: number | null }
+    auditFields: {
+      command: string | null;
+      url: string | null;
+      contentBlocks: number | null;
+      responseBytes?: number | null;
+    }
   ): Promise<GatewayInvocationResult> {
     const durationMs = Date.now() - startedAt;
     const audit = await appendGatewayAuditEntry(
@@ -584,6 +642,9 @@ export async function invokeGatewayTool(options: GatewayInvokeOptions): Promise<
         delivered: partial.delivered,
         durationMs,
         contentBlocks: auditFields.contentBlocks,
+        responseBytes: auditFields.responseBytes ?? null,
+        truncated: partial.truncated,
+        redactions: partial.redactions,
         error: partial.error
       },
       auditLogPath
@@ -615,6 +676,24 @@ export async function invokeGatewayTool(options: GatewayInvokeOptions): Promise<
         outcome: "policy-unavailable",
         delivered: false,
         error: `Gateway-Policy konnte nicht gelesen werden — der Aufruf wurde abgelehnt: ${maskGatewayText(formatError(error))}`
+      },
+      { command: null, url: null, contentBlocks: null }
+    );
+  }
+
+  const budgets: GatewayBudgets = loadGatewayBudgets();
+  const requestBudget = checkRequestBudget(options.args, budgets);
+  if (!requestBudget.withinBudget) {
+    // Arguments are refused rather than shortened: a truncated argument set would
+    // silently change what the caller asked the target to do.
+    return finish(
+      {
+        ...base,
+        outcome: "budget-exceeded",
+        delivered: false,
+        error:
+          `Die Argumente überschreiten das Request-Budget (${requestBudget.bytes} > ${requestBudget.limit} Bytes). ` +
+          "Der Aufruf wurde abgelehnt statt gekürzt, damit sich die Anfrage nicht stillschweigend ändert."
       },
       { command: null, url: null, contentBlocks: null }
     );
@@ -687,7 +766,40 @@ export async function invokeGatewayTool(options: GatewayInvokeOptions): Promise<
     );
   }
 
+  if (target.url) {
+    const urlVerdict = checkRemoteTargetUrl(target.url, policy.allowedRemoteHosts);
+    if (!urlVerdict.allowed) {
+      return finish(
+        {
+          ...base,
+          ...identity,
+          outcome: "transport-denied",
+          delivered: false,
+          error: `Das Remote-Ziel von '${target.packageName}' ist gesperrt: ${urlVerdict.reason}`
+        },
+        { ...auditConnection, contentBlocks: null }
+      );
+    }
+  }
+
   const timeoutMs = normalizeGatewayTimeout(options.timeoutMs);
+  const limiter = getGatewayLimiter(budgets);
+  const slot = await limiter.acquire(timeoutMs);
+  if (!slot) {
+    return finish(
+      {
+        ...base,
+        ...identity,
+        outcome: "budget-exceeded",
+        delivered: false,
+        error:
+          `Das Parallelitätsbudget ist ausgeschöpft (max. ${budgets.maxConcurrentInvocations} gleichzeitige ` +
+          `Gateway-Aufrufe) und innerhalb von ${timeoutMs} ms wurde kein Platz frei.`
+      },
+      { ...auditConnection, contentBlocks: null }
+    );
+  }
+
   let transport: Transport | null = null;
   const client = new Client(
     { name: "ellmos-controlcenter-gateway", version: "0.5.0" },
@@ -695,7 +807,9 @@ export async function invokeGatewayTool(options: GatewayInvokeOptions): Promise<
   );
 
   try {
-    transport = createTransport(target);
+    // Redirects are refused: a redirect could move an authenticated MCP request
+    // to a host that never passed the target policy above.
+    transport = createTransport(target, { redirect: "error" });
     if (!transport) {
       return finish(
         {
@@ -733,8 +847,17 @@ export async function invokeGatewayTool(options: GatewayInvokeOptions): Promise<
       { timeout: timeoutMs }
     )) as CallToolShape;
 
-    const content = Array.isArray(raw.content) ? raw.content : [];
+    const rawContent = Array.isArray(raw.content) ? raw.content : [];
     const isTargetError = raw.isError === true;
+
+    // The payload is foreign data: bound it, then redact recursively before it
+    // reaches the caller's context.
+    const bounded = applyResponseBudget(
+      rawContent,
+      raw.structuredContent ?? null,
+      budgets,
+      policy.redactResults
+    );
 
     return finish(
       {
@@ -742,13 +865,20 @@ export async function invokeGatewayTool(options: GatewayInvokeOptions): Promise<
         ...identity,
         outcome: isTargetError ? "target-error" : "ok",
         delivered: true,
-        content,
-        structuredContent: raw.structuredContent ?? null,
+        content: bounded.content,
+        structuredContent: bounded.structuredContent,
+        truncated: bounded.truncated,
+        redactions: bounded.report.redactions,
+        depthExceeded: bounded.report.depthExceeded,
         error: isTargetError
           ? `Der Zielserver '${target.packageName}' hat das Tool ausgeführt und einen Tool-Fehler gemeldet.`
           : null
       },
-      { ...auditConnection, contentBlocks: content.length }
+      {
+        ...auditConnection,
+        contentBlocks: bounded.content.length,
+        responseBytes: bounded.responseBytes
+      }
     );
   } catch (error) {
     return finish(
@@ -774,6 +904,7 @@ export async function invokeGatewayTool(options: GatewayInvokeOptions): Promise<
         // Best-effort cleanup; the client may already have closed the transport.
       }
     }
+    limiter.release();
   }
 }
 
@@ -878,6 +1009,15 @@ export function formatGatewayInvocation(result: GatewayInvocationResult): string
   if (result.transportKind) {
     lines.push(`- Transport: ${result.transportKind}`);
   }
+  if (result.redactions > 0) {
+    lines.push(`- Redaktion: ${result.redactions} Wert(e) in der Antwort ersetzt`);
+  }
+  if (result.truncated) {
+    lines.push("- Gekürzt: ja, das Response-Budget wurde erreicht — die Antwort ist unvollständig");
+  }
+  if (result.depthExceeded) {
+    lines.push("- Verschachtelung: mindestens ein Zweig wurde an der Tiefengrenze abgeschnitten");
+  }
   lines.push("");
 
   switch (result.outcome) {
@@ -915,6 +1055,8 @@ export function formatGatewayInvocation(result: GatewayInvocationResult): string
     case "policy-denied":
     case "policy-unavailable":
     case "audit-unavailable":
+    case "budget-exceeded":
+    case "transport-denied":
       lines.push(`**Abgelehnt.** ${result.error}`);
       return lines.join("\n");
   }
@@ -925,6 +1067,10 @@ export function formatGatewayInvocation(result: GatewayInvocationResult): string
     return lines.join("\n");
   }
 
+  // Everything below this line comes from a third-party server. Marking it keeps
+  // a forwarded payload from being read as instructions to the calling agent.
+  lines.push(UNTRUSTED_BANNER, "");
+
   for (const block of content) {
     lines.push(stringifyContentBlock(block));
   }
@@ -932,5 +1078,6 @@ export function formatGatewayInvocation(result: GatewayInvocationResult): string
     lines.push("", "```json", JSON.stringify(result.structuredContent, null, 2), "```");
   }
 
+  lines.push("", "<!-- Ende der fremden Daten -->");
   return lines.join("\n");
 }

@@ -45,6 +45,9 @@
 - List the tools of MCP servers the host has not loaded, marking any server that could not be asked as unreachable with an unknown tool count instead of as a server without tools (`controlcenter_list_available_tools`)
 - Invoke a single tool on such a server and return its result, gated by `data/gateway-policy.json` and recorded in an audit log that holds argument names but never argument values (`controlcenter_invoke`)
 - Keep the four gateway failure modes apart: unknown server, unreachable server, unknown tool, and a tool error reported by the target — the last one means the call did arrive
+- Redact forwarded results recursively before they reach the caller, report how many values changed, and mark every forwarded payload as untrusted data rather than as instructions
+- Hold the gateway to finite request, response, nesting, content-block, and concurrency budgets; refuse oversized arguments outright and truncate oversized answers visibly
+- Restrict remote gateway targets to HTTPS, allow plain HTTP only on loopback, refuse redirects, and narrow further through an optional host allowlist
 
 ## What Is Still Missing
 
@@ -61,5 +64,9 @@
   only tool calls with a single final result are forwarded
 - Risk-class policies for the gateway (read-only, write, destructive, network, secrets); the gate
   matches server and tool patterns and does not yet act on backend tool annotations
+- Opaque session-bound capabilities; the gateway holds no session and issues no capability handle,
+  so there is nothing to make opaque yet
+- Response and concurrency budgets on the tool-scanning path; only the gateway invoke path enforces
+  them, while scanning shares the transport policy but not the limits
 - Policy-gated context packs for arbitrary skill, module, or project content
 - Optional Claude Code restart/reconnect guidance after written profile changes; the workflow is planned, but no live-session mutation is implemented

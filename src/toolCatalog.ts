@@ -272,7 +272,23 @@ export function createProfileToolCatalogTargets(profile: ResolvedProfile): ToolC
     .sort((a, b) => a.packageName.localeCompare(b.packageName));
 }
 
-export function createTransport(target: ToolCatalogTarget): Transport | null {
+export interface TransportHardening {
+  /** Pass "error" to refuse HTTP redirects on remote transports. */
+  redirect?: RequestRedirect;
+}
+
+export function createTransport(
+  target: ToolCatalogTarget,
+  hardening: TransportHardening = {}
+): Transport | null {
+  const requestInit: RequestInit | undefined =
+    target.headers || hardening.redirect
+      ? {
+          ...(target.headers ? { headers: target.headers } : {}),
+          ...(hardening.redirect ? { redirect: hardening.redirect } : {})
+        }
+      : undefined;
+
   if (target.transportKind === "stdio" && target.command) {
     const transport = new StdioClientTransport({
       command: target.command,
@@ -288,15 +304,11 @@ export function createTransport(target: ToolCatalogTarget): Transport | null {
   }
 
   if (target.transportKind === "streamable-http" && target.url) {
-    return new StreamableHTTPClientTransport(new URL(target.url), {
-      requestInit: target.headers ? { headers: target.headers } : undefined
-    });
+    return new StreamableHTTPClientTransport(new URL(target.url), { requestInit });
   }
 
   if (target.transportKind === "sse" && target.url) {
-    return new SSEClientTransport(new URL(target.url), {
-      requestInit: target.headers ? { headers: target.headers } : undefined
-    });
+    return new SSEClientTransport(new URL(target.url), { requestInit });
   }
 
   return null;

@@ -165,9 +165,22 @@ connection command or URL, outcome, duration and content-block count, never resu
 tool output reports whether the write succeeded, so a failed audit is visible; set
 `ELLMOS_GATEWAY_AUDIT_REQUIRED=1` to turn a failed write into a refused call.
 
+**Hardening.** Forwarded payloads are foreign data, so the invoke path is bounded on every axis:
+
+| Control | Behaviour |
+|---|---|
+| Recursive redaction | Secret-named keys and narrow credential shapes (`sk-`, `ghp_`, `AKIA`, JWT, …) are replaced at every nesting level. The result reports how many values changed. Disable with `redactResults: false` in the policy — a deliberate weakening. |
+| Request budget | Oversized arguments are **refused**, never shortened; a truncated argument set would silently change the request. `ELLMOS_GATEWAY_MAX_REQUEST_BYTES`, default 256 KiB. |
+| Response budget | Oversized answers are **truncated and flagged**, so the part that arrived stays usable. `ELLMOS_GATEWAY_MAX_RESPONSE_BYTES`, default 1 MiB. |
+| Nesting and blocks | `ELLMOS_GATEWAY_MAX_DEPTH` (32) and `ELLMOS_GATEWAY_MAX_CONTENT_BLOCKS` (200). Cycle-safe, so a self-referential payload cuts off instead of looping. |
+| Concurrency | `ELLMOS_GATEWAY_MAX_CONCURRENT` (4). Without it a parallel batch would spawn one backend process each. A call that gets no slot is refused, not queued forever. |
+| Transport | HTTPS only; plain HTTP allowed on loopback alone. Redirects refused. Narrow further with `allowedRemoteHosts` (supports `*.` subdomains). |
+| Untrusted marking | Forwarded content is fenced with a banner marking it as data, not instructions — the gateway pipes third-party output into an agent's context. |
+
 **Not included.** Connection pooling, streaming and progress pass-through, sampling, elicitation,
-backend resources and prompts, and risk-class policies derived from tool annotations. Only the MCP
-adapter exists; module, stack and folder adapters remain open.
+backend resources and prompts, and risk-class policies derived from tool annotations. Opaque
+session-bound capabilities have no counterpart yet, because no session is held and no capability
+handle is issued. Only the MCP adapter exists; module, stack and folder adapters remain open.
 
 ## Catalog discovery
 

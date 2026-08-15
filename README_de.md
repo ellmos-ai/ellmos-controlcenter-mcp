@@ -167,9 +167,24 @@ Inhaltsblöcke, nie den Inhalt selbst. Die Tool-Ausgabe meldet, ob der Schreibvo
 `ELLMOS_GATEWAY_AUDIT_REQUIRED=1` wird ein fehlgeschlagener Audit-Schreibvorgang zum abgelehnten
 Aufruf.
 
+**Härtung.** Weitergereichte Nutzlasten sind fremde Daten, deshalb ist der Invoke-Pfad auf jeder
+Achse begrenzt:
+
+| Kontrolle | Verhalten |
+|---|---|
+| Rekursive Redaktion | Schlüsselnamen, die ein Geheimnis benennen, und eng gefasste Credential-Muster (`sk-`, `ghp_`, `AKIA`, JWT, …) werden auf jeder Ebene ersetzt. Das Ergebnis meldet, wie viele Werte geändert wurden. Abschaltbar per `redactResults: false` — eine bewusste Abschwächung. |
+| Request-Budget | Zu große Argumente werden **abgelehnt**, nie gekürzt; ein gekürzter Argumentsatz würde stillschweigend etwas anderes verlangen. `ELLMOS_GATEWAY_MAX_REQUEST_BYTES`, Vorgabe 256 KiB. |
+| Response-Budget | Zu große Antworten werden **gekürzt und markiert**, damit der angekommene Teil nutzbar bleibt. `ELLMOS_GATEWAY_MAX_RESPONSE_BYTES`, Vorgabe 1 MiB. |
+| Tiefe und Blöcke | `ELLMOS_GATEWAY_MAX_DEPTH` (32) und `ELLMOS_GATEWAY_MAX_CONTENT_BLOCKS` (200). Zyklensicher, eine selbstbezügliche Nutzlast bricht ab statt zu schleifen. |
+| Parallelität | `ELLMOS_GATEWAY_MAX_CONCURRENT` (4). Ohne diese Grenze würde ein paralleler Stapel je einen Backend-Prozess starten. Wer keinen Platz bekommt, wird abgelehnt statt endlos eingereiht. |
+| Transport | Nur HTTPS; einfaches HTTP ausschließlich auf Loopback. Redirects werden abgelehnt. Weitere Einengung über `allowedRemoteHosts` (mit `*.`-Subdomains). |
+| Kennzeichnung | Fremder Inhalt wird mit einem Banner als **Daten** markiert, nicht als Anweisung — der Gateway leitet fremde Ausgaben in den Kontext eines Agenten. |
+
 **Nicht enthalten.** Verbindungs-Pooling, Weiterreichen von Streaming und Progress, Sampling,
-Elicitation, Ressourcen und Prompts der Backends sowie Policy-Klassen aus Tool-Annotationen. Es
-existiert nur der MCP-Adapter; Modul-, Stack- und Ordner-Adapter bleiben offen.
+Elicitation, Ressourcen und Prompts der Backends sowie Policy-Klassen aus Tool-Annotationen. Opake
+sitzungsgebundene Capabilities haben hier noch kein Gegenstück, weil keine Sitzung gehalten und
+kein Capability-Handle ausgegeben wird. Es existiert nur der MCP-Adapter; Modul-, Stack- und
+Ordner-Adapter bleiben offen.
 
 ## Katalog-Discovery
 

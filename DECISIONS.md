@@ -95,6 +95,29 @@ Der Freigabeauftrag zielte auf den Gateway-Durchgriff, und ein Dry-Run-Planer f�
 hätte wenig Aussagekraft — der Plan wäre identisch mit den Argumenten des Aufrufs. Für die
 Modul-, Stack- und Ordner-Adapter, wo ein Plan echte Nebenwirkungen beschreibt, bleibt er offen.
 
+## Gateway-Redaktion: strukturell scharf, textuell eng [C 2026-08-16]
+
+Weitergereichte Ergebnisse werden rekursiv redigiert (Default `redactResults: true`), aber mit zwei
+unterschiedlich scharfen Signalen:
+
+- **Schlüsselnamen** (`token`, `apiKey`, `password`, `cookie`, `private_key`, …) → der Wert wird
+  vollständig ersetzt. Das ist strukturell eindeutig und kann kaum danebengreifen.
+- **Muster im Fließtext** → nur eng gefasste Credential-Formen (`sk-…`, `ghp_…`, `AKIA…`, JWT, …).
+
+Begründung: Ergebnisse enthalten echte Nutzdaten. Eine lockere `key=value`-Maskierung — wie sie für
+*Fehlertexte* richtig ist, wo Zerstörung nichts kostet — würde beim Lesen einer Konfigurationsdatei
+oder eines Quelltexts stillschweigend Inhalte zerstören. Deshalb bleibt die aggressive Maskierung
+auf Fehlertext beschränkt. Zusätzlich meldet jedes Ergebnis, **wie viele** Werte ersetzt wurden:
+eine veränderte Nutzlast darf nie unbemerkt verändert sein. Für Aufrufer, die byte-genaue Daten
+brauchen, gibt es `redactResults: false` als dokumentierte, bewusste Abschwächung.
+
+## Gateway-Budgets: Anfrage ablehnen, Antwort kürzen [C 2026-08-16]
+
+Zu große **Argumente** werden abgelehnt, nicht gekürzt — ein gekürzter Argumentsatz würde
+stillschweigend etwas anderes verlangen, als der Aufrufer wollte. Eine zu große **Antwort** wird
+gekürzt und sichtbar markiert — der angekommene Teil bleibt nutzbar, und die Kürzung steht im
+Ergebnis. Die beiden Richtungen sind bewusst nicht symmetrisch behandelt.
+
 ## Gateway: nur der MCP-Adapter, nicht die übrigen Adapterklassen [C 2026-08-16]
 
 `controlcenter_invoke` implementiert ausschließlich den **MCP-Adapter** aus P3. Die dort ebenfalls

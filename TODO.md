@@ -103,11 +103,20 @@
   über Provider normalisieren, Dubletten/Versionskonflikte und Ziel-Agenten
   sichtbar machen. Remote-Metadaten sind unvertrauenswürdig; Inhalte werden
   nicht automatisch installiert, aktiviert oder als lokal verfügbar gemeldet.
-- [ ] Eigendark-Härtung für künftige Remote-MCP-Prüfungen festschreiben:
-  Geheimnisse nie in Toolargumenten/-resultaten, opake sitzungsgebundene
-  Capabilities, HTTPS-Ziel-Allowlist, keine Redirects, endliche Request-/Response-
-  /Verschachtelungs-/Parallelitätsbudgets, rekursive Redaktion und Kennzeichnung
-  fremder Antworten als unvertrauenswürdige Daten.
+- [x] **Eigendark-Härtung — für den Gateway-Invoke-Pfad umgesetzt (2026-08-16, `src/gatewayHardening.ts`).**
+  Umgesetzt und getestet: Geheimnisse nie in Toolargumenten/-resultaten (Audit-Log führt nur
+  Argumentnamen; Ergebnisse werden rekursiv redigiert), HTTPS-Zielpolitik mit optionaler
+  Host-Allowlist (einfaches HTTP nur auf Loopback), keine Redirects (`redirect: "error"`),
+  endliche Request-/Response-/Verschachtelungs-/Parallelitätsbudgets (alle per Umgebungsvariable
+  überschreibbar), rekursive und zyklensichere Redaktion sowie Kennzeichnung fremder Antworten als
+  unvertrauenswürdige Daten. **Offen geblieben:** *opake sitzungsgebundene Capabilities* — der
+  Gateway hält keine Sitzung und gibt kein Capability-Handle aus, es gibt also derzeit nichts, das
+  opak gemacht werden könnte; wird relevant, sobald Pooling oder Handles eingeführt werden.
+- [ ] Härtung auf den Toolscan-Pfad (`controlcenter_list_tools`) ausdehnen: er teilt die
+  Transportpolitik über den gemeinsamen Code, unterliegt aber noch keinen Response- oder
+  Parallelitätsbudgets.
+- [ ] Risikoklassen-Policy aus den Tool-Annotationen der Zielserver ableiten
+  (`destructiveHint`, `readOnlyHint`): heute wird beides gelesen, aber nicht durchgesetzt.
 - [ ] HarnessRanger-Learning übernehmen: pro Host-Adapter getrennte,
   idempotente Operationen `detect`, `status`, `setup --dry-run` und `uninstall`
   modellieren. `scaffolded`, `installed`, `configured`, `running`, `healthy` und
