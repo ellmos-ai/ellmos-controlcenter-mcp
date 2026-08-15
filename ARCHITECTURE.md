@@ -41,6 +41,14 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
   - ruft echte MCP-`list_tools`-Antworten ab
   - normalisiert Toolnamen, Titel, Beschreibungen, Input-Schemas und Annotationen
   - begrenzt Probe-Laufzeiten per Timeout und beendet gestartete Prozesse wieder
+- `gateway.ts`
+  - erreicht Backend-MCP-Server, die der Host **nicht** geladen hat, und leitet einen Toolaufruf dorthin weiter
+  - baut auf den Zielen und Transports aus `toolCatalog.ts` auf und führt keine zweite Client-Schicht ein
+  - öffnet die Verbindung je Aufruf und schließt sie im `finally` — es wird keine Sitzung gehalten, damit keine Stdio-Kindprozesse zurückbleiben
+  - prüft jeden Aufruf gegen `data/gateway-policy.json`; eine defekte Policy lehnt jeden Aufruf ab statt auf „alles erlaubt" zurückzufallen
+  - trennt unbekannter Server, nicht erreichbarer Server, unbekanntes Tool und Tool-Fehler des Zielservers; nur die letzte Klasse heißt „zugestellt"
+  - meldet einen nicht befragbaren Server als unbekannt statt als toolfrei und kennzeichnet unvollständige Listen ausdrücklich als unvollständig
+  - schreibt jeden Aufruf in ein JSONL-Audit-Log mit Argument**namen**, niemals Argumentwerten, und maskiert Token-artige Werte in weitergereichtem Fehlertext
 - `capabilityFinder.ts`
   - konsumiert ausschließlich explizite, hash-konsistente `system-explorer.resolution.v1`-Dateien
   - übernimmt nur stabile, typkonsistente Komponentenreferenzen mit behaupteter nativer Registry-Bindung

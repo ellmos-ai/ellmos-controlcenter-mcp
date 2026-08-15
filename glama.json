@@ -1,8 +1,8 @@
 {
   "$schema": "https://glama.ai/mcp/schemas/server.json",
   "name": "ellmos-controlcenter-mcp",
-  "version": "0.4.0",
-  "description": "Read-mostly MCP administration for local MCP server, tool and skill discovery, profile resolution and config generation, capability bundles, skill catalogs, and policy audits. Prepares configuration; does not change running sessions or enforce permissions.",
+  "version": "0.5.0",
+  "description": "MCP control plane for local MCP server, tool and skill discovery, profile resolution and config generation, capability bundles, skill catalogs, and policy audits, plus a policy-gated, audited gateway that lists and invokes tools on backend MCP servers the host has not loaded.",
   "maintainers": [
     "lukisch"
   ],
@@ -14,6 +14,7 @@
     "model-context-protocol",
     "control-plane",
     "mcp-profiles",
+    "mcp-gateway",
     "tool-bundles",
     "skills",
     "claude",
@@ -21,7 +22,7 @@
     "mcp-server"
   ],
   "tools": {
-    "count": 29
+    "count": 31
   },
   "features": [
     "Profile management",
@@ -30,6 +31,7 @@
     "Skill catalog",
     "Stack descriptions",
     "Policy audits",
-    "Host lock and permission registers (read-only)"
+    "Host lock and permission registers (read-only)",
+    "Gateway: list and invoke tools on servers the host has not loaded"
   ]
 }

@@ -1,0 +1,7 @@
+{
+  "schema": "ellmos.controlcenter.gateway-policy.v1",
+  "note": "Gate for controlcenter_invoke. mode 'open' allows every tool of a discoverable server; mode 'allowlist' requires a matching allow rule. deny always wins. 'server' and 'tool' accept '*' wildcards. A malformed file refuses every invocation instead of falling back to allow-all.",
+  "mode": "open",
+  "deny": [],
+  "allow": []
+}

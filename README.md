@@ -27,7 +27,7 @@ An alpha-stage **Model Context Protocol (MCP) administration server** for local 
 
 > **Provider note:** ControlCenter works with any MCP-capable client (Claude Code, Codex, Gemini, or any stdio-based MCP host). The profile management tools default to Claude Code's profile directory (`~/.claude/profiles`) but accept any directory via `ELLMOS_PROFILE_ROOT`. The skill and plugin inventory tools are scoped to Claude Code conventions by default; see the environment variables below for override options.
 
-The first alpha release focuses on **discovery, profile visibility, dashboard workflows, capability bundles, profile-aware tool-list probes, tool-bundle assignments, internationalization, and initial policy audits**. Gateway mode, enforced tool-level permissions, authentication, and hard security boundaries are planned, but are not implemented yet.
+The first alpha release focuses on **discovery, profile visibility, dashboard workflows, capability bundles, profile-aware tool-list probes, tool-bundle assignments, internationalization, and initial policy audits**. Since 0.5.0 a **gateway** is added on top: `controlcenter_list_available_tools` and `controlcenter_invoke` reach MCP servers the host has not loaded, under a pattern-based policy and an audit log — see [Gateway](#gateway-reaching-servers-the-host-has-not-loaded). Authentication, risk-class enforcement, and hard security boundaries are still planned, not implemented.
 
 > **Alpha note:** This version is useful for local administration and preview testing. It is not a hardened MCP gateway and should not be used as a security layer for untrusted tools or other users.
 
@@ -103,6 +103,71 @@ graph TD
 | `controlcenter_check_lock` | Check whether one path is locked, including locks inherited from parent directories |
 | `controlcenter_evaluate_permission` | Report what the nearest `LOCK.permissions` register allows an agent to do at a path |
 | `controlcenter_list_decisions` | List pending user decisions by identifier, date, title and status |
+| `controlcenter_list_available_tools` | List the tools of MCP servers this host has **not** loaded, without loading them — see [Gateway](#gateway-reaching-servers-the-host-has-not-loaded) |
+| `controlcenter_invoke` | Run one tool on a server this host has not loaded and return its result, policy-gated and audited |
+
+## Gateway: reaching servers the host has not loaded
+
+A session that loads eleven MCP servers pays for all of their tools at once. The gateway lets the
+loaded profile stay small — for example FileCommander, ControlCenter, open-compute — while the
+remaining servers stay reachable on demand.
+
+```jsonc
+// what is out there, without loading it
+{ "name": "controlcenter_list_available_tools", "arguments": { "profile": "full" } }
+
+// run one of those tools; no prior listing required when the name is known
+{ "name": "controlcenter_invoke", "arguments": {
+    "server": "ellmos-clatcher-mcp", "tool": "fix_umlauts",
+    "args": { "path": "C:/tmp/notes.md" } } }
+```
+
+**Scope.** Only servers declared by the configured MCP root (`ELLMOS_MCP_ROOT`) or by the profile
+named in `profile` can be addressed. That set is the gateway's primary boundary — there is no way
+to point it at an arbitrary command.
+
+**Lifecycle.** The connection is opened for the call and closed afterwards. No backend process is
+kept running between invocations. The cost is roughly 200–500 ms per call on a cold stdio server;
+the benefit is that ControlCenter never leaves child processes behind.
+
+**Failure modes are kept apart.** Four different things can go wrong, and they mean different
+things:
+
+| Outcome | Meaning |
+|---|---|
+| `unknown-server` | The name is not in the addressable set. The known names are returned. |
+| `unreachable` | The server exists but could not be asked. **Not** "returned nothing". |
+| `unknown-tool` | The server has no such tool. Its available tool names are returned, so a wrong guess self-corrects in one step. |
+| `target-error` | The call arrived and the target reported a tool error. This is a backend result, not a ControlCenter failure. |
+
+A listing over several servers states at the top when some of them could not be asked, so a partial
+result is never mistaken for a complete one.
+
+**Policy.** `data/gateway-policy.json` (override with `ELLMOS_GATEWAY_POLICY`):
+
+```json
+{
+  "schema": "ellmos.controlcenter.gateway-policy.v1",
+  "mode": "open",
+  "deny": [{ "server": "*", "tool": "*_delete_*", "reason": "Deletion stays manual." }],
+  "allow": []
+}
+```
+
+`mode: "open"` allows every tool of an addressable server; `mode: "allowlist"` requires a matching
+`allow` rule. `deny` always wins, and `*` is a wildcard in both fields. A malformed or
+schema-foreign policy file **refuses every invocation** rather than falling back to allow-all.
+
+**Audit.** Every invocation, including refused ones, is appended as one JSON line to
+`~/.ellmos/controlcenter/gateway-audit.jsonl` (`ELLMOS_GATEWAY_AUDIT_LOG`; set it to `off` to
+disable). The entry holds argument **names and count — never argument values** — plus the masked
+connection command or URL, outcome, duration and content-block count, never result content. The
+tool output reports whether the write succeeded, so a failed audit is visible; set
+`ELLMOS_GATEWAY_AUDIT_REQUIRED=1` to turn a failed write into a refused call.
+
+**Not included.** Connection pooling, streaming and progress pass-through, sampling, elicitation,
+backend resources and prompts, and risk-class policies derived from tool annotations. Only the MCP
+adapter exists; module, stack and folder adapters remain open.
 
 ## Catalog discovery
 

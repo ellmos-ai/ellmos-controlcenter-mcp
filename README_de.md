@@ -104,6 +104,72 @@ graph TD
 | `controlcenter_check_lock` | Prüft, ob ein Pfad gesperrt ist — einschließlich der aus Elternordnern geerbten Sperren |
 | `controlcenter_evaluate_permission` | Meldet, was das nächstgelegene `LOCK.permissions`-Register einem Agenten an diesem Pfad erlaubt |
 | `controlcenter_list_decisions` | Listet offene Nutzerentscheidungen mit Kennung, Datum, Titel und Status |
+| `controlcenter_list_available_tools` | Listet die Tools von MCP-Servern, die dieser Host **nicht** geladen hat, ohne sie zu laden — siehe [Gateway](#gateway-server-erreichen-die-der-host-nicht-geladen-hat) |
+| `controlcenter_invoke` | Führt ein Tool eines nicht geladenen Servers aus und gibt dessen Ergebnis zurück, policy-geprüft und auditiert |
+
+## Gateway: Server erreichen, die der Host nicht geladen hat
+
+Eine Sitzung mit elf geladenen MCP-Servern bezahlt deren Tools alle gleichzeitig. Der Gateway hält
+das geladene Profil klein — etwa FileCommander, ControlCenter, open-compute — und lässt die übrigen
+Server bei Bedarf erreichbar bleiben.
+
+```jsonc
+// was da draußen ist, ohne es zu laden
+{ "name": "controlcenter_list_available_tools", "arguments": { "profile": "full" } }
+
+// eines dieser Tools ausführen; ein vorheriger Listenaufruf ist nicht nötig, wenn der Name bekannt ist
+{ "name": "controlcenter_invoke", "arguments": {
+    "server": "ellmos-clatcher-mcp", "tool": "fix_umlauts",
+    "args": { "path": "C:/tmp/notizen.md" } } }
+```
+
+**Reichweite.** Adressierbar ist nur, was der konfigurierte MCP-Root (`ELLMOS_MCP_ROOT`) oder das in
+`profile` benannte Profil ohnehin deklariert. Diese Menge ist die eigentliche Grenze des Gateways —
+ein beliebiger Befehl lässt sich damit nicht starten.
+
+**Lebenszyklus.** Die Verbindung wird für den Aufruf geöffnet und danach geschlossen. Zwischen zwei
+Aufrufen läuft kein Backend-Prozess weiter. Der Preis sind rund 200–500 ms je Aufruf auf einem
+kalten Stdio-Server; der Gewinn ist, dass ControlCenter keine Kindprozesse zurücklässt.
+
+**Fehlerklassen bleiben getrennt.** Vier Dinge können schiefgehen, und sie bedeuten Verschiedenes:
+
+| Ergebnis | Bedeutung |
+|---|---|
+| `unknown-server` | Der Name gehört nicht zur adressierbaren Menge. Die bekannten Namen werden zurückgegeben. |
+| `unreachable` | Der Server existiert, konnte aber nicht befragt werden. **Nicht** „hat nichts geliefert“. |
+| `unknown-tool` | Der Server kennt dieses Tool nicht. Seine verfügbaren Toolnamen kommen zurück, ein Vertipper korrigiert sich damit in einem Schritt. |
+| `target-error` | Der Aufruf kam an, und der Zielserver meldet einen Tool-Fehler. Das ist ein Backend-Ergebnis, kein ControlCenter-Fehler. |
+
+Eine Liste über mehrere Server sagt oben, wenn einzelne nicht befragt werden konnten — ein
+unvollständiges Ergebnis wird nie für ein vollständiges gehalten.
+
+**Policy.** `data/gateway-policy.json` (überschreibbar mit `ELLMOS_GATEWAY_POLICY`):
+
+```json
+{
+  "schema": "ellmos.controlcenter.gateway-policy.v1",
+  "mode": "open",
+  "deny": [{ "server": "*", "tool": "*_delete_*", "reason": "Löschen bleibt manuell." }],
+  "allow": []
+}
+```
+
+`mode: "open"` erlaubt jedes Tool eines adressierbaren Servers; `mode: "allowlist"` verlangt eine
+passende `allow`-Regel. `deny` gewinnt immer, `*` ist in beiden Feldern ein Platzhalter. Eine
+defekte oder schema-fremde Policy-Datei **lehnt jeden Aufruf ab**, statt auf „alles erlaubt“
+zurückzufallen.
+
+**Audit.** Jeder Aufruf, auch ein abgelehnter, wird als eine JSON-Zeile an
+`~/.ellmos/controlcenter/gateway-audit.jsonl` angehängt (`ELLMOS_GATEWAY_AUDIT_LOG`; `off`
+schaltet ab). Der Eintrag enthält Argument**namen und -anzahl — niemals Argumentwerte** — dazu den
+maskierten Startbefehl beziehungsweise die maskierte URL, Ergebnis, Dauer und Anzahl der
+Inhaltsblöcke, nie den Inhalt selbst. Die Tool-Ausgabe meldet, ob der Schreibvorgang gelang; mit
+`ELLMOS_GATEWAY_AUDIT_REQUIRED=1` wird ein fehlgeschlagener Audit-Schreibvorgang zum abgelehnten
+Aufruf.
+
+**Nicht enthalten.** Verbindungs-Pooling, Weiterreichen von Streaming und Progress, Sampling,
+Elicitation, Ressourcen und Prompts der Backends sowie Policy-Klassen aus Tool-Annotationen. Es
+existiert nur der MCP-Adapter; Modul-, Stack- und Ordner-Adapter bleiben offen.
 
 ## Katalog-Discovery
 

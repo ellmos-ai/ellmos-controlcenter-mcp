@@ -119,14 +119,41 @@ Status: planned
 
 ## Phase 4: Virtual MCP Gateway
 
-Status: planned
+Status: partially implemented (2026-08-16)
 
-- Claude loads only the virtual `ellmos-controlcenter-gateway`
-- Gateway starts selected backend servers
-- Gateway exposes only allowed tools
-- Tool calls are checked, logged, and forwarded
+The deferral recorded on 2026-07-23 was lifted by the user on 2026-08-16. What
+shipped is the MCP forwarding path; the adapter classes beyond MCP are still open.
+
+- [x] Gateway starts selected backend servers on demand
+- [x] Tool calls are checked against a policy, logged to an audit trail, and forwarded
+- [x] `controlcenter_list_available_tools` reports what is reachable without loading it
+- [x] `controlcenter_invoke` runs one tool of a server the host has not loaded
 - Capability execution is adapter-gated: ControlCenter plans calls, checks
-  policy, and executes only declared MCP, module, folder, or stack adapters
+  policy, and executes only declared MCP, module, folder, or stack adapters —
+  **only the MCP adapter exists**; module, folder, and stack adapters remain open
+
+### Divergence from the original sketch
+
+This section originally read "Claude loads only the virtual
+`ellmos-controlcenter-gateway`", i.e. a *separate* server process. The
+implementation instead adds two tools to the existing ControlCenter server.
+
+The goal is a small default profile — FileCommander, ControlCenter,
+open-compute — in which ControlCenter is loaded anyway. A separate gateway
+process would add another profile entry and another child process, which works
+against that goal. The separate-process form remains a possible later variant;
+the divergence is deliberate and recorded in `DECISIONS.md`.
+
+### Known gaps
+
+- No connection pooling: each invocation connects and disconnects. This is a
+  deliberate trade against leaving stdio child processes behind, at the cost of
+  roughly 200–500 ms per call on a cold server.
+- No streaming, progress notifications, sampling, or elicitation pass-through;
+  a forwarded call returns one final result.
+- Backend resources and prompts are not exposed — tools only.
+- Remote authentication and header edge cases inherit the limits of the tool
+  catalog: profile-declared headers are passed through, and nothing else.
 
 ## Phase 5: Publication
 

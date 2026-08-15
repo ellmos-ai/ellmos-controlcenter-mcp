@@ -72,10 +72,16 @@
 ## P2
 
 > **Status 2026-07-23:** Die folgenden Punkte (virtueller Gateway + adapter-gesteuerte Ausführung, ROADMAP Phase 4 / Plan P3+P4) bleiben offen und sind **große, freigabepflichtige Ausbaustufen** — nicht autonom umgesetzt. Der Gateway (P4) hängt an P3 (Adapterschema + Policy-Klassen + Audit-Log). Stack-`policies` sind heute free-form Strings (keine feste Sensitivitäts-Taxonomie); ein strenger Policy-Validator wird deshalb nicht vor einem definierten Policy-Klassen-Modell eingeführt.
+>
+> **Status 2026-08-16:** Freigabe durch den Nutzer erteilt, Gateway-Grundpfad gebaut (`controlcenter_list_available_tools`, `controlcenter_invoke`, `src/gateway.ts`). Umgesetzt ist der **MCP-Adapter** mit Policy-Gate und Audit-Log. Offen bleiben die übrigen Adapterklassen, die Policy-Klassen-Taxonomie und die kuratierten virtuellen Server — siehe Einzelpunkte unten.
 
-- Gateway-Modus
-- Virtuelle MCP-Server aus Clustern erzeugen, sodass ausgewählte Fähigkeitsgruppen als kuratierte Server bereitgestellt werden können
-- Adapter-gesteuerte Ausführung planen: `controlcenter_plan_capability` zuerst als Dry-Run, `controlcenter_execute_capability` erst nach Policy-Gates, Audit-Log und expliziten Adapterverträgen
+- [x] Gateway-Modus als Tools am ControlCenter statt als eigener Serverprozess (2026-08-16). Abweichung von der ROADMAP-Skizze bewusst und in `DECISIONS.md` begründet.
+- Virtuelle MCP-Server aus Clustern erzeugen, sodass ausgewählte Fähigkeitsgruppen als kuratierte Server bereitgestellt werden können — der Gateway leitet weiter, bündelt aber noch keine kuratierte Gruppe
+- Adapter-gesteuerte Ausführung planen: `controlcenter_plan_capability` zuerst als Dry-Run, `controlcenter_execute_capability` erst nach Policy-Gates, Audit-Log und expliziten Adapterverträgen — für den MCP-Pfad bewusst übersprungen, für Modul-/Stack-/Ordner-Adapter weiterhin offen
+- Gateway: Modul-, Stack- und Ordner-Adapter ergänzen; heute existiert nur der MCP-Adapter
+- Gateway: Policy-Klassen (read-only, write, destruktiv, Netz, Secrets) statt reinem Server-/Tool-Pattern-Matching; die `destructiveHint`-Annotationen der Zielserver werden gelesen, aber nicht durchgesetzt
+- Gateway: Weiterreichen von Streaming, Progress, Sampling, Elicitation sowie Ressourcen und Prompts; heute wird nur ein einzelnes Endergebnis eines Toolaufrufs zurückgegeben
+- Gateway: Verbindungs-Pooling erst mit Idle-TTL, Obergrenze und Prozess-Teardown — und erst nach gemessenem Nachweis, dass keine Kindprozesse zurückbleiben
 - BACH-Partnerprogramm und BACH-interne Skill-/Tool-Strukturen als Inspirations- und Importquelle prüfen
 - Private Registry Feed
 - Observability und Tool-Trace-Ansicht

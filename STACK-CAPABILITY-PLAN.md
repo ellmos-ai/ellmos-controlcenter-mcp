@@ -27,6 +27,34 @@ Date: 2026-07-05 (status update 2026-07-23)
   taxonomy), so a strict policy validator is not introduced ahead of a defined
   policy-class model.
 
+## Status update (2026-08-16): P3 MCP adapter and P4 forwarding shipped
+
+The user lifted the 2026-07-23 deferral. What exists now, and what does not:
+
+- **Done — MCP adapter with policy gate and audit trail.** `controlcenter_invoke`
+  forwards one tool call to a backend MCP server the host has not loaded, and
+  `controlcenter_list_available_tools` reports what is reachable without loading
+  it. Both live in `src/gateway.ts`. The policy gate is `data/gateway-policy.json`
+  (`deny` rules, optional `allowlist` mode); a malformed policy refuses every call
+  rather than falling back to allow-all. Every invocation, including refused ones,
+  is appended to a JSONL audit log with argument *names* only.
+- **Done — the reachability boundary.** Only servers declared by the configured
+  MCP root or the named profile can be addressed. That set, not a per-tool
+  allowlist, is the gateway's primary boundary.
+- **Open — the other adapter classes.** Module adapters (declared CLI or library
+  entry points), stack adapters (install/status/start/stop), and folder adapters
+  (status files, manifests, queues of a local stack instance) are **not**
+  implemented. Only the MCP adapter exists.
+- **Open — `controlcenter_plan_capability` / `controlcenter_execute_capability`.**
+  The capability-level naming and the dry-run planner were deliberately skipped
+  for the MCP path, where a plan would restate the call arguments. They remain the
+  right shape for the adapter classes above, which do have describable side
+  effects.
+- **Open — policy classes.** The gate is server/tool pattern matching, not the
+  risk taxonomy (read-only, write, destructive, network, secrets, private data)
+  this plan describes. Tool annotations such as `destructiveHint` are read from the
+  backend but not yet enforced. Stack `policies` remain free-form strings.
+
 ## Purpose
 
 ControlCenter must stay user-agnostic. It should not hard-code or create a
@@ -196,9 +224,15 @@ The dashboard should gain a stack/capability view:
 - Add `controlcenter_plan_capability`.
 - Add `controlcenter_execute_capability` only after policy enforcement and
   audit logging are available.
+- [x] MCP adapter with a policy gate and an audit log (`controlcenter_invoke`,
+  2026-08-16). Module, stack, and folder adapters and the policy-class taxonomy
+  remain open — see the 2026-08-16 status update above.
 
 ### P4: Virtual gateway integration
 
 - Expose selected capability groups as virtual MCP servers.
 - Keep backend tools hidden unless selected by profile, bundle, or stack.
-- Route calls through policy, adapter, and audit layers.
+- [x] Route calls through policy and audit layers (2026-08-16). Backend tools stay
+  hidden from the host by default: they are reachable through the gateway rather
+  than loaded into the session. Grouping the exposed set by bundle or stack, and
+  packaging a group as its own virtual server, remain open.

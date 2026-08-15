@@ -161,7 +161,7 @@ function maskSensitiveArg(arg: string): string {
   return sensitiveName(arg) ? "***" : arg;
 }
 
-function maskSensitiveArgs(args: string[]): string[] {
+export function maskSensitiveArgs(args: string[]): string[] {
   return args.map((arg, index) => {
     const previousArg = args[index - 1] ?? "";
     if (index > 0 && sensitiveName(previousArg)) {
@@ -171,7 +171,7 @@ function maskSensitiveArgs(args: string[]): string[] {
   });
 }
 
-function maskUrl(urlValue: string | null): string | null {
+export function maskUrl(urlValue: string | null): string | null {
   if (!urlValue) {
     return null;
   }
@@ -272,7 +272,7 @@ export function createProfileToolCatalogTargets(profile: ResolvedProfile): ToolC
     .sort((a, b) => a.packageName.localeCompare(b.packageName));
 }
 
-function createTransport(target: ToolCatalogTarget): Transport | null {
+export function createTransport(target: ToolCatalogTarget): Transport | null {
   if (target.transportKind === "stdio" && target.command) {
     const transport = new StdioClientTransport({
       command: target.command,

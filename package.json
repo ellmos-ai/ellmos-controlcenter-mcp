@@ -1,8 +1,8 @@
 {
   "name": "ellmos-controlcenter-mcp",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "mcpName": "io.github.ellmos-ai/ellmos-controlcenter-mcp",
-  "description": "Read-mostly MCP administration: local server, tool and skill discovery, capability bundles, dashboard, policy audits, and MCP profile resolution and config generation. Prepares configuration; does not change running sessions or enforce permissions",
+  "description": "MCP control plane: local server, tool and skill discovery, capability bundles, dashboard, policy audits, MCP profile resolution and config generation, plus a policy-gated, audited gateway that lists and invokes tools on backend MCP servers the host has not loaded",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -15,6 +15,7 @@
     "scripts/controlroom_bridge.py",
     "data/capability-bundles.json",
     "data/policy-rules.json",
+    "data/gateway-policy.json",
     "server.json",
     "glama.json",
     "smithery.yaml",
@@ -62,6 +63,9 @@
     "local-mcp",
     "mcp-registry",
     "policy-audit",
+    "mcp-gateway",
+    "mcp-proxy",
+    "tool-forwarding",
     "mcp-server"
   ],
   "author": "Lukas (BACH)",

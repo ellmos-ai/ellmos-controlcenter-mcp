@@ -1,9 +1,9 @@
 # ellmos ControlCenter MCP
 
-> Read-mostly MCP administration server for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, and a local dashboard. It prepares configuration; it does not change running sessions, proxy other servers, or enforce permissions.
+> MCP control-plane server for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, a local dashboard, and a policy-gated, audited gateway that lists and invokes tools on backend MCP servers the host has not loaded. It prepares configuration and does not change running sessions.
 
-Last-checked: 2026-08-13
-Test status: 134/134 Vitest tests passing (100% green)
+Last-checked: 2026-08-16
+Test status: 164/164 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
 MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
@@ -15,11 +15,13 @@ Runtime: Node.js >=20
 
 ellmos ControlCenter MCP is an alpha-stage Model Context Protocol server for local MCP administration. It discovers local MCP repositories and registered stack compositions, reads MCP profile files, resolves inherited profile configurations, recommends profiles and capability bundles for tasks, runs initial profile policy audits, builds local server catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, supports maintained output text sets for `de`, `en`, `es`, `zh`, `ja`, and `ru`, and can start a local dashboard.
 
-It is useful for local MCP stack visibility and profile management. It is not a hardened security gateway. Gateway mode, enforced tool-level permissions, authentication, and hard isolation are planned but not implemented.
+It is useful for local MCP stack visibility, profile management, and for keeping a small loaded profile while remaining able to reach the other servers on demand. It is not a hardened security gateway: the gateway forwards tool calls under a pattern-based policy and an audit log, but authentication, risk-class enforcement, and hard isolation are still planned rather than implemented.
 
 Host registers: four read-only tools expose this machine's project locks, agent-neutral permission register and pending decision list. They never write — no lock is set, renewed or released and no decision answered — and they fail closed, reporting `unknown` rather than `clear` whenever a register is unconfigured or unreadable. They delegate every lock rule to the host's canonical Python modules instead of reimplementing them, and stay inert until `ELLMOS_LOCK_SCRIPTS` and `ELLMOS_DECISIONS_ROOT` are configured.
 
-Scope boundary: ControlCenter is read-mostly. Its write actions are limited to generating an MCP configuration file, writing a catalog file, and — via the dashboard, with confirmation and backup — toggling servers in a profile file. It never changes a running session, never sits in the request path, never executes a tool on another MCP server, and enforces no permissions. It owns no domain data: policies, decisions, memory, tasks, tickets, and automations belong to other components.
+Scope boundary: ControlCenter is read-mostly outside the gateway. Its write actions are limited to generating an MCP configuration file, writing a catalog file, appending to the gateway audit log, and — via the dashboard, with confirmation and backup — toggling servers in a profile file. It never changes a running session. Since 2026-08-16 it does sit in the request path for one explicit case: `controlcenter_invoke` executes a single tool on another MCP server, gated by `data/gateway-policy.json` and recorded in an audit log. Only servers declared by the configured MCP root or a named profile can be addressed. It owns no domain data: policies, decisions, memory, tasks, tickets, and automations belong to other components.
+
+Gateway: `controlcenter_list_available_tools` reports the tools of servers the host has not loaded; `controlcenter_invoke` runs one of them and returns the result. The connection is opened per call and closed again, so no backend process is left running. Fail-closed: a server that cannot be asked is reported as unreachable with an unknown tool count, never as a server without tools, and a malformed policy file refuses every call instead of falling back to allow-all. A tool error reported by the target is kept distinct from a gateway failure, because the call did arrive. Argument values never reach the audit log.
 
 ## Tools
 
@@ -115,4 +117,4 @@ ellmos-controlcenter-mcp
 - `src/dashboard.ts`: local dashboard server.
 - `test/catalog.test.ts` and `test/semanticRouting.test.ts`: unit coverage for catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, and semantic-route validation (134 tests passing in the full suite, including `test/mcpCatalog.test.ts` for catalog discovery and enrichment).
 
-## Last-checked: 2026-08-13
+## Last-checked: 2026-08-16

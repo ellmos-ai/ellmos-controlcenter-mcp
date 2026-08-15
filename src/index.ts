@@ -55,6 +55,12 @@ import { auditResolvedProfile, loadPolicyRules, summarizePolicyFindings } from "
 import { produceActualSelfReceipt, publicActualSelfReceiptError } from "./actualSelfReceipt.js";
 import { buildToolCatalog, scanLocalServerTools, scanProfileServerTools, type ServerToolCatalog } from "./toolCatalog.js";
 import {
+  formatGatewayInvocation,
+  formatGatewayToolListing,
+  invokeGatewayTool,
+  listGatewayTools
+} from "./gateway.js";
+import {
   DEFAULT_PROFILE_ROOT,
   listMcpProfiles,
   prepareProfileSwitch,
@@ -64,7 +70,7 @@ import {
 
 const server = new McpServer({
   name: "ellmos-controlcenter-mcp",
-  version: "0.4.0"
+  version: "0.5.0"
 });
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -1311,6 +1317,91 @@ server.registerTool(
   async ({ status, limit }) => {
     const result = await listDecisions({ status, limit });
     return { content: [{ type: "text", text: formatDecisions(result) }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_list_available_tools",
+  {
+    title: "List tools reachable through the gateway",
+    description:
+      "Lists the tools of MCP servers that this host has NOT loaded, without loading them. Starts each server, reads its " +
+      "real list_tools output and shuts it down again. Fail-closed: a server that cannot be asked is reported as " +
+      "unreachable with an unknown tool count — never as a server without tools — and the summary states whether the " +
+      "result is complete. Scope is the local MCP root, or a named profile when 'profile' is set. " +
+      "Not required before controlcenter_invoke: call that one directly when the tool name is already known.",
+    inputSchema: {
+      server: z.string().optional().describe(
+        "Restrict the listing to one server, by package name, directory name, MCP name, or profile server key."
+      ),
+      profile: z.string().optional().describe(
+        "Read the server list from this MCP profile instead of the local MCP root."
+      ),
+      profileRoot: z.string().optional().describe(inputText("profileRoot")),
+      mcpRoot: z.string().optional().describe(inputText("mcpRoot")),
+      includeSchemas: z.boolean().default(false).describe(
+        "Include full input schemas. Off by default because schemas dominate the output."
+      ),
+      timeoutMs: z.number().int().positive().optional().describe(inputText("timeoutMs"))
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
+  },
+  async ({ server: serverName, profile, profileRoot, mcpRoot, includeSchemas, timeoutMs }) => {
+    const listing = await listGatewayTools({
+      serverName,
+      profileName: profile,
+      profileRoot,
+      mcpRoot,
+      includeSchemas,
+      timeoutMs
+    });
+    return { content: [{ type: "text", text: formatGatewayToolListing(listing) }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_invoke",
+  {
+    title: "Invoke a tool on a server this host has not loaded",
+    description:
+      "Runs one tool of a backend MCP server that is not part of the current session, and returns its result. The " +
+      "connection is opened for the call and closed afterwards, so no server process is left running. Only servers " +
+      "discoverable from the configured MCP root or the named profile can be addressed; data/gateway-policy.json can " +
+      "deny tools on top of that, and a malformed policy refuses every call. Distinguishes unknown server, unreachable " +
+      "server, unknown tool and a tool error reported by the target — a target error means the call did arrive. " +
+      "On an unknown tool name the available tool names are returned, so a wrong guess self-corrects in one step. " +
+      "Every call is appended to an audit log with argument names only, never argument values.",
+    inputSchema: {
+      server: z.string().min(1).describe(
+        "Server to call, by package name, directory name, MCP name, or profile server key."
+      ),
+      tool: z.string().min(1).describe("Name of the tool on that server, e.g. fc_read_file."),
+      args: z.record(z.unknown()).optional().describe("Arguments for the target tool, passed through unchanged."),
+      profile: z.string().optional().describe(
+        "Resolve the server from this MCP profile instead of the local MCP root."
+      ),
+      profileRoot: z.string().optional().describe(inputText("profileRoot")),
+      mcpRoot: z.string().optional().describe(inputText("mcpRoot")),
+      timeoutMs: z.number().int().positive().optional().describe(
+        "Timeout in milliseconds for connect, list and call. Default 30000."
+      )
+    },
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+  },
+  async ({ server: serverName, tool, args, profile, profileRoot, mcpRoot, timeoutMs }) => {
+    const result = await invokeGatewayTool({
+      serverName,
+      toolName: tool,
+      args,
+      profileName: profile,
+      profileRoot,
+      mcpRoot,
+      timeoutMs
+    });
+    return {
+      content: [{ type: "text", text: formatGatewayInvocation(result) }],
+      isError: result.outcome !== "ok"
+    };
   }
 );
 

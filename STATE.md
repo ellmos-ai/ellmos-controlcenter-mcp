@@ -6,7 +6,9 @@
 - TypeScript MCP scaffold in place
 - Initial discovery and profile tools implemented
 - Tests for core logic available
-- Version `0.3.0` prepared for GitHub/npm review; publication is not implied
+- Version `0.5.0` prepared for GitHub/npm review; publication is not implied
+- ControlCenter is no longer read-only in the request path: the gateway forwards tool calls to
+  backend MCP servers under a policy gate and an audit log
 - Optional actual-self producer implemented fail-closed; no host trust store or live routing activation is configured by the package
 
 ## What the MVP Can Do
@@ -40,6 +42,9 @@
 - Consume hash-consistent System Explorer resolutions for typed lexical capability claims without owning a second registry or granting execution authority; provenance and identity remain unverified (`controlcenter_find_capability`)
 - Show native-bound components while keeping declared and actual runtime-state axes separate (`controlcenter_tool_overview`)
 - Build bounded `short`, `execution`, or `full` context packs for registered stacks without loading arbitrary project files, secrets, commands, or live state (`controlcenter_context_pack`)
+- List the tools of MCP servers the host has not loaded, marking any server that could not be asked as unreachable with an unknown tool count instead of as a server without tools (`controlcenter_list_available_tools`)
+- Invoke a single tool on such a server and return its result, gated by `data/gateway-policy.json` and recorded in an audit log that holds argument names but never argument values (`controlcenter_invoke`)
+- Keep the four gateway failure modes apart: unknown server, unreachable server, unknown tool, and a tool error reported by the target — the last one means the call did arrive
 
 ## What Is Still Missing
 
@@ -48,6 +53,13 @@
 - Host-trusted availability evidence and policy-gated selection/execution remain outside this package
 - Remote auth and header handling for legacy SSE
 - Thematic clusters that can be automatically suggested and manually maintained
-- Virtual MCP servers built from curated clusters
+- Virtual MCP servers built from curated clusters; the gateway forwards calls but does not yet
+  package a curated group as its own server
+- Gateway connection pooling; each invocation connects and disconnects, deliberately, so that no
+  stdio child process is left behind
+- Gateway pass-through for streaming, progress, sampling, elicitation, resources, and prompts;
+  only tool calls with a single final result are forwarded
+- Risk-class policies for the gateway (read-only, write, destructive, network, secrets); the gate
+  matches server and tool patterns and does not yet act on backend tool annotations
 - Policy-gated context packs for arbitrary skill, module, or project content
 - Optional Claude Code restart/reconnect guidance after written profile changes; the workflow is planned, but no live-session mutation is implemented
