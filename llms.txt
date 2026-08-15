@@ -3,7 +3,7 @@
 > MCP control-plane server for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, a local dashboard, and a policy-gated, audited gateway that lists and invokes tools on backend MCP servers the host has not loaded. It prepares configuration and does not change running sessions.
 
 Last-checked: 2026-08-16
-Test status: 198/198 Vitest tests passing (100% green)
+Test status: 202/202 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
 MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
@@ -23,7 +23,7 @@ Scope boundary: ControlCenter is read-mostly outside the gateway. Its write acti
 
 Gateway: `controlcenter_list_available_tools` reports the tools of servers the host has not loaded; `controlcenter_invoke` runs one of them and returns the result. The connection is opened per call and closed again, so no backend process is left running. Fail-closed: a server that cannot be asked is reported as unreachable with an unknown tool count, never as a server without tools, and a malformed policy file refuses every call instead of falling back to allow-all. A tool error reported by the target is kept distinct from a gateway failure, because the call did arrive. Argument values never reach the audit log.
 
-Gateway hardening: forwarded payloads are treated as untrusted foreign data. Results are redacted recursively before reaching the caller, and the number of replaced values is reported. Finite budgets bound request size, response size, nesting depth, content blocks, and concurrent invocations; oversized arguments are refused rather than shortened, while oversized answers are truncated and flagged. Remote targets must be HTTPS unless they are on loopback, redirects are refused, and an optional host allowlist narrows this further. Forwarded content is marked as data rather than as instructions.
+Gateway hardening: forwarded payloads are treated as untrusted foreign data. Results are redacted recursively before reaching the caller, and the number of replaced values is reported; narrow credential patterns are replaced everywhere, while key-based wiping applies only to structured metadata so that requested file contents are never silently altered. Finite budgets bound request size, response size, nesting depth, content blocks, and concurrent invocations; oversized arguments are refused rather than shortened, while oversized answers are truncated and flagged. Remote targets must be HTTPS unless they are on loopback, redirects are refused, and an optional host allowlist narrows this further. Forwarded content is marked as data rather than as instructions.
 
 ## Tools
 

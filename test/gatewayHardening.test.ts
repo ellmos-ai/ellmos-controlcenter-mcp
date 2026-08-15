@@ -31,6 +31,22 @@ function budgets(overrides: Partial<GatewayBudgets> = {}): GatewayBudgets {
 }
 
 describe("recursive redaction", () => {
+  it("leaves keys alone when key-based redaction is switched off", () => {
+    const report = emptyReport();
+    const result = redactDeep(
+      { apiKey: "keep-me", token: "keep-me-too" },
+      8,
+      report,
+      0,
+      new WeakSet(),
+      false
+    ) as Record<string, string>;
+
+    expect(result.apiKey).toBe("keep-me");
+    expect(result.token).toBe("keep-me-too");
+    expect(report.redactions).toBe(0);
+  });
+
   it("replaces values whose key looks like a secret, at any depth", () => {
     const report = emptyReport();
     const result = redactDeep(
@@ -145,6 +161,48 @@ describe("response budget", () => {
     expect(JSON.stringify(bounded.content)).not.toContain("sk-abcdefghijklmnopqrstuvwx");
     expect(JSON.stringify(bounded.structuredContent)).not.toContain("hunter2");
     expect(bounded.report.redactions).toBeGreaterThanOrEqual(2);
+  });
+
+  it("does not wipe requested data out of content blocks by key name", () => {
+    // The flagship path: a config file read through the gateway. Its own keys are
+    // payload the caller asked for, not credentials belonging to the transport.
+    const asText = applyResponseBudget(
+      [{ type: "text", text: '{"auth":"hunter2","port":8080}' }],
+      null,
+      budgets(),
+      true
+    );
+    expect(JSON.stringify(asText.content)).toContain("hunter2");
+
+    const asObject = applyResponseBudget(
+      [{ type: "json", auth: "hunter2", port: 8080 }],
+      null,
+      budgets(),
+      true
+    );
+    expect(JSON.stringify(asObject.content)).toContain("hunter2");
+  });
+
+  it("still applies key-based redaction to structured metadata", () => {
+    const bounded = applyResponseBudget(
+      [{ type: "text", text: "ok" }],
+      { auth: "hunter2", port: 8080 },
+      budgets(),
+      true
+    );
+    expect(JSON.stringify(bounded.structuredContent)).not.toContain("hunter2");
+    expect(JSON.stringify(bounded.structuredContent)).toContain("8080");
+  });
+
+  it("redacts real credential shapes even inside a content block", () => {
+    const bounded = applyResponseBudget(
+      [{ type: "json", note: "sk-abcdefghijklmnopqrstuvwx" }],
+      null,
+      budgets(),
+      true
+    );
+    expect(JSON.stringify(bounded.content)).not.toContain("sk-abcdefghijklmnopqrstuvwx");
+    expect(bounded.report.redactions).toBe(1);
   });
 
   it("can be switched off for callers that need byte-exact payloads", () => {

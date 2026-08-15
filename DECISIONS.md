@@ -101,8 +101,18 @@ Weitergereichte Ergebnisse werden rekursiv redigiert (Default `redactResults: tr
 unterschiedlich scharfen Signalen:
 
 - **Schlüsselnamen** (`token`, `apiKey`, `password`, `cookie`, `private_key`, …) → der Wert wird
-  vollständig ersetzt. Das ist strukturell eindeutig und kann kaum danebengreifen.
+  vollständig ersetzt. **Nur in `structuredContent`**, also in maschinenlesbaren Metadaten, wo ein
+  Feld namens `auth` tatsächlich ein Zugangsdatum ist.
 - **Muster im Fließtext** → nur eng gefasste Credential-Formen (`sk-…`, `ghp_…`, `AKIA…`, JWT, …).
+  Diese Regel gilt **überall**, auch in Inhaltsblöcken.
+
+**Warum die Schlüsselregel nicht auf Inhaltsblöcke angewandt wird (gemessen 2026-08-16):** Der
+Hauptanwendungsfall ist `fc_read_file` über den Gateway. Eine Konfigurationsdatei mit einem Feld
+`auth` ist der Inhalt, den der Aufrufer **angefordert** hat — nicht ein Zugangsdatum des Transports.
+Die Schlüsselregel hätte dort still eine andere Datei zurückgegeben. Gemessen: Als Textblock war die
+Datei ohnehin unversehrt (der Inhalt ist ein String), aber ein objektförmiger Inhaltsblock verlor
+seinen Wert. Konsequenz: Schlüsselregel nur auf `structuredContent`, Musterregel überall. Ein echter
+Token in einem Inhaltsblock wird also weiterhin ersetzt, eine angeforderte Nutzdatei nicht.
 
 Begründung: Ergebnisse enthalten echte Nutzdaten. Eine lockere `key=value`-Maskierung — wie sie für
 *Fehlertexte* richtig ist, wo Zerstörung nichts kostet — würde beim Lesen einer Konfigurationsdatei

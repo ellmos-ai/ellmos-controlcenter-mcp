@@ -172,7 +172,7 @@ Achse begrenzt:
 
 | Kontrolle | Verhalten |
 |---|---|
-| Rekursive Redaktion | Schlüsselnamen, die ein Geheimnis benennen, und eng gefasste Credential-Muster (`sk-`, `ghp_`, `AKIA`, JWT, …) werden auf jeder Ebene ersetzt. Das Ergebnis meldet, wie viele Werte geändert wurden. Abschaltbar per `redactResults: false` — eine bewusste Abschwächung. |
+| Rekursive Redaktion | Eng gefasste Credential-Muster (`sk-`, `ghp_`, `AKIA`, JWT, …) werden **überall** auf jeder Ebene ersetzt. Schlüsselnamen, die ein Geheimnis benennen (`auth`, `token`, `apiKey`, …), werden **nur in `structuredContent`** vollständig gelöscht — nie in Inhaltsblöcken, denn die tragen die vom Aufrufer angeforderten Nutzdaten. Das Ergebnis meldet, wie viele Werte geändert wurden. Abschaltbar per `redactResults: false` — eine bewusste Abschwächung. |
 | Request-Budget | Zu große Argumente werden **abgelehnt**, nie gekürzt; ein gekürzter Argumentsatz würde stillschweigend etwas anderes verlangen. `ELLMOS_GATEWAY_MAX_REQUEST_BYTES`, Vorgabe 256 KiB. |
 | Response-Budget | Zu große Antworten werden **gekürzt und markiert**, damit der angekommene Teil nutzbar bleibt. `ELLMOS_GATEWAY_MAX_RESPONSE_BYTES`, Vorgabe 1 MiB. |
 | Tiefe und Blöcke | `ELLMOS_GATEWAY_MAX_DEPTH` (32) und `ELLMOS_GATEWAY_MAX_CONTENT_BLOCKS` (200). Zyklensicher, eine selbstbezügliche Nutzlast bricht ab statt zu schleifen. |

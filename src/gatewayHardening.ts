@@ -96,13 +96,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 /**
  * Walks a forwarded payload and redacts at every level. Bounded by `maxDepth`
  * and cycle-safe, so a hostile or looping backend cannot make this run forever.
+ *
+ * `keyBased` controls the sharper of the two rules. It belongs on machine-readable
+ * metadata (`structuredContent`), where a key called `auth` really is a credential
+ * field. It must stay OFF for content blocks: those carry what the caller asked
+ * to read, and wiping a key called `auth` out of a config file the caller
+ * requested would hand back a different file without saying so.
  */
 export function redactDeep(
   value: unknown,
   maxDepth: number,
   report: RedactionReport,
   depth = 0,
-  seen: WeakSet<object> = new WeakSet()
+  seen: WeakSet<object> = new WeakSet(),
+  keyBased = true
 ): unknown {
   if (depth > maxDepth) {
     report.depthExceeded = true;
@@ -122,18 +129,18 @@ export function redactDeep(
   seen.add(value as object);
 
   if (Array.isArray(value)) {
-    return value.map((item) => redactDeep(item, maxDepth, report, depth + 1, seen));
+    return value.map((item) => redactDeep(item, maxDepth, report, depth + 1, seen, keyBased));
   }
 
   const source = value as Record<string, unknown>;
   const result: Record<string, unknown> = {};
   for (const [key, entry] of Object.entries(source)) {
-    if (SENSITIVE_KEY.test(key)) {
+    if (keyBased && SENSITIVE_KEY.test(key)) {
       report.redactions += 1;
       result[key] = REDACTED;
       continue;
     }
-    result[key] = redactDeep(entry, maxDepth, report, depth + 1, seen);
+    result[key] = redactDeep(entry, maxDepth, report, depth + 1, seen, keyBased);
   }
   return result;
 }
@@ -193,12 +200,17 @@ export function applyResponseBudget(
     blocks = blocks.slice(0, budgets.maxContentBlocks);
   }
 
-  let safeContent = redact ? (redactDeep(blocks, budgets.maxDepth, report) as unknown[]) : blocks;
+  // Content blocks are the payload the caller asked for: narrow credential
+  // patterns only, no key-based wiping. Structured content is machine metadata:
+  // both rules apply. See redactDeep for why the two differ.
+  let safeContent = redact
+    ? (redactDeep(blocks, budgets.maxDepth, report, 0, new WeakSet(), false) as unknown[])
+    : blocks;
   let safeStructured =
     structuredContent === null || structuredContent === undefined
       ? null
       : redact
-        ? redactDeep(structuredContent, budgets.maxDepth, report)
+        ? redactDeep(structuredContent, budgets.maxDepth, report, 0, new WeakSet(), true)
         : structuredContent;
 
   let truncated = report.blocksDropped > 0;

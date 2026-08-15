@@ -169,7 +169,7 @@ tool output reports whether the write succeeded, so a failed audit is visible; s
 
 | Control | Behaviour |
 |---|---|
-| Recursive redaction | Secret-named keys and narrow credential shapes (`sk-`, `ghp_`, `AKIA`, JWT, …) are replaced at every nesting level. The result reports how many values changed. Disable with `redactResults: false` in the policy — a deliberate weakening. |
+| Recursive redaction | Narrow credential shapes (`sk-`, `ghp_`, `AKIA`, JWT, …) are replaced **everywhere**, at every nesting level. Secret-named keys (`auth`, `token`, `apiKey`, …) are wiped whole **only in `structuredContent`** — never in content blocks, which carry the payload the caller asked to read. The result reports how many values changed. Disable with `redactResults: false` — a deliberate weakening. |
 | Request budget | Oversized arguments are **refused**, never shortened; a truncated argument set would silently change the request. `ELLMOS_GATEWAY_MAX_REQUEST_BYTES`, default 256 KiB. |
 | Response budget | Oversized answers are **truncated and flagged**, so the part that arrived stays usable. `ELLMOS_GATEWAY_MAX_RESPONSE_BYTES`, default 1 MiB. |
 | Nesting and blocks | `ELLMOS_GATEWAY_MAX_DEPTH` (32) and `ELLMOS_GATEWAY_MAX_CONTENT_BLOCKS` (200). Cycle-safe, so a self-referential payload cuts off instead of looping. |
