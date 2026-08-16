@@ -3,7 +3,7 @@
 > MCP control-plane server for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, a local dashboard, and a policy-gated, audited gateway that lists and invokes tools on backend MCP servers the host has not loaded. It prepares configuration and does not change running sessions.
 
 Last-checked: 2026-08-16
-Test status: 202/202 Vitest tests passing (100% green)
+Test status: 207/207 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
 MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
@@ -56,6 +56,8 @@ Gateway hardening: forwarded payloads are treated as untrusted foreign data. Res
 - `controlcenter_check_lock`: check whether one path may be modified, including locks inherited from parent directories, and report the effective lock with type, scope and expiry. Fails closed: unreadable path, missing configuration or an error yields `unknown`, never `clear`.
 - `controlcenter_evaluate_permission`: report what the nearest `LOCK.permissions` register allows an agent to do at a path, precedence `deny > ask > allow > default`. A report, not enforcement; no register anywhere up the chain yields `unknown`, not `allow`.
 - `controlcenter_list_decisions`: list pending user decisions by identifier, date, title, status and scope — deliberately not their question texts, options or recommendations. Reports when its index is older than its sources. Requires `ELLMOS_DECISIONS_ROOT`.
+- `controlcenter_list_available_tools`: list tools of backend MCP servers declared by the local root or a profile, without loading them permanently into the host.
+- `controlcenter_invoke`: policy-gated execution of a single tool on an unloaded backend MCP server with automatic sanitization and audit logging.
 
 ## Install
 

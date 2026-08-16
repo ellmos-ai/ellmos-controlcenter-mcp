@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Discoverability, Badges & Metadata Parity (2026-08-16)
+- Harmonized README and README_de badges (207 Vitest passed, 31 MCP tools, Node >=20).
+- Standardized sibling MCP server ecosystem tables and companion tooling matrices across open-bricks and ellmos-ai.
+- Updated `server.json` and `glama.json` to 0.5.1 release parity.
+- Added comprehensive automated metadata parity test suite in `test/metadata.test.ts` (5/5 passed).
+- Synchronized `llms.txt` tool descriptions and 207 test verification.
+
 ## 0.5.1 - 2026-08-16
 
 Includes the 0.5.0 gateway release from the same day. 0.5.0 was published to npm before the hardening section below existed - same version string, different content; 0.5.1 closes that drift.

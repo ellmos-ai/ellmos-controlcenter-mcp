@@ -379,7 +379,7 @@ describe.skipIf(!HAS_CANONICAL)("controlroom against the canonical lock modules"
 
     // A zero budget stops before the first root: no lock found, and that must not
     // be rendered as "nothing is locked".
-    const starved = await listLocks({ config: config(), rootsFile, budgetSeconds: 0.001, timeoutMs: 30_000 });
+    const starved = await listLocks({ config: config(), rootsFile, budgetSeconds: 0, timeoutMs: 30_000 });
     expect(starved.complete).toBe(false);
     expect(formatLockList(starved)).toContain("INCOMPLETE");
   });
