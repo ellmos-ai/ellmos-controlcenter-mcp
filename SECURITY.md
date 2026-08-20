@@ -12,11 +12,10 @@
 - The dashboard binds to `127.0.0.1` by default.
 - `controlcenter_context_pack` reads only the server-configured registered stack root. It excludes absolute paths, arbitrary project files, commands, secrets, live state, and unallowlisted policy values.
 - `controlcenter_actual_self_receipt` is disabled unless an explicit host-local configuration is present. It pins an Ed25519 key file by SHA-256, probes only this package's `list_tools` surface, redacts error details at the MCP boundary, and does not provision trust or authorize execution.
+- `controlcenter_invoke` enforces the Eigendark hardening invariants: policy-gated dispatch (`data/gateway-policy.json`), connect-per-call isolation (no persistent child processes), recursive credential redaction on forwarded results, strict finite resource budgets (request bytes, response bytes, nesting depth, block counts, and concurrent execution slots), transport policy (HTTPS-only for remote targets, loopback plain HTTP, redirect refusal), and structured JSONL audit logging (`gateway-audit.jsonl`) recording argument names and counts but never argument values.
 
 ## Not Yet Implemented
 
-- Tool-level policy enforcement
-- MCP gateway/proxy enforcement
 - User authentication for the dashboard
 - Remote multi-user access control
 - Tamper-proof audit logs

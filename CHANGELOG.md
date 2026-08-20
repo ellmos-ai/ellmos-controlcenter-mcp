@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### CI Matrix Hardening, Security Invariants & Metadata Parity Currency (2026-08-20)
+- Hardened GitHub Actions CI workflow (`.github/workflows/ci.yml`) with multi-version Node.js matrix support (`18.x`, `20.x`, `22.x`).
+- Documented Gateway Safety Model and Eigendark hardening invariants in `SECURITY.md`.
+- Updated `llms.txt` Last-checked timestamp to `2026-08-20` and verified 207 passing tests across all test suites.
+- Expanded automated metadata parity test suite in `test/metadata.test.ts` to validate CI workflow matrix configuration, security invariants, license parity, and timestamp currency (8/8 tests).
+
 ### Discoverability, Badges & Metadata Parity (2026-08-16)
 - Harmonized README and README_de badges (207 Vitest passed, 31 MCP tools, Node >=20).
 - Standardized sibling MCP server ecosystem tables and companion tooling matrices across open-bricks and ellmos-ai.

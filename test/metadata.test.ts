@@ -11,6 +11,9 @@ describe("metadata & manifest parity", () => {
   const readmeEn = fs.readFileSync(path.join(root, "README.md"), "utf-8");
   const readmeDe = fs.readFileSync(path.join(root, "README_de.md"), "utf-8");
   const indexTs = fs.readFileSync(path.join(root, "src", "index.ts"), "utf-8");
+  const securityMd = fs.readFileSync(path.join(root, "SECURITY.md"), "utf-8");
+  const license = fs.readFileSync(path.join(root, "LICENSE"), "utf-8");
+  const ciYml = fs.readFileSync(path.join(root, ".github", "workflows", "ci.yml"), "utf-8");
 
   it("ensures version parity across package.json, server.json, and glama.json", () => {
     expect(packageJson.version).toBe(serverJson.version);
@@ -36,10 +39,17 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-08-16");
+    expect(llmsTxt).toContain("Last-checked: 2026-08-20");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("MIT");
+  });
+
+  it("ensures license parity across package.json, glama.json, LICENSE, and llms.txt", () => {
+    expect(packageJson.license).toBe("MIT");
+    expect(glamaJson.license).toBe("MIT");
+    expect(license).toContain("MIT License");
+    expect(llmsTxt).toContain("License: MIT");
   });
 
   it("ensures README.md and README_de.md contain ecosystem and umbrella badges", () => {
@@ -59,5 +69,21 @@ describe("metadata & manifest parity", () => {
     for (const file of required) {
       expect(fs.existsSync(path.join(root, file))).toBe(true);
     }
+  });
+
+  it("ensures SECURITY.md documents key security boundaries and gateway hardening", () => {
+    expect(securityMd).toContain("Current Safety Model");
+    expect(securityMd).toContain("controlcenter_invoke");
+    expect(securityMd).toContain("gateway-audit.jsonl");
+    expect(securityMd).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp/issues");
+  });
+
+  it("ensures CI workflow is properly configured with Node.js matrix strategy", () => {
+    expect(ciYml).toContain("actions/checkout@v4");
+    expect(ciYml).toContain("actions/setup-node@v4");
+    expect(ciYml).toContain("matrix:");
+    expect(ciYml).toContain("node-version: [18.x, 20.x, 22.x]");
+    expect(ciYml).toContain("npm run test");
+    expect(ciYml).toContain("npm run build");
   });
 });

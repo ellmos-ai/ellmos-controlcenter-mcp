@@ -2,7 +2,7 @@
 
 > MCP control-plane server for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, a local dashboard, and a policy-gated, audited gateway that lists and invokes tools on backend MCP servers the host has not loaded. It prepares configuration and does not change running sessions.
 
-Last-checked: 2026-08-16
+Last-checked: 2026-08-20
 Test status: 207/207 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
