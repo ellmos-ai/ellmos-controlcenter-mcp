@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Bilingual Security Policy, Lifecycle Sequence Diagram & Discoverability Parity (2026-08-21)
+- Upgraded `SECURITY.md` to comprehensive bilingual (English / German) policy covering 100% local execution, Zero-Egress guarantees, unprivileged user mode (Non-Elevation), Eigendark hardening invariants on the gateway path, loopback dashboard binding, Ed25519 runtime receipt verification, direct security contact emails (`security@ellmos.ai`, `support@lukasgeiger.com`, `lukas@open-bricks.org`), and GitHub Security Advisories.
+- Added interactive bilingual Mermaid Sequence Diagram for the Control Plane, Profile Resolution, Dynamic Discovery & Policy-Gated Gateway Lifecycle in `README.md` and `README_de.md`.
+- Integrated structured Quick Navigation bars in both `README.md` and `README_de.md`.
+- Synchronized badges across `README.md` and `README_de.md` (CI Status, Vitest 211 passed, MCP Tools 31, Platform: Windows | macOS | Linux, Privacy: Zero-Egress, Security: Local-First, Ecosystem: ellmos-ai, Umbrella: open-bricks, LLM-Ready: llms.txt).
+- Updated partner ecosystem tables across AI Infrastructure, Open-Science, and Desktop Software with `workflowhooker-provenance`, `UniversalDocsGrabber`, `system-gap-master`, `lock-master`, and `build-your-users-mind`.
+- Updated `llms.txt` with `Last-checked: 2026-08-21`, 211 verified Vitest tests, and `SECURITY.md` references.
+- Expanded automated metadata parity test suite in `test/metadata.test.ts` (9/9 tests passed, 211/211 total suite).
+
 ### CI Matrix Hardening, Security Invariants & Metadata Parity Currency (2026-08-20)
 - Hardened GitHub Actions CI workflow (`.github/workflows/ci.yml`) with multi-version Node.js matrix support (`18.x`, `20.x`, `22.x`).
 - Documented Gateway Safety Model and Eigendark hardening invariants in `SECURITY.md`.

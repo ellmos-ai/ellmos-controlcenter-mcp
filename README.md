@@ -8,17 +8,29 @@
 
 *Part of the [ellmos-ai](https://github.com/ellmos-ai) family.*
 
+[![CI](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-207%20passed-brightgreen.svg)](https://vitest.dev/)
-[![MCP Tools](https://img.shields.io/badge/MCP%20Tools-31-blue.svg)](#available-tools)
+[![Vitest](https://img.shields.io/badge/Vitest-211%20passed-brightgreen.svg)](https://vitest.dev/)
+[![MCP Tools](https://img.shields.io/badge/MCP%20Tools-31-blue.svg)](#tools)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
+[![Privacy](https://img.shields.io/badge/Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg)](SECURITY.md)
+[![Security](https://img.shields.io/badge/Security-Local--First%20%7C%20Policy--Gated-blue.svg)](SECURITY.md)
 [![Ecosystem](https://img.shields.io/badge/Ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
 [![Umbrella](https://img.shields.io/badge/Umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
 [![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-success.svg)](llms.txt)
 
 > [!NOTE]
 > **LLM / AI Agent Integration:** This repository provides an [`llms.txt`](llms.txt) index file for context optimization, RAG discovery, and agent navigation.
+
+---
+
+### Quick Navigation
+
+[Quick Start](#install) • [System Architecture](#system-architecture) • [Control & Gateway Flow](#control-plane--gateway-lifecycle) • [Tools (31)](#tools) • [Gateway](#gateway-reaching-servers-the-host-has-not-loaded) • [Security Policy](SECURITY.md) • [llms.txt Context](llms.txt) • [Ecosystem Matrix](#ellmos-ai-ecosystem)
+
+---
 
 An alpha-stage **Model Context Protocol (MCP) administration server** for local MCP stacks. ControlCenter discovers local MCP servers, reads MCP profile files, groups servers into capability bundles, recommends profiles for a task, builds catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, and provides an optional local dashboard.
 
@@ -61,10 +73,48 @@ graph TD
     end
 ```
 
+## Control Plane & Gateway Lifecycle
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Agent as MCP Client (Claude / Codex / Gemini)
+    participant CC as ControlCenter MCP Server
+    participant Res as Profile & Capability Resolver
+    participant Gate as Gateway Policy Guard
+    participant Backend as Backend MCP Server (Unloaded)
+    participant Scrub as Hardening & Secret Scrubber
+    participant Audit as Audit Logger (JSONL)
+
+    Note over Agent,CC: 1. Administration & Profile Discovery
+    Agent->>CC: controlcenter_suggest_profile / resolve_profile
+    CC->>Res: Inspect ~/.claude/profiles & extends chains
+    Res-->>CC: Resolved MCP Configuration & Bundles
+    CC-->>Agent: Suggested Profile & --mcp-config flags
+
+    Note over Agent,CC: 2. Policy-Gated Gateway Execution
+    Agent->>CC: controlcenter_invoke(server, tool, args)
+    CC->>Gate: Evaluate data/gateway-policy.json
+    alt Policy Denied or Missing
+        Gate-->>CC: Policy Refusal (Fail-Closed)
+        CC->>Audit: Log refusal (names only, 0 values)
+        CC-->>Agent: Error: Tool / Server denied by policy
+    else Policy Allowed
+        Gate-->>CC: Dispatch Approved
+        CC->>Backend: Connect-per-call (stdio / Streamable HTTP)
+        Backend-->>CC: Raw Tool Output / Response
+        CC->>Backend: Terminate process / Close transport
+        CC->>Scrub: Recursive Secret Redaction & Finite Budgets
+        Scrub-->>CC: Sanitized Payload & Truncation Status
+        CC->>Audit: Append structured audit event (gateway-audit.jsonl)
+        CC-->>Agent: Safe Tool Result wrapped with Data Banners
+    end
+```
+
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.3.0`
+- **Version:** `0.5.1`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI checks:** `npm run test` and `npm run build`
@@ -540,6 +590,7 @@ This MCP server is part of the **[ellmos-ai](https://github.com/ellmos-ai)** eco
 | Project | Description |
 |---------|-------------|
 | [BACH](https://github.com/ellmos-ai/bach) | Local-first text-based OS for LLM agents — 113+ handlers, 550+ tools, SQLite memory |
+| [workflowhooker-provenance](https://github.com/ellmos-ai/workflowhooker-provenance) | Local-first lifecycle hooks, scope guardrails & runtime provenance |
 | [open-compute](https://github.com/ellmos-ai/open-compute) | Model-agnostic computer-use core powering Open Compute MCP |
 | [clutch](https://github.com/ellmos-ai/clutch) | Provider-neutral LLM orchestration with auto-routing and budget tracking |
 | [rinnsal](https://github.com/ellmos-ai/rinnsal) | Lightweight agent memory, connectors, and automation infrastructure |
@@ -548,6 +599,12 @@ This MCP server is part of the **[ellmos-ai](https://github.com/ellmos-ai)** eco
 | [gardener](https://github.com/ellmos-ai/gardener) | Minimalist database-driven LLM OS prototype (4 functions, 1 table) |
 | [ellmos-tests](https://github.com/ellmos-ai/ellmos-tests) | Testing framework for LLM operating systems (7 dimensions) |
 
+### Open-Science & Research
+
+| Project | Ecosystem | Focus |
+|---|---|---|
+| [build-your-users-mind](https://github.com/research-line/build-your-users-mind) | `research-line` | Open-science user mental model reconstruction & cognitive framework |
+
 ### Desktop Software & Companion Tools
 
 Our partner organization **[open-bricks](https://github.com/open-bricks)** bundles AI-native desktop applications — a modern, open-source software suite built for the age of AI.
@@ -555,11 +612,14 @@ Our partner organization **[open-bricks](https://github.com/open-bricks)** bundl
 | Project | Ecosystem | Focus |
 |---|---|---|
 | [ProFiler](https://github.com/open-bricks/ProFiler) | `open-bricks` / `file-bricks` | Advanced file management, checksums, duplicate detection, and batch operations |
+| [lock-master](https://github.com/file-bricks/lock-master) | `open-bricks` / `file-bricks` | Local-first multi-agent project locking and permission governance |
 | [DokuZen](https://github.com/open-bricks/DokuZen) | `open-bricks` / `doc-bricks` | Document management, text extraction, OCR, and PDF processing |
+| [UniversalDocsGrabber](https://github.com/doc-bricks/UniversalDocsGrabber) | `open-bricks` / `doc-bricks` | Universal document grabbing, batch ingestion, OCR & text normalization |
 | [safe-start-for-codex](https://github.com/dev-bricks/safe-start-for-codex) | `open-bricks` / `dev-bricks` | Local-first runtime guard and environment validator for AI coding agents |
 | [automation-master](https://github.com/dev-bricks/automation-master) | `open-bricks` / `dev-bricks` | Multi-agent coordination and background automation engine |
 | [DevCenter](https://github.com/dev-bricks/DevCenter) | `open-bricks` / `dev-bricks` | Developer productivity center and workspace manager |
 | [CodeBox](https://github.com/dev-bricks/CodeBox) | `open-bricks` / `dev-bricks` | Sandboxed script execution and multi-language scratchpad |
+| [system-gap-master](https://github.com/dev-bricks/system-gap-master) | `open-bricks` / `dev-bricks` | System gap discovery, test gap analysis & contract validation |
 
 ## License
 

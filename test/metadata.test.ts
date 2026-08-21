@@ -16,6 +16,7 @@ describe("metadata & manifest parity", () => {
   const ciYml = fs.readFileSync(path.join(root, ".github", "workflows", "ci.yml"), "utf-8");
 
   it("ensures version parity across package.json, server.json, and glama.json", () => {
+    expect(packageJson.version).toBe("0.5.1");
     expect(packageJson.version).toBe(serverJson.version);
     expect(packageJson.version).toBe(glamaJson.version);
     expect(serverJson.packages[0].version).toBe(packageJson.version);
@@ -39,7 +40,8 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-08-20");
+    expect(llmsTxt).toContain("Last-checked: 2026-08-21");
+    expect(llmsTxt).toContain("Test status: 211/211 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("MIT");
@@ -52,16 +54,36 @@ describe("metadata & manifest parity", () => {
     expect(llmsTxt).toContain("License: MIT");
   });
 
-  it("ensures README.md and README_de.md contain ecosystem and umbrella badges", () => {
-    expect(readmeEn).toContain("Ecosystem-ellmos--ai-blue.svg");
-    expect(readmeEn).toContain("Umbrella-open--bricks-blueviolet.svg");
-    expect(readmeEn).toContain("LLM--Ready-llms.txt-success.svg");
-    expect(readmeEn).toContain("README_de.md");
+  it("ensures README.md and README_de.md contain badges, platforms, and security indicators", () => {
+    const badges = [
+      "Ecosystem-ellmos--ai-blue.svg",
+      "Umbrella-open--bricks-blueviolet.svg",
+      "LLM--Ready-llms.txt-success.svg",
+      "Vitest-211%20passed-brightgreen.svg",
+      "MCP%20Tools-31-blue.svg",
+      "Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg",
+      "Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg",
+      "Security-Local--First%20%7C%20Policy--Gated-blue.svg",
+      "actions/workflows/ci.yml/badge.svg",
+    ];
 
-    expect(readmeDe).toContain("Ecosystem-ellmos--ai-blue.svg");
-    expect(readmeDe).toContain("Umbrella-open--bricks-blueviolet.svg");
-    expect(readmeDe).toContain("LLM--Ready-llms.txt-success.svg");
+    for (const badge of badges) {
+      expect(readmeEn).toContain(badge);
+      expect(readmeDe).toContain(badge);
+    }
+
+    expect(readmeEn).toContain("README_de.md");
     expect(readmeDe).toContain("README.md");
+  });
+
+  it("ensures quick navigation and sequence diagrams exist in both READMEs", () => {
+    expect(readmeEn).toContain("### Quick Navigation");
+    expect(readmeEn).toContain("## Control Plane & Gateway Lifecycle");
+    expect(readmeEn).toContain("sequenceDiagram");
+
+    expect(readmeDe).toContain("### Schnellnavigation");
+    expect(readmeDe).toContain("## Control Plane & Gateway-Lebenszyklus");
+    expect(readmeDe).toContain("sequenceDiagram");
   });
 
   it("ensures core required documents exist", () => {
@@ -71,11 +93,20 @@ describe("metadata & manifest parity", () => {
     }
   });
 
-  it("ensures SECURITY.md documents key security boundaries and gateway hardening", () => {
-    expect(securityMd).toContain("Current Safety Model");
+  it("ensures SECURITY.md is bilingual and documents key safety boundaries, zero-egress, and contacts", () => {
+    expect(securityMd).toContain("# Security Policy / Sicherheitsrichtlinie");
+    expect(securityMd).toContain("## English");
+    expect(securityMd).toContain("## Deutsch");
+    expect(securityMd).toContain("Zero-Egress & Local-First Guarantees");
+    expect(securityMd).toContain("Non-Elevation (User-Mode Only)");
+    expect(securityMd).toContain("Gateway Safety Model & Eigendark Invariants");
     expect(securityMd).toContain("controlcenter_invoke");
     expect(securityMd).toContain("gateway-audit.jsonl");
+    expect(securityMd).toContain("security@ellmos.ai");
+    expect(securityMd).toContain("support@lukasgeiger.com");
+    expect(securityMd).toContain("lukas@open-bricks.org");
     expect(securityMd).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp/issues");
+    expect(securityMd).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp/security/advisories");
   });
 
   it("ensures CI workflow is properly configured with Node.js matrix strategy", () => {
@@ -87,3 +118,4 @@ describe("metadata & manifest parity", () => {
     expect(ciYml).toContain("npm run build");
   });
 });
+
