@@ -40,8 +40,8 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-08-21");
-    expect(llmsTxt).toContain("Test status: 211/211 Vitest tests passing (100% green)");
+    expect(llmsTxt).toContain("Last-checked: 2026-08-23");
+    expect(llmsTxt).toContain("Test status: 214/214 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("MIT");
@@ -59,7 +59,7 @@ describe("metadata & manifest parity", () => {
       "Ecosystem-ellmos--ai-blue.svg",
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
-      "Vitest-211%20passed-brightgreen.svg",
+      "Vitest-214%20passed-brightgreen.svg",
       "MCP%20Tools-31-blue.svg",
       "Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg",
       "Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg",
@@ -116,6 +116,42 @@ describe("metadata & manifest parity", () => {
     expect(ciYml).toContain("node-version: [18.x, 20.x, 22.x]");
     expect(ciYml).toContain("npm run test");
     expect(ciYml).toContain("npm run build");
+  });
+
+  it("ensures sibling ecosystem partner matrix exists in both READMEs", () => {
+    const siblingTokens = [
+      "ellmos-filecommander-mcp",
+      "ellmos-codecommander-mcp",
+      "n8n-manager-mcp",
+      "BACH",
+      "open-bricks",
+      "dev-bricks",
+      "doc-bricks",
+      "file-bricks",
+      "research-line",
+    ];
+    for (const token of siblingTokens) {
+      expect(readmeEn).toContain(token);
+      expect(readmeDe).toContain(token);
+    }
+  });
+
+  it("ensures key gateway hardening controls are documented in both READMEs", () => {
+    const hardeningControls = [
+      "Recursive redaction",
+      "Request budget",
+      "Response budget",
+      "Transport",
+      "Untrusted marking",
+    ];
+    for (const control of hardeningControls) {
+      expect(readmeEn).toContain(control);
+    }
+  });
+
+  it("ensures runtime package dependencies remain lean with zero external telemetry", () => {
+    const deps = Object.keys(packageJson.dependencies || {});
+    expect(deps).toEqual(["@modelcontextprotocol/sdk", "update-notifier", "zod"]);
   });
 });
 

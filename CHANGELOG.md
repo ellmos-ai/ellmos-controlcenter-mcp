@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Discoverability, Sibling Ecosystem & Metadata Contract Parity (2026-08-23)
+- Expanded automated metadata contract test suite in `test/metadata.test.ts` with checks for partner ecosystem matrices, gateway hardening invariants, and lean runtime dependencies (12/12 contract tests passing, 214/214 total test suite).
+- Synchronized Shields.io test status badges to 214 passed across both `README.md` and `README_de.md`.
+- Updated `llms.txt` with `Last-checked: 2026-08-23` and 214 verified Vitest tests.
+- Re-verified zero-egress, local-first execution, and lean runtime dependency invariants across all components.
+
 ### Bilingual Security Policy, Lifecycle Sequence Diagram & Discoverability Parity (2026-08-21)
 - Upgraded `SECURITY.md` to comprehensive bilingual (English / German) policy covering 100% local execution, Zero-Egress guarantees, unprivileged user mode (Non-Elevation), Eigendark hardening invariants on the gateway path, loopback dashboard binding, Ed25519 runtime receipt verification, direct security contact emails (`security@ellmos.ai`, `support@lukasgeiger.com`, `lukas@open-bricks.org`), and GitHub Security Advisories.
 - Added interactive bilingual Mermaid Sequence Diagram for the Control Plane, Profile Resolution, Dynamic Discovery & Policy-Gated Gateway Lifecycle in `README.md` and `README_de.md`.
