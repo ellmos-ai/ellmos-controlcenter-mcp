@@ -134,3 +134,23 @@ Ergebnis. Die beiden Richtungen sind bewusst nicht symmetrisch behandelt.
 genannten Modul-, Stack- und Ordner-Adapter (CLI-Einstiegspunkte, Install/Status/Start/Stop,
 Statusdateien lokaler Stack-Instanzen) sind **nicht** enthalten und bleiben offen.
 
+## Ressourcen-Register: Hoheit beim ControlRoom, hier nur Spiegel (CR11=C) [C 2026-08-25]
+
+`controlcenter_list_resources`/`controlcenter_describe_resource` lesen `.SYNC/_inventory/inventory.db`
+(Systeme + installierte Software) direkt und schreibgeschützt über dasselbe Python-Brückenskript,
+das schon die Lock-/Rechte-/Entscheidungs-Register bedient (`scripts/controlroom_bridge.py`) — keine
+native TypeScript-Zweitimplementierung, keine neue npm-Abhängigkeit.
+
+**Bewusst KEINE zweite Kanonik.** User-Entscheid CR11=C (T-20260824-339847482, „Hoheits-Fassung"):
+Die Register-Hoheit über `inventory.db` liegt beim **ControlRoom-Programm** — konkret bei dessen
+`resources.inventory`-Resolver-Rolle in `source-resolver` (seit dortiger Version `0.1.2`) und der
+Kanonik-Zeile in `~/OneDrive/SYSTEM-MANIFEST.md` §3.2. Dieser MCP-Server bekommt hier nur einen
+Lese-Spiegel derselben Datei, damit ein Agent sie fragen kann, ohne SQLite selbst zu öffnen — nicht
+umgekehrt: `inventory.db` wird nicht neu hier verankert, nur weil der Zugriff hier bequem ist.
+
+Anders als bei Locks/Rechten/Entscheidungen gibt es für dieses Register **keine kanonische Python-CLI**
+zum Delegieren (die Daten sind reine Schema-Tabellen, keine eingebettete Fachlogik) — die Brücke
+öffnet die Datei deshalb selbst per `sqlite3` im Read-Only-Modus (`?mode=ro`), statt an ein Skript
+zu delegieren wie bei den Lock-Tools. Fail-closed gilt identisch: fehlt `ELLMOS_INVENTORY_DB` oder
+die Datei, ist das Ergebnis `unknown`/`unavailable`, nie ein stillschweigend leeres Inventar.
+

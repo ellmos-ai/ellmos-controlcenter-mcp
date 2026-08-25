@@ -22,6 +22,11 @@ What this bridge adds is only *composition* the canonical CLI does not offer:
   * `list-locks` scans the configured roots under a wall-clock budget and reports
     honestly when the budget ran out (a full scan takes minutes over cloud storage).
   * `list-decisions` reads the generated decision index and reports its staleness.
+  * `list-resources`/`describe-resource` read `.SYNC/_inventory/inventory.db` directly (no
+    canonical CLI exists for it -- it is plain schema data, not embedded business logic like
+    the modules above). Register authority sits with the ControlRoom programme's own
+    resolver role (`resources.inventory` in source-resolver); this bridge is a read-only
+    mirror of the same file, never a second canon.
 
 Fail-closed contract: every command that cannot determine an answer emits
 `"verdict": "unknown"` (or the command's equivalent) and never a reassuring default.
@@ -33,11 +38,14 @@ Usage:
     python controlroom_bridge.py --scripts-dir DIR list-locks [--roots-file F] [--budget-seconds N]
     python controlroom_bridge.py --scripts-dir DIR evaluate-permission PATH AGENT ACTION
     python controlroom_bridge.py --decisions-root DIR list-decisions [--status S] [--limit N]
+    python controlroom_bridge.py --inventory-db FILE list-resources [--type systems|software|all] [--host H] [--limit N]
+    python controlroom_bridge.py --inventory-db FILE describe-resource ID [--type systems|software]
 """
 from __future__ import annotations
 
 import argparse
 import json
+import sqlite3
 import sys
 import time
 from datetime import datetime
@@ -390,10 +398,149 @@ def cmd_list_decisions(args) -> dict:
     }
 
 
+def _open_inventory_ro(db_path: Path) -> sqlite3.Connection:
+    """Open the inventory DB read-only via a file: URI (mode=ro) -- never write here."""
+    conn = sqlite3.connect(db_path.as_uri() + "?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def cmd_list_resources(args) -> dict:
+    """Systems and/or software rows from the ControlRoom resource inventory
+    (.SYNC/_inventory/inventory.db). Read-only mirror -- the canonical register is the
+    database itself, reached natively via the source-resolver `resources.inventory`
+    role; this command never writes and never becomes a second source of truth."""
+    db_path = Path(args.inventory_db)
+    if not db_path.is_file():
+        return {
+            "schema": SCHEMA,
+            "command": "list-resources",
+            "verdict": "unavailable",
+            "reason": f"inventory database not found at {db_path}",
+            "resources": [],
+        }
+
+    resource_type = (args.type or "all").lower()
+    if resource_type not in ("all", "systems", "software"):
+        raise BridgeError(f"unknown type: {resource_type} (expected systems, software, or all)")
+
+    try:
+        conn = _open_inventory_ro(db_path)
+    except sqlite3.Error as exc:
+        return {
+            "schema": SCHEMA,
+            "command": "list-resources",
+            "verdict": "unavailable",
+            "reason": f"inventory database unreadable: {exc}",
+            "resources": [],
+        }
+
+    resources: list[dict] = []
+    try:
+        if resource_type in ("all", "systems"):
+            query = "SELECT * FROM systems"
+            params: list = []
+            if args.host:
+                query += " WHERE hostname = ? OR name = ?"
+                params = [args.host, args.host]
+            for row in conn.execute(query, params).fetchall():
+                entry = dict(row)
+                entry["resource_type"] = "systems"
+                resources.append(entry)
+        if resource_type in ("all", "software"):
+            query = (
+                "SELECT software.*, systems.hostname AS system_hostname, "
+                "systems.name AS system_name FROM software "
+                "JOIN systems ON software.system_id = systems.id"
+            )
+            params = []
+            if args.host:
+                query += " WHERE systems.hostname = ? OR systems.name = ?"
+                params = [args.host, args.host]
+            for row in conn.execute(query, params).fetchall():
+                entry = dict(row)
+                entry["resource_type"] = "software"
+                resources.append(entry)
+    except sqlite3.Error as exc:
+        return {
+            "schema": SCHEMA,
+            "command": "list-resources",
+            "verdict": "unavailable",
+            "reason": f"inventory query failed: {exc}",
+            "resources": [],
+        }
+    finally:
+        conn.close()
+
+    limited = resources[: args.limit]
+    return {
+        "schema": SCHEMA,
+        "command": "list-resources",
+        "verdict": "ok",
+        "type_filter": resource_type,
+        "host_filter": args.host or None,
+        "match_count": len(resources),
+        "returned": len(limited),
+        "resources": limited,
+    }
+
+
+def cmd_describe_resource(args) -> dict:
+    """Full row for one resource, addressed by its numeric inventory id + type."""
+    db_path = Path(args.inventory_db)
+    if not db_path.is_file():
+        return {
+            "schema": SCHEMA,
+            "command": "describe-resource",
+            "verdict": "unavailable",
+            "reason": f"inventory database not found at {db_path}",
+            "resource": None,
+        }
+
+    resource_type = (args.type or "systems").lower()
+    if resource_type not in ("systems", "software"):
+        raise BridgeError(f"unknown type: {resource_type} (expected systems or software)")
+
+    try:
+        conn = _open_inventory_ro(db_path)
+        row = conn.execute(
+            f"SELECT * FROM {resource_type} WHERE id = ?", (args.id,)
+        ).fetchone()
+    except sqlite3.Error as exc:
+        return {
+            "schema": SCHEMA,
+            "command": "describe-resource",
+            "verdict": "unavailable",
+            "reason": f"inventory query failed: {exc}",
+            "resource": None,
+        }
+    finally:
+        conn.close()
+
+    if row is None:
+        return {
+            "schema": SCHEMA,
+            "command": "describe-resource",
+            "verdict": "not_found",
+            "reason": f"no {resource_type} row with id={args.id}",
+            "resource": None,
+        }
+
+    entry = dict(row)
+    entry["resource_type"] = resource_type
+    return {
+        "schema": SCHEMA,
+        "command": "describe-resource",
+        "verdict": "ok",
+        "resource": entry,
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scripts-dir", default="", help="Directory holding lock_utils.py etc.")
     parser.add_argument("--decisions-root", default="", help="Directory holding the decision chain.")
+    parser.add_argument("--inventory-db", default="", help="Path to the resource inventory SQLite file.")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_check = sub.add_parser("check-lock")
@@ -415,6 +562,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_dec.add_argument("--status", default="OFFEN")
     p_dec.add_argument("--limit", type=int, default=50)
     p_dec.set_defaults(func=cmd_list_decisions)
+
+    p_res = sub.add_parser("list-resources")
+    p_res.add_argument("--type", default="all")
+    p_res.add_argument("--host", default="")
+    p_res.add_argument("--limit", type=int, default=100)
+    p_res.set_defaults(func=cmd_list_resources)
+
+    p_desc = sub.add_parser("describe-resource")
+    p_desc.add_argument("id", type=int)
+    p_desc.add_argument("--type", default="systems")
+    p_desc.set_defaults(func=cmd_describe_resource)
 
     return parser
 

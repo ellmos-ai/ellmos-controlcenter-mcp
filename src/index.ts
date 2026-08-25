@@ -43,13 +43,17 @@ import {
 } from "./i18n/index.js";
 import {
   checkLock,
+  describeResource,
   evaluatePermission,
   formatDecisions,
   formatLockCheck,
   formatLockList,
   formatPermission,
+  formatResource,
+  formatResources,
   listDecisions,
-  listLocks
+  listLocks,
+  listResources
 } from "./controlroom.js";
 import { auditResolvedProfile, loadPolicyRules, summarizePolicyFindings } from "./policy.js";
 import { produceActualSelfReceipt, publicActualSelfReceiptError } from "./actualSelfReceipt.js";
@@ -70,7 +74,7 @@ import {
 
 const server = new McpServer({
   name: "ellmos-controlcenter-mcp",
-  version: "0.5.0"
+  version: "0.6.0"
 });
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -1317,6 +1321,52 @@ server.registerTool(
   async ({ status, limit }) => {
     const result = await listDecisions({ status, limit });
     return { content: [{ type: "text", text: formatDecisions(result) }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_list_resources",
+  {
+    title: "List known systems and software",
+    description:
+      "Lists rows from the host's resource inventory (systems and/or installed software), optionally " +
+      "filtered by host and/or type. Read-only mirror of the ControlRoom programme's resource register " +
+      "(.SYNC/_inventory/inventory.db) -- authority sits with that register and the source-resolver " +
+      "'resources.inventory' role, not with this tool. Summary columns only; use " +
+      "controlcenter_describe_resource for the full row. When unconfigured it says so rather than " +
+      "reporting an empty inventory.",
+    inputSchema: {
+      type: z.enum(["all", "systems", "software"]).default("all")
+        .describe("Restrict to systems, software, or both (default)."),
+      host: z.string().optional()
+        .describe("Restrict to one host, by hostname or system name (e.g. 'ASUS-GEI' or 'laptop')."),
+      limit: z.number().int().positive().max(500).default(100).describe("Maximum number of entries to return.")
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ type, host, limit }) => {
+    const result = await listResources({ type, host, limit });
+    return { content: [{ type: "text", text: formatResources(result) }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_describe_resource",
+  {
+    title: "Describe one system or software row",
+    description:
+      "Full row detail for one resource (a system or an installed software entry), addressed by its " +
+      "numeric inventory id (from controlcenter_list_resources). Read-only mirror, same register as " +
+      "controlcenter_list_resources -- see that tool's description for the authority note.",
+    inputSchema: {
+      id: z.number().int().positive().describe("Numeric inventory id, from controlcenter_list_resources."),
+      type: z.enum(["systems", "software"]).default("systems").describe("Which table the id belongs to.")
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ id, type }) => {
+    const result = await describeResource(id, { type });
+    return { content: [{ type: "text", text: formatResource(result) }] };
   }
 );
 

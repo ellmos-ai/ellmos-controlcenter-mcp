@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Resource Inventory Register (Read-Only Mirror): `controlcenter_list_resources` / `controlcenter_describe_resource` (2026-08-25)
+- Added two new read-only host-register tools, `controlcenter_list_resources` and `controlcenter_describe_resource`, extending `scripts/controlroom_bridge.py` with `list-resources`/`describe-resource` subcommands that read `.SYNC/_inventory/inventory.db` (systems + software tables) directly via read-only SQLite (`?mode=ro`) — no new npm dependency, same bridge pattern already used for locks/permissions/decisions.
+- New `ELLMOS_INVENTORY_DB` environment variable; both tools fail closed (`unknown`/`unavailable`, never an empty inventory) when unconfigured or the file is missing.
+- **Register authority sits with the ControlRoom programme, not this server** (User decision CR11=C, "Hoheits-Fassung", T-20260824-339847482): canon is the `resources.inventory` role in `source-resolver` (v0.1.2) plus the register row in `~/OneDrive/SYSTEM-MANIFEST.md` §3.2 — this MCP server is documented explicitly as a mirror in `README.md`, `README_de.md`, `llms.txt`, `STATE.md`, and a new `DECISIONS.md` entry.
+- Tool count 31 → 33; version `0.5.1` → `0.6.0` across `package.json`, `server.json`, `glama.json`, and the `McpServer` constructor in `src/index.ts`.
+- Full Vitest coverage: fail-closed contract tests, rendering tests, a config test, and an integration block against a real SQLite fixture built via Python's stdlib (12 new tests; 225/225 total suite passing).
+- Synchronized badges, Quick Navigation tool count, ecosystem-matrix tool count, and the "Host registers" section (now six tools / four registers) in both `README.md` and `README_de.md`, plus `llms.txt` (`Last-checked: 2026-08-25`, 225/225 tests, two new tool entries).
+
 ### Discoverability, Sibling Ecosystem & Metadata Contract Parity (2026-08-23)
 - Expanded automated metadata contract test suite in `test/metadata.test.ts` with checks for partner ecosystem matrices, gateway hardening invariants, and lean runtime dependencies (12/12 contract tests passing, 214/214 total test suite).
 - Synchronized Shields.io test status badges to 214 passed across both `README.md` and `README_de.md`.

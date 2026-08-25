@@ -36,6 +36,8 @@ export const CONTROLROOM_ENV = {
   roots: "ELLMOS_LOCK_ROOTS",
   /** Directory holding the TO-DECIDE chain and its generated index. */
   decisions: "ELLMOS_DECISIONS_ROOT",
+  /** Path to the ControlRoom resource inventory SQLite file (systems/software). */
+  inventory: "ELLMOS_INVENTORY_DB",
   /** Python interpreter; defaults to "python" with a "python3" fallback. */
   python: "ELLMOS_PYTHON"
 } as const;
@@ -44,6 +46,7 @@ export interface ControlroomConfig {
   scriptsDir: string;
   rootsFile: string;
   decisionsRoot: string;
+  inventoryDb: string;
   python: string;
 }
 
@@ -54,6 +57,7 @@ export function resolveControlroomConfig(
     scriptsDir: env[CONTROLROOM_ENV.scripts]?.trim() ?? "",
     rootsFile: env[CONTROLROOM_ENV.roots]?.trim() ?? "",
     decisionsRoot: env[CONTROLROOM_ENV.decisions]?.trim() ?? "",
+    inventoryDb: env[CONTROLROOM_ENV.inventory]?.trim() ?? "",
     python: env[CONTROLROOM_ENV.python]?.trim() || "python"
   };
 }
@@ -273,6 +277,56 @@ export async function listDecisions(
   );
 }
 
+export async function listResources(
+  options: QueryOptions & { type?: string; host?: string; limit?: number } = {}
+): Promise<BridgeResult> {
+  const config = options.config ?? resolveControlroomConfig();
+  if (!config.inventoryDb) {
+    return failClosed(
+      "list-resources",
+      `Not configured: set ${CONTROLROOM_ENV.inventory} to the resource inventory ` +
+        `SQLite file. An unconfigured register is not an empty one -- no statement ` +
+        `about known systems/software can be made.`
+    );
+  }
+
+  const args = [
+    "--inventory-db", config.inventoryDb,
+    "list-resources",
+    "--type", options.type ?? "all",
+    "--limit", String(options.limit ?? 100)
+  ];
+  if (options.host) {
+    args.push("--host", options.host);
+  }
+
+  return runnerFor({ ...options, config })(args, options.timeoutMs ?? 30_000);
+}
+
+export async function describeResource(
+  id: number,
+  options: QueryOptions & { type?: string } = {}
+): Promise<BridgeResult> {
+  const config = options.config ?? resolveControlroomConfig();
+  if (!config.inventoryDb) {
+    return failClosed(
+      "describe-resource",
+      `Not configured: set ${CONTROLROOM_ENV.inventory} to the resource inventory ` +
+        `SQLite file. An unconfigured register is not an empty one -- no statement ` +
+        `about a specific resource can be made.`
+    );
+  }
+
+  return runnerFor({ ...options, config })(
+    [
+      "--inventory-db", config.inventoryDb,
+      "describe-resource", String(id),
+      "--type", options.type ?? "systems"
+    ],
+    options.timeoutMs ?? 30_000
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Rendering
 // ---------------------------------------------------------------------------
@@ -429,5 +483,60 @@ export function formatDecisions(result: BridgeResult): string {
     );
   }
 
+  return lines.join("\n");
+}
+
+export function formatResources(result: BridgeResult): string {
+  const resources = (result.resources as Record<string, unknown>[] | undefined) ?? [];
+  const lines = [
+    "# ControlRoom resource inventory (read-only mirror)",
+    "",
+    `- Type filter: ${String(result.type_filter ?? "all")}`,
+    ...(result.host_filter ? [`- Host filter: ${String(result.host_filter)}`] : []),
+    `- Matches: ${String(result.match_count ?? resources.length)}`,
+    `- Returned: ${String(result.returned ?? resources.length)}`,
+    ...reasonLine(result)
+  ];
+
+  if (resources.length > 0) {
+    lines.push("", "| Type | ID | Name | Host | Detail |", "|---|---|---|---|---|");
+    for (const entry of resources) {
+      const type = String(entry.resource_type ?? "");
+      const host = String(entry.hostname ?? entry.system_hostname ?? "");
+      const detail =
+        type === "software"
+          ? String(entry.version ?? entry.purpose ?? "")
+          : String(entry.role ?? entry.os ?? "");
+      lines.push(`| ${type} | ${String(entry.id ?? "")} | ${String(entry.name ?? "")} | ${host} | ${detail} |`);
+    }
+    lines.push(
+      "",
+      "Summary columns only. Call controlcenter_describe_resource for the full row " +
+        "(cpu/ram/gpu, install_path, notes, ...)."
+    );
+  }
+
+  return lines.join("\n");
+}
+
+export function formatResource(result: BridgeResult): string {
+  const resource = result.resource as Record<string, unknown> | null | undefined;
+  if (!resource) {
+    return [
+      "# ControlRoom resource",
+      "",
+      `- Verdict: ${result.verdict}`,
+      ...reasonLine(result)
+    ].join("\n");
+  }
+
+  const lines = [
+    `# ${String(resource.resource_type ?? "resource")}: ${String(resource.name ?? resource.id)}`,
+    ""
+  ];
+  for (const [key, value] of Object.entries(resource)) {
+    if (value === null || value === undefined || value === "") continue;
+    lines.push(`- **${key}**: ${String(value)}`);
+  }
   return lines.join("\n");
 }

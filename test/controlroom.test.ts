@@ -3,15 +3,20 @@ import * as os from "os";
 import * as path from "path";
 import { existsSync } from "fs";
 import { describe, expect, it } from "vitest";
+import { execFileSync } from "child_process";
 import {
   checkLock,
+  describeResource,
   evaluatePermission,
   formatDecisions,
   formatLockCheck,
   formatLockList,
   formatPermission,
+  formatResource,
+  formatResources,
   listDecisions,
   listLocks,
+  listResources,
   resolveControlroomConfig,
   runBridge,
   type BridgeResult
@@ -102,6 +107,26 @@ async function permissionFixture(): Promise<string> {
   return root;
 }
 
+/** Builds a tiny real SQLite fixture (systems + software) via Python's stdlib --
+ * no new npm dependency, same interpreter the bridge itself needs. */
+async function inventoryFixture(): Promise<string> {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-inventory-"));
+  const dbPath = path.join(root, "inventory.db");
+  const script = [
+    "import sqlite3",
+    `conn = sqlite3.connect(${JSON.stringify(dbPath)})`,
+    "conn.execute('CREATE TABLE systems (id INTEGER PRIMARY KEY, name TEXT, hostname TEXT, os TEXT, role TEXT)')",
+    "conn.execute('CREATE TABLE software (id INTEGER PRIMARY KEY, system_id INTEGER, name TEXT, version TEXT, purpose TEXT)')",
+    "conn.execute(\"INSERT INTO systems VALUES (1, 'laptop', 'ASUS-GEI', 'Windows 11', 'mobile')\")",
+    "conn.execute(\"INSERT INTO systems VALUES (2, 'mac-studio', 'mac-studio', 'macOS', 'server')\")",
+    "conn.execute(\"INSERT INTO software VALUES (1, 1, 'Claude Code CLI', '2.1.62', 'agent')\")",
+    "conn.commit()",
+    "conn.close()"
+  ].join("; ");
+  execFileSync("python", ["-c", script]);
+  return dbPath;
+}
+
 // ---------------------------------------------------------------------------
 // Fail-closed contract
 // ---------------------------------------------------------------------------
@@ -143,6 +168,19 @@ describe("controlroom fail-closed contract", () => {
     expect(result.verdict).toBe("unknown");
   });
 
+  it("refuses to call an unconfigured resource inventory an empty one", async () => {
+    const result = await listResources({ config: resolveControlroomConfig(EMPTY_ENV) });
+    expect(result.verdict).toBe("unknown");
+    expect(result.resources).toBeUndefined();
+    expect(result.reason).toContain("ELLMOS_INVENTORY_DB");
+  });
+
+  it("reports unknown when describe-resource is unconfigured", async () => {
+    const result = await describeResource(1, { config: resolveControlroomConfig(EMPTY_ENV) });
+    expect(result.verdict).toBe("unknown");
+    expect(result.reason).toContain("ELLMOS_INVENTORY_DB");
+  });
+
   it("fails closed when the Python interpreter is missing", async () => {
     const config = { ...resolveControlroomConfig(CONFIGURED_ENV), python: "definitely-not-a-real-interpreter" };
     const result = await runBridge(["--scripts-dir", CANONICAL_SCRIPTS, "check-lock", "C:/x"], 15_000, config);
@@ -174,17 +212,19 @@ describe("controlroom fail-closed contract", () => {
 // ---------------------------------------------------------------------------
 
 describe("controlroom configuration", () => {
-  it("reads all four environment variables", () => {
+  it("reads all five environment variables", () => {
     const config = resolveControlroomConfig({
       ELLMOS_LOCK_SCRIPTS: "/scripts",
       ELLMOS_LOCK_ROOTS: "/roots.json",
       ELLMOS_DECISIONS_ROOT: "/decisions",
+      ELLMOS_INVENTORY_DB: "/inventory.db",
       ELLMOS_PYTHON: "python3.12"
     });
     expect(config).toEqual({
       scriptsDir: "/scripts",
       rootsFile: "/roots.json",
       decisionsRoot: "/decisions",
+      inventoryDb: "/inventory.db",
       python: "python3.12"
     });
   });
@@ -266,6 +306,34 @@ describe("controlroom rendering", () => {
     expect(text).toContain("D-1");
     expect(text).toContain("A title");
     expect(text).toContain("Titles and status only");
+  });
+
+  it("renders a resource list with type and host filters visible", () => {
+    const text = formatResources({
+      verdict: "ok", type_filter: "systems", host_filter: "ASUS-GEI", match_count: 1, returned: 1,
+      resources: [{ resource_type: "systems", id: 1, name: "laptop", hostname: "ASUS-GEI", role: "mobile" }]
+    });
+    expect(text).toContain("laptop");
+    expect(text).toContain("ASUS-GEI");
+    expect(text).toContain("Type filter: systems");
+    expect(text).toContain("Host filter: ASUS-GEI");
+  });
+
+  it("renders a single resource's full row, skipping empty fields", () => {
+    const text = formatResource({
+      verdict: "ok",
+      resource: { resource_type: "systems", id: 1, name: "laptop", role: "mobile", specialization: null, notes: "" }
+    });
+    expect(text).toContain("laptop");
+    expect(text).toContain("**role**: mobile");
+    expect(text).not.toContain("specialization");
+    expect(text).not.toContain("notes");
+  });
+
+  it("renders a not-found resource by its verdict, not a stale table", () => {
+    const text = formatResource({ verdict: "not_found", reason: "no systems row with id=99999", resource: null });
+    expect(text).toContain("not_found");
+    expect(text).toContain("id=99999");
   });
 });
 
@@ -382,5 +450,61 @@ describe.skipIf(!HAS_CANONICAL)("controlroom against the canonical lock modules"
     const starved = await listLocks({ config: config(), rootsFile, budgetSeconds: 0, timeoutMs: 30_000 });
     expect(starved.complete).toBe(false);
     expect(formatLockList(starved)).toContain("INCOMPLETE");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Integration against a real SQLite fixture (resource inventory)
+// ---------------------------------------------------------------------------
+
+describe("controlroom against a real resource inventory", () => {
+  const config = async () => ({
+    ...resolveControlroomConfig(EMPTY_ENV),
+    inventoryDb: await inventoryFixture()
+  });
+
+  it("lists systems and software together by default", async () => {
+    const result = await listResources({ config: await config() });
+    expect(result.verdict).toBe("ok");
+    const resources = result.resources as Record<string, unknown>[];
+    expect(resources.some((r) => r.resource_type === "systems" && r.name === "laptop")).toBe(true);
+    expect(resources.some((r) => r.resource_type === "software" && r.name === "Claude Code CLI")).toBe(true);
+  });
+
+  it("filters by type", async () => {
+    const result = await listResources({ config: await config(), type: "software" });
+    const resources = result.resources as Record<string, unknown>[];
+    expect(resources).toHaveLength(1);
+    expect(resources[0].resource_type).toBe("software");
+  });
+
+  it("filters by host across both tables", async () => {
+    const result = await listResources({ config: await config(), host: "mac-studio" });
+    const resources = result.resources as Record<string, unknown>[];
+    // mac-studio has a systems row but no software row in the fixture.
+    expect(resources).toHaveLength(1);
+    expect(resources[0].name).toBe("mac-studio");
+  });
+
+  it("describes a single system by id", async () => {
+    const result = await describeResource(1, { config: await config(), type: "systems" });
+    expect(result.verdict).toBe("ok");
+    const resource = result.resource as Record<string, unknown>;
+    expect(resource.name).toBe("laptop");
+    expect(resource.hostname).toBe("ASUS-GEI");
+  });
+
+  it("reports not_found for an id that does not exist", async () => {
+    const result = await describeResource(9999, { config: await config() });
+    expect(result.verdict).toBe("not_found");
+  });
+
+  it("fails closed when the inventory file does not exist", async () => {
+    const missing = path.join(os.tmpdir(), "controlroom-inventory-absent-xyz.db");
+    const result = await listResources({
+      config: { ...resolveControlroomConfig(EMPTY_ENV), inventoryDb: missing }
+    });
+    expect(result.verdict).toBe("unavailable");
+    expect(result.resources).toEqual([]);
   });
 });

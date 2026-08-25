@@ -2,8 +2,8 @@
 
 > MCP control-plane server for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, a local dashboard, and a policy-gated, audited gateway that lists and invokes tools on backend MCP servers the host has not loaded. It prepares configuration and does not change running sessions.
 
-Last-checked: 2026-08-23
-Test status: 214/214 Vitest tests passing (100% green)
+Last-checked: 2026-08-25
+Test status: 225/225 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
 MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
@@ -17,7 +17,7 @@ ellmos ControlCenter MCP is an alpha-stage Model Context Protocol server for loc
 
 It is useful for local MCP stack visibility, profile management, and for keeping a small loaded profile while remaining able to reach the other servers on demand. It is not a hardened security gateway: the gateway forwards tool calls under a pattern-based policy and an audit log, but authentication, risk-class enforcement, and hard isolation are still planned rather than implemented.
 
-Host registers: four read-only tools expose this machine's project locks, agent-neutral permission register and pending decision list. They never write — no lock is set, renewed or released and no decision answered — and they fail closed, reporting `unknown` rather than `clear` whenever a register is unconfigured or unreadable. They delegate every lock rule to the host's canonical Python modules instead of reimplementing them, and stay inert until `ELLMOS_LOCK_SCRIPTS` and `ELLMOS_DECISIONS_ROOT` are configured.
+Host registers: six read-only tools expose this machine's project locks, agent-neutral permission register, pending decision list, and resource inventory of systems and installed software. They never write — no lock is set, renewed or released and no decision answered — and they fail closed, reporting `unknown` rather than `clear` whenever a register is unconfigured or unreadable. Lock, permission and decision tools delegate every rule to the host's canonical Python modules instead of reimplementing it; the resource tools are a plain read-only mirror of `.SYNC/_inventory/inventory.db`, with register authority sitting explicitly with the ControlRoom programme, not this server. All stay inert until their respective `ELLMOS_*` variables are configured.
 
 Scope boundary: ControlCenter is read-mostly outside the gateway. Its write actions are limited to generating an MCP configuration file, writing a catalog file, appending to the gateway audit log, and — via the dashboard, with confirmation and backup — toggling servers in a profile file. It never changes a running session. Since 2026-08-16 it does sit in the request path for one explicit case: `controlcenter_invoke` executes a single tool on another MCP server, gated by `data/gateway-policy.json` and recorded in an audit log. Only servers declared by the configured MCP root or a named profile can be addressed. It owns no domain data: policies, decisions, memory, tasks, tickets, and automations belong to other components.
 
@@ -56,6 +56,8 @@ Gateway hardening: forwarded payloads are treated as untrusted foreign data. Res
 - `controlcenter_check_lock`: check whether one path may be modified, including locks inherited from parent directories, and report the effective lock with type, scope and expiry. Fails closed: unreadable path, missing configuration or an error yields `unknown`, never `clear`.
 - `controlcenter_evaluate_permission`: report what the nearest `LOCK.permissions` register allows an agent to do at a path, precedence `deny > ask > allow > default`. A report, not enforcement; no register anywhere up the chain yields `unknown`, not `allow`.
 - `controlcenter_list_decisions`: list pending user decisions by identifier, date, title, status and scope — deliberately not their question texts, options or recommendations. Reports when its index is older than its sources. Requires `ELLMOS_DECISIONS_ROOT`.
+- `controlcenter_list_resources`: list rows from the host's resource inventory (systems and/or installed software), optionally filtered by host and/or type. Read-only mirror of `.SYNC/_inventory/inventory.db`; register authority sits with the ControlRoom programme.
+- `controlcenter_describe_resource`: full row detail for one resource by its numeric inventory id, from the same read-only mirror.
 - `controlcenter_list_available_tools`: list tools of backend MCP servers declared by the local root or a profile, without loading them permanently into the host.
 - `controlcenter_invoke`: policy-gated execution of a single tool on an unloaded backend MCP server with automatic sanitization and audit logging.
 
@@ -123,4 +125,4 @@ ellmos-controlcenter-mcp
 - `src/dashboard.ts`: local dashboard server.
 - `test/catalog.test.ts` and `test/semanticRouting.test.ts`: unit coverage for catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, and semantic-route validation (211 tests passing in the full suite, including `test/mcpCatalog.test.ts` for catalog discovery and enrichment).
 
-## Last-checked: 2026-08-21
+## Last-checked: 2026-08-25
