@@ -12,8 +12,8 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-225%20passed-brightgreen.svg)](https://vitest.dev/)
-[![MCP Tools](https://img.shields.io/badge/MCP%20Tools-33-blue.svg)](#tools)
+[![Vitest](https://img.shields.io/badge/Vitest-236%20passed-brightgreen.svg)](https://vitest.dev/)
+[![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
 [![Privacy](https://img.shields.io/badge/Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg)](SECURITY.md)
 [![Security](https://img.shields.io/badge/Security-Local--First%20%7C%20Policy--Gated-blue.svg)](SECURITY.md)
@@ -28,7 +28,7 @@
 
 ### Quick Navigation
 
-[Quick Start](#install) • [System Architecture](#system-architecture) • [Control & Gateway Flow](#control-plane--gateway-lifecycle) • [Tools (33)](#tools) • [Gateway](#gateway-reaching-servers-the-host-has-not-loaded) • [Security Policy](SECURITY.md) • [llms.txt Context](llms.txt) • [Ecosystem Matrix](#ellmos-ai-ecosystem)
+[Quick Start](#install) • [System Architecture](#system-architecture) • [Control & Gateway Flow](#control-plane--gateway-lifecycle) • [Tools (34)](#tools) • [Gateway](#gateway-reaching-servers-the-host-has-not-loaded) • [Security Policy](SECURITY.md) • [llms.txt Context](llms.txt) • [Ecosystem Matrix](#ellmos-ai-ecosystem)
 
 ---
 
@@ -114,12 +114,12 @@ sequenceDiagram
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.5.1`
+- **Version:** `0.6.0`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI checks:** `npm run test` and `npm run build`
 - **Goal:** Make local MCP stacks visible, inspectable, and reproducibly configurable
-- **Focus:** Catalogs, profile overview, profile recommendation, bundle recommendation, profile-aware tool-list probes, tool-bundle assignments, i18n, and early audits
+- **Focus:** Catalogs, profile overview, profile recommendation, bundle recommendation, profile-aware tool-list probes, tool-bundle assignments, i18n, early audits, and read-only host governance metadata
 
 ## Tools
 
@@ -150,10 +150,11 @@ sequenceDiagram
 | `controlcenter_find_skill` | Match **keywords** for a task or intent against the scanned skill catalogue and return ranked candidates — see [Querying skill search](#querying-skill-search) |
 | `controlcenter_resolve_semantic_route` | Validate an LLM/user-selected role, expert and persona against a provider-neutral map and verify endpoints against the live skill inventory |
 | `controlcenter_list_plugins` | Inventory installed plugins (`~/.claude/plugins` by default; Claude Code convention, override with `ELLMOS_PLUGINS_ROOT`) and local ellmos modules |
-| `controlcenter_list_locks` | List active `LOCK*.txt` project locks across the configured roots — see [Host registers](#host-registers-locks-permissions-decisions) |
+| `controlcenter_list_locks` | List active `LOCK*.txt` project locks across the configured roots — see [Host registers](#host-registers-locks-permissions-decisions-governance-resources) |
 | `controlcenter_check_lock` | Check whether one path is locked, including locks inherited from parent directories |
 | `controlcenter_evaluate_permission` | Report what the nearest `LOCK.permissions` register allows an agent to do at a path |
 | `controlcenter_list_decisions` | List pending user decisions by identifier, date, title and status |
+| `controlcenter_list_governance` | Federate allowlisted decision, policy and BYUM metadata read-only; report each source separately and never adopt or execute a candidate |
 | `controlcenter_list_resources` | List rows from the host's resource inventory (systems and/or installed software) — read-only mirror; the register's authority sits with the ControlRoom programme, not here |
 | `controlcenter_describe_resource` | Full row detail for one resource by its inventory id, from the same read-only mirror |
 | `controlcenter_list_available_tools` | List the tools of MCP servers this host has **not** loaded, without loading them — see [Gateway](#gateway-reaching-servers-the-host-has-not-loaded) |
@@ -249,12 +250,19 @@ The MCP catalog contributes what a directory scan cannot see: `mcp_kind` (`tool`
 
 A missing, unreadable, or foreign-schema catalog never fails a tool call. The enriched fields degrade to empty and the output names the reason, so an absent catalog is distinguishable from a server that genuinely holds no state. An unreadable MCP root is likewise reported as unreadable instead of as an empty result.
 
-## Host registers: locks, permissions, decisions, resources
+## Host registers: locks, permissions, decisions, governance, resources
 
-The six tools above answer a different question from the rest of this server: not
-*"what can I configure?"* but *"what applies on this machine right now?"* They read four
+The seven tools above answer a different question from the rest of this server: not
+*"what can I configure?"* but *"what applies on this machine right now?"* They read five
 host-local registers — project locks, an agent-neutral permission register, a pending
-decision list, and a resource inventory of systems and installed software.
+decision list, a policy registry, and a resource inventory of systems and installed software.
+
+`controlcenter_list_governance` composes the generated decision index with an explicitly
+configured `ellmos.policy-registry.v1` file. The registry is validated only through the
+canonical `PolicyRegistry.load()` API. Every source reports `available`, `unconfigured`,
+`unreadable`, or `invalid`; partial data never claims completeness, and a valid registry with
+zero BYUM candidates reports an honest zero. BYUM rows remain pending advisory pointers without
+adoption or execution authority.
 
 `controlcenter_list_resources` and `controlcenter_describe_resource` are a read-only mirror
 of `.SYNC/_inventory/inventory.db`. Register authority sits with the ControlRoom programme's
@@ -291,6 +299,8 @@ machine that has not set them up:
 | `ELLMOS_LOCK_ROOTS` | Optional path to `lock_roots.json`. Defaults to the file beside the lock scripts. |
 | `ELLMOS_DECISIONS_ROOT` | Directory holding the decision chain and its generated index. Required by `controlcenter_list_decisions`. |
 | `ELLMOS_INVENTORY_DB` | Path to the resource inventory SQLite file (`.SYNC/_inventory/inventory.db`). Required by `controlcenter_list_resources` and `controlcenter_describe_resource`. |
+| `ELLMOS_POLICY_REGISTRY_PATH` | Explicit path to an `ellmos.policy-registry.v1` registry. Required for the policy side of `controlcenter_list_governance`. |
+| `ELLMOS_POLICY_REGISTRY_SRC` | Optional source root containing the canonical `policy_registry` Python package. |
 | `ELLMOS_PYTHON` | Interpreter to run the bridge with. Defaults to `python`, falling back to `python3`. |
 
 ### What these tools deliberately do not return
@@ -298,6 +308,11 @@ machine that has not set them up:
 `controlcenter_list_decisions` returns identifiers, dates, titles, status and scope — not the
 question texts, options or recommendations, which can describe personal circumstances. Read
 those in the register itself.
+
+`controlcenter_list_governance` uses fixed field allowlists. It never returns source URIs,
+questions, options, recommendations, rationale, prompts, full text, reasons, secure/avatar
+content, action payloads, execution payloads, or receipts, and it never dereferences a registry
+pointer.
 
 ### Cost of a full scan
 
@@ -587,7 +602,7 @@ This MCP server is part of the **[ellmos-ai](https://github.com/ellmos-ai)** eco
 | [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 22 | Code analysis, JSON repair, imports, diffs, regex | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
 | [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | File repair, format conversion, batch operations | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 19 | n8n workflow management via AI assistants | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **33** | **MCP stack, tool and skill discovery; profile resolution and audit; host lock, permission and decision registers** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **34** | **MCP stack, tool and skill discovery; profile resolution and audit; read-only host lock, permission, decision, policy and resource registers** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 | [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 45 | Local-first LLM memory, knowledge, state, routing, swarm orchestration | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
 | [ServerCommander](https://github.com/ellmos-ai/ellmos-servercommander-mcp) | 8 | Server operations: health checks, log analysis, deploy dry-runs, mail diagnostics | [`ellmos-servercommander-mcp`](https://www.npmjs.com/package/ellmos-servercommander-mcp) (alpha) |
 | [Blender Use](https://github.com/ellmos-ai/ellmos-blender-use-mcp) | 3 | Headless Blender asset QA and FBX reimport verification | [`ellmos-blender-use-mcp`](https://www.npmjs.com/package/ellmos-blender-use-mcp) (alpha) |

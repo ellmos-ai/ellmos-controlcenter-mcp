@@ -22,7 +22,7 @@
     "mcp-server"
   ],
   "tools": {
-    "count": 33
+    "count": 34
   },
   "features": [
     "Profile management",
@@ -32,6 +32,7 @@
     "Stack descriptions",
     "Policy audits",
     "Host lock and permission registers (read-only)",
+    "Federated decision, policy and BYUM metadata (read-only)",
     "Gateway: list and invoke tools on servers the host has not loaded"
   ]
 }

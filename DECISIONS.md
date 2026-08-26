@@ -154,3 +154,23 @@ zum Delegieren (die Daten sind reine Schema-Tabellen, keine eingebettete Fachlog
 zu delegieren wie bei den Lock-Tools. Fail-closed gilt identisch: fehlt `ELLMOS_INVENTORY_DB` oder
 die Datei, ist das Ergebnis `unknown`/`unavailable`, nie ein stillschweigend leeres Inventar.
 
+## Governance-Lesespiegel: föderieren, nicht kanonisieren [C 2026-08-26]
+
+`controlcenter_list_governance` führt zwei bereits bestehende Quellen nur für eine rein lesende
+Operator-Sicht zusammen: den generierten Entscheidungsindex und ein explizit konfiguriertes
+`ellmos.policy-registry.v1`-Register. Der Entscheidungsindex bleibt über die bestehende
+List-Decisions-Logik angebunden; das Policy-Register wird ausschließlich durch die kanonische
+`PolicyRegistry.load()`-API geladen und validiert. ControlCenter erhält dadurch keine neue
+Register-Hoheit und führt keine zweite Policy- oder Entscheidungskanonik ein.
+
+Die Projektion ist eine feste Allowlist und löst keine Quellzeiger auf. Insbesondere bleiben
+Fragetexte, Optionen, Empfehlungen, Begründungen, Prompts, Volltexte, sichere oder Avatar-Inhalte,
+Aktions- und Ausführungsdaten sowie Receipts außerhalb der MCP-Antwort. Jede Quelle meldet ihren
+eigenen Status; ein Teilergebnis bleibt als `partial` sichtbar und ein gültiges Register ohne
+BYUM-Kandidaten meldet null statt „unbekannt".
+
+BYUM-Einträge werden nur als `decision-candidate` mit `adoption=pending` und
+`authority=advisory-pointer` akzeptiert. Ein Kandidat, der Ausführungsautorität behauptet, macht
+die Registerquelle ungültig und wird nicht ausgegeben. Der Lesespiegel übernimmt, beschließt,
+vollstreckt oder schreibt nichts.
+

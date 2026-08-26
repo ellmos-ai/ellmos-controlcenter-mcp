@@ -6,7 +6,7 @@
 - TypeScript MCP scaffold in place
 - Initial discovery and profile tools implemented
 - Tests for core logic available
-- Version `0.5.0` prepared for GitHub/npm review; publication is not implied
+- Source version `0.6.0`; publication of newer unreleased changes is not implied
 - ControlCenter is no longer read-only in the request path: the gateway forwards tool calls to
   backend MCP servers under a policy gate and an audit log
 - Optional actual-self producer implemented fail-closed; no host trust store or live routing activation is configured by the package
@@ -49,6 +49,7 @@
 - Hold the gateway to finite request, response, nesting, content-block, and concurrency budgets; refuse oversized arguments outright and truncate oversized answers visibly
 - Restrict remote gateway targets to HTTPS, allow plain HTTP only on loopback, refuse redirects, and narrow further through an optional host allowlist
 - Read-only mirror of the host's resource inventory (systems and installed software) from `.SYNC/_inventory/inventory.db`, filterable by host and type (`controlcenter_list_resources`, `controlcenter_describe_resource`); register authority sits with the ControlRoom programme's own `resources.inventory` resolver role, not here (CR11=C, T-20260824-339847482)
+- Federate allowlisted metadata from the decision index and a canonically validated `ellmos.policy-registry.v1` source (`controlcenter_list_governance`), with explicit per-source availability, honest partial results, and BYUM candidates confined to pending advisory pointers without adoption or execution authority
 
 ## What Is Still Missing
 

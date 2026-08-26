@@ -9,12 +9,14 @@ import {
   describeResource,
   evaluatePermission,
   formatDecisions,
+  formatGovernance,
   formatLockCheck,
   formatLockList,
   formatPermission,
   formatResource,
   formatResources,
   listDecisions,
+  listGovernance,
   listLocks,
   listResources,
   resolveControlroomConfig,
@@ -44,6 +46,118 @@ const CONFIGURED_ENV: NodeJS.ProcessEnv = {
   ELLMOS_LOCK_SCRIPTS: CANONICAL_SCRIPTS,
   ELLMOS_DECISIONS_ROOT: path.join(os.tmpdir(), "decisions-placeholder")
 };
+const POLICY_REGISTRY_FIXTURE_SRC = path.join(
+  path.resolve(__dirname, ".."), "test", "fixtures", "policy_registry_src"
+);
+const SHA_A = "a".repeat(64);
+const SHA_B = "b".repeat(64);
+
+function policyEntry(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: "policy:test",
+    kind: "policy",
+    title: "Public policy title",
+    scope: "system-wide",
+    owner: "fixture",
+    priority: 10,
+    precedence: 10,
+    version: "1",
+    privacy: "internal",
+    source: { uri: "C:/PRIVATE/POLICY_SOURCE.md", type: "file" },
+    consumers: ["*"],
+    status: "active",
+    adoption: "adopted",
+    authority: "normative",
+    hash: { algorithm: "sha256", value: SHA_A },
+    summary: "PRIVATE_POLICY_SUMMARY_MUST_NOT_LEAK",
+    rationale: "PRIVATE_POLICY_RATIONALE_MUST_NOT_LEAK",
+    receipt: { secret: "PRIVATE_POLICY_RECEIPT_MUST_NOT_LEAK" },
+    execution: { command: "PRIVATE_POLICY_EXECUTION_MUST_NOT_LEAK" },
+    ...overrides
+  };
+}
+
+function byumCandidate(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: `byum-candidate:pred-1@sha256:${SHA_B}`,
+    kind: "decision-candidate",
+    title: "BYUM decision candidate D-1",
+    scope: "global",
+    owner: "BYUM",
+    authority: "advisory-pointer",
+    priority: 0,
+    precedence: 0,
+    version: "byum.decision-prediction.v2",
+    hash: { algorithm: "sha256", value: SHA_B },
+    privacy: "private",
+    source: {
+      uri: "C:/PRIVATE/BYUM_PROJECTION.json",
+      type: "byum-projection",
+      canonical: false,
+      origin: "build-your-users-mind"
+    },
+    consumers: ["*"],
+    status: "active",
+    adoption: "pending",
+    summary: "PRIVATE_BYUM_SUMMARY_MUST_NOT_LEAK",
+    prompt: "PRIVATE_BYUM_PROMPT_MUST_NOT_LEAK",
+    private_text: "PRIVATE_BYUM_SECURE_TEXT_MUST_NOT_LEAK",
+    receipt: { id: "PRIVATE_BYUM_RECEIPT_MUST_NOT_LEAK" },
+    execution: { authorized: true, action: "PRIVATE_BYUM_ACTION_MUST_NOT_LEAK" },
+    provenance: {
+      protocol: "byum.decision-prediction.v2",
+      prediction_id: "pred-1",
+      decision_ref: {
+        decision_id: "D-1",
+        index_key: "IDX-1",
+        scope: "global",
+        source_locator: {
+          path: "C:/PRIVATE/DECISION_SOURCE.txt",
+          block_id: "BLOCK-1"
+        },
+        source_sha256: SHA_A
+      },
+      projection_status: "validated"
+    },
+    ...overrides
+  };
+}
+
+async function decisionFixture(stale = false): Promise<string> {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-governance-decisions-"));
+  const tools = path.join(root, "_tools");
+  const source = path.join(root, "TO-DECIDE-USER.txt");
+  const index = path.join(tools, "decisions.index.json");
+  await fs.mkdir(tools, { recursive: true });
+  await fs.writeFile(source, "decision source", "utf-8");
+  await fs.writeFile(index, JSON.stringify({
+    generated_at: "2026-08-26T12:00:00+02:00",
+    counts: { by_status_class: { OFFEN: 1 } },
+    entries: [{
+      key: "D-1", id: "D-1", date: "2026-08-26", title: "Choose a safe option",
+      status_class: "OFFEN", scope: "global", source_file: "C:/PRIVATE/TO-DECIDE-USER.txt",
+      question: "PRIVATE_DECISION_QUESTION_MUST_NOT_LEAK",
+      options: ["PRIVATE_DECISION_OPTION_MUST_NOT_LEAK"],
+      recommendation: "PRIVATE_DECISION_RECOMMENDATION_MUST_NOT_LEAK"
+    }]
+  }), "utf-8");
+  const now = Date.now();
+  const sourceTime = stale ? new Date(now) : new Date(now - 60_000);
+  const indexTime = stale ? new Date(now - 60_000) : new Date(now);
+  await fs.utimes(source, sourceTime, sourceTime);
+  await fs.utimes(index, indexTime, indexTime);
+  return root;
+}
+
+async function registryFixture(
+  entries: Record<string, unknown>[],
+  schema = "ellmos.policy-registry.v1"
+): Promise<string> {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-governance-registry-"));
+  const registry = path.join(root, "registry.json");
+  await fs.writeFile(registry, JSON.stringify({ schema, updated_at: null, entries }), "utf-8");
+  return registry;
+}
 
 /** Records what the bridge was asked, and answers with a canned payload. */
 function fakeRunner(payload: BridgeResult, capture?: { args?: string[] }) {
@@ -181,6 +295,20 @@ describe("controlroom fail-closed contract", () => {
     expect(result.reason).toContain("ELLMOS_INVENTORY_DB");
   });
 
+  it("distinguishes unconfigured governance sources from valid empty sources", async () => {
+    const result = await listGovernance({ config: resolveControlroomConfig(EMPTY_ENV) });
+    expect(result.verdict).toBe("unknown");
+    expect(result.complete).toBe(false);
+    expect(result.sources).toMatchObject({
+      decisions: { status: "unconfigured" },
+      policy_registry: { status: "unconfigured" }
+    });
+    expect(result.decisions).toEqual([]);
+    expect(result.registry_entries).toEqual([]);
+    expect(result.byum_candidates).toEqual([]);
+    expect(result.counts).toEqual({ decisions: 0, registry_entries: 0, byum_candidates: 0 });
+  });
+
   it("fails closed when the Python interpreter is missing", async () => {
     const config = { ...resolveControlroomConfig(CONFIGURED_ENV), python: "definitely-not-a-real-interpreter" };
     const result = await runBridge(["--scripts-dir", CANONICAL_SCRIPTS, "check-lock", "C:/x"], 15_000, config);
@@ -212,12 +340,14 @@ describe("controlroom fail-closed contract", () => {
 // ---------------------------------------------------------------------------
 
 describe("controlroom configuration", () => {
-  it("reads all five environment variables", () => {
+  it("reads all seven environment variables", () => {
     const config = resolveControlroomConfig({
       ELLMOS_LOCK_SCRIPTS: "/scripts",
       ELLMOS_LOCK_ROOTS: "/roots.json",
       ELLMOS_DECISIONS_ROOT: "/decisions",
       ELLMOS_INVENTORY_DB: "/inventory.db",
+      ELLMOS_POLICY_REGISTRY_PATH: "/policy-registry.json",
+      ELLMOS_POLICY_REGISTRY_SRC: "/policy-registry-src",
       ELLMOS_PYTHON: "python3.12"
     });
     expect(config).toEqual({
@@ -225,6 +355,8 @@ describe("controlroom configuration", () => {
       rootsFile: "/roots.json",
       decisionsRoot: "/decisions",
       inventoryDb: "/inventory.db",
+      policyRegistryPath: "/policy-registry.json",
+      policyRegistrySrc: "/policy-registry-src",
       python: "python3.12"
     });
   });
@@ -247,6 +379,24 @@ describe("controlroom configuration", () => {
     expect(capture.args).toContain("--budget-seconds");
     expect(capture.args).toContain("5");
     expect(capture.args).toContain("/custom/roots.json");
+  });
+
+  it("passes only configured governance source locations to the bridge", async () => {
+    const capture: { args?: string[] } = {};
+    await listGovernance({
+      config: resolveControlroomConfig({
+        ELLMOS_DECISIONS_ROOT: "/decisions",
+        ELLMOS_POLICY_REGISTRY_PATH: "/policy-registry.json",
+        ELLMOS_POLICY_REGISTRY_SRC: "/policy-registry-src"
+      }),
+      runner: fakeRunner({ verdict: "complete", complete: true }, capture)
+    });
+    expect(capture.args).toEqual([
+      "--decisions-root", "/decisions",
+      "--policy-registry", "/policy-registry.json",
+      "--policy-registry-src", "/policy-registry-src",
+      "list-governance", "--status", "OFFEN", "--decision-limit", "50", "--registry-limit", "200"
+    ]);
   });
 });
 
@@ -334,6 +484,152 @@ describe("controlroom rendering", () => {
     const text = formatResource({ verdict: "not_found", reason: "no systems row with id=99999", resource: null });
     expect(text).toContain("not_found");
     expect(text).toContain("id=99999");
+  });
+
+  it("renders partial governance and decision staleness without source paths", () => {
+    const text = formatGovernance({
+      verdict: "partial",
+      complete: false,
+      sources: {
+        decisions: { status: "available", stale: true, stale_source_count: 1 },
+        policy_registry: { status: "unreadable" }
+      },
+      counts: { decisions: 1, registry_entries: 0, byum_candidates: 0 },
+      decisions: [{ key: "D-1", id: "D-1", date: "2026-08-26", title: "Choose safely", status: "OFFEN", scope: "global" }],
+      registry_entries: [],
+      byum_candidates: []
+    });
+    expect(text).toContain("PARTIAL");
+    expect(text).toContain("available");
+    expect(text).toContain("unreadable");
+    expect(text).toContain("stale: yes");
+    expect(text).not.toContain("TO-DECIDE-USER.txt");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Integration against an explicit PolicyRegistry.load() source seam
+// ---------------------------------------------------------------------------
+
+describe("controlroom governance federation", () => {
+  async function governanceConfig(registryPath: string, stale = false) {
+    return resolveControlroomConfig({
+      ELLMOS_DECISIONS_ROOT: await decisionFixture(stale),
+      ELLMOS_POLICY_REGISTRY_PATH: registryPath,
+      ELLMOS_POLICY_REGISTRY_SRC: POLICY_REGISTRY_FIXTURE_SRC
+    });
+  }
+
+  it("reports a valid registry with zero BYUM candidates as complete count zero", async () => {
+    const registry = await registryFixture([policyEntry()]);
+    const result = await listGovernance({ config: await governanceConfig(registry) });
+    expect(result.verdict).toBe("complete");
+    expect(result.complete).toBe(true);
+    expect(result.sources).toMatchObject({
+      decisions: { status: "available" },
+      policy_registry: { status: "available", byum_candidate_count: 0 }
+    });
+    expect(result.counts).toEqual({ decisions: 1, registry_entries: 1, byum_candidates: 0 });
+    expect(result.byum_candidates).toEqual([]);
+  });
+
+  it("projects policy and BYUM metadata through exact allowlists only", async () => {
+    const registry = await registryFixture([policyEntry(), byumCandidate()]);
+    const result = await listGovernance({ config: await governanceConfig(registry) });
+    const norms = result.registry_entries as Record<string, unknown>[];
+    const candidates = result.byum_candidates as Record<string, unknown>[];
+    const decisions = result.decisions as Record<string, unknown>[];
+
+    expect(Object.keys(norms[0]).sort()).toEqual([
+      "adoption", "authority", "hash_status", "id", "kind", "privacy", "scope", "status", "title"
+    ]);
+    expect(Object.keys(candidates[0]).sort()).toEqual([
+      "adoption", "authority", "decision_ref", "hash_status", "id", "kind", "prediction_id",
+      "privacy", "projection_sha256", "projection_status", "protocol", "scope", "status", "title"
+    ]);
+    expect(Object.keys(candidates[0].decision_ref as Record<string, unknown>).sort()).toEqual([
+      "block_id", "decision_id", "index_key", "scope", "source_sha256"
+    ]);
+    expect(Object.keys(decisions[0]).sort()).toEqual(["date", "id", "key", "scope", "status", "title"]);
+    expect(candidates[0].authority).toBe("advisory-pointer");
+
+    const serialized = JSON.stringify(result);
+    for (const forbidden of [
+      "C:/PRIVATE", "PRIVATE_POLICY_SUMMARY", "PRIVATE_POLICY_RATIONALE", "PRIVATE_POLICY_RECEIPT",
+      "PRIVATE_POLICY_EXECUTION", "PRIVATE_BYUM_SUMMARY", "PRIVATE_BYUM_PROMPT", "PRIVATE_BYUM_SECURE_TEXT",
+      "PRIVATE_BYUM_RECEIPT", "PRIVATE_BYUM_ACTION", "PRIVATE_DECISION_QUESTION",
+      "PRIVATE_DECISION_OPTION", "PRIVATE_DECISION_RECOMMENDATION"
+    ]) {
+      expect(serialized).not.toContain(forbidden);
+    }
+  });
+
+  it.each([
+    ["foreign schema", "ellmos.policy-registry.v999", [policyEntry()]],
+    ["invalid entry", "ellmos.policy-registry.v1", [{ ...policyEntry(), owner: undefined }]]
+  ])("marks a %s registry invalid and leaks no entries", async (_label, schema, entries) => {
+    const cleaned = JSON.parse(JSON.stringify(entries)) as Record<string, unknown>[];
+    const registry = await registryFixture(cleaned, schema);
+    const result = await listGovernance({ config: await governanceConfig(registry) });
+    expect((result.sources as Record<string, Record<string, unknown>>).policy_registry.status).toBe("invalid");
+    expect(result.registry_entries).toEqual([]);
+    expect(result.byum_candidates).toEqual([]);
+    expect(JSON.stringify(result)).not.toContain("Public policy title");
+  });
+
+  it("keeps stale decisions visible when the registry is unreadable and marks the aggregate partial", async () => {
+    const missing = path.join(os.tmpdir(), "controlroom-governance-registry-missing.json");
+    const result = await listGovernance({ config: await governanceConfig(missing, true) });
+    expect(result.verdict).toBe("partial");
+    expect(result.complete).toBe(false);
+    expect(result.sources).toMatchObject({
+      decisions: { status: "available", stale: true },
+      policy_registry: { status: "unreadable" }
+    });
+    expect((result.decisions as unknown[])).toHaveLength(1);
+    expect(result.registry_entries).toEqual([]);
+  });
+
+  it("rejects a BYUM projection that claims execution authority", async () => {
+    const registry = await registryFixture([
+      byumCandidate({ authority: "execution-authority", execution_authorized: true })
+    ]);
+    const result = await listGovernance({ config: await governanceConfig(registry) });
+    expect((result.sources as Record<string, Record<string, unknown>>).policy_registry.status).toBe("invalid");
+    expect(result.byum_candidates).toEqual([]);
+    expect(JSON.stringify(result)).not.toContain("execution-authority");
+  });
+
+  it("rejects non-scalar allowlisted metadata instead of leaking nested values", async () => {
+    const registry = await registryFixture([
+      policyEntry({ authority: { receipt: "PRIVATE_NESTED_AUTHORITY_MUST_NOT_LEAK" } })
+    ]);
+    const result = await listGovernance({ config: await governanceConfig(registry) });
+    expect((result.sources as Record<string, Record<string, unknown>>).policy_registry.status).toBe("invalid");
+    expect(result.registry_entries).toEqual([]);
+    expect(JSON.stringify(result)).not.toContain("PRIVATE_NESTED_AUTHORITY_MUST_NOT_LEAK");
+  });
+
+  it("marks non-scalar decision metadata invalid and keeps the registry side available", async () => {
+    const decisionsRoot = await decisionFixture();
+    const indexPath = path.join(decisionsRoot, "_tools", "decisions.index.json");
+    const index = JSON.parse(await fs.readFile(indexPath, "utf-8"));
+    index.entries[0].title = { prompt: "PRIVATE_NESTED_DECISION_MUST_NOT_LEAK" };
+    await fs.writeFile(indexPath, JSON.stringify(index), "utf-8");
+    const registry = await registryFixture([policyEntry()]);
+    const config = resolveControlroomConfig({
+      ELLMOS_DECISIONS_ROOT: decisionsRoot,
+      ELLMOS_POLICY_REGISTRY_PATH: registry,
+      ELLMOS_POLICY_REGISTRY_SRC: POLICY_REGISTRY_FIXTURE_SRC
+    });
+    const result = await listGovernance({ config });
+    expect(result.verdict).toBe("partial");
+    expect(result.sources).toMatchObject({
+      decisions: { status: "invalid" },
+      policy_registry: { status: "available" }
+    });
+    expect(result.decisions).toEqual([]);
+    expect(JSON.stringify(result)).not.toContain("PRIVATE_NESTED_DECISION_MUST_NOT_LEAK");
   });
 });
 

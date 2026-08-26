@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Federated Governance Metadata (Read-Only): `controlcenter_list_governance` (2026-08-26)
+- Added one read-only MCP tool that composes allowlisted decision-index metadata with an explicitly configured `ellmos.policy-registry.v1` source; the policy side is loaded only through the canonical `PolicyRegistry.load()` API.
+- Report `available`, `unconfigured`, `unreadable`, and `invalid` per source. Partial data never claims completeness, while a valid registry with zero BYUM candidates reports an honest zero.
+- Keep source URIs, questions, options, recommendations, rationale, prompts, full texts, reasons, secure/avatar content, action or execution payloads, and receipts outside the projection; registry pointers are never dereferenced.
+- Keep BYUM rows strictly pending advisory pointers. A projection that claims execution authority invalidates the registry side and yields no candidate data; this view never adopts, executes, or writes.
+- Added eleven TDD cases across configuration, rendering, source states, canonical-load validation, exact scalar allowlists on both sources, zero candidates, stale partial output, and the BYUM authority boundary. Tool count is now 34 and the verified full Vitest suite is 236/236.
+
 ### Resource Inventory Register (Read-Only Mirror): `controlcenter_list_resources` / `controlcenter_describe_resource` (2026-08-25)
 - Added two new read-only host-register tools, `controlcenter_list_resources` and `controlcenter_describe_resource`, extending `scripts/controlroom_bridge.py` with `list-resources`/`describe-resource` subcommands that read `.SYNC/_inventory/inventory.db` (systems + software tables) directly via read-only SQLite (`?mode=ro`) — no new npm dependency, same bridge pattern already used for locks/permissions/decisions.
 - New `ELLMOS_INVENTORY_DB` environment variable; both tools fail closed (`unknown`/`unavailable`, never an empty inventory) when unconfigured or the file is missing.
