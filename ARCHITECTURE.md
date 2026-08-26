@@ -69,6 +69,13 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
   - auditiert aufgelöste Profile
   - meldet erste Risiken wie `npx`-Starts, Env-Secrets und ungültige Server-Konfigurationen
   - gibt keine Secret-Werte aus
+- `controlroom.ts` mit `scripts/controlroom_bridge.py`
+  - bildet die rein lesenden Host-Register-Werkzeuge auf eine kleine Python-Brücke ab
+  - führt für `controlcenter_list_governance` den generierten Entscheidungsindex und ein explizit konfiguriertes `ellmos.policy-registry.v1`-Register zusammen
+  - lädt und validiert das Policy-Register ausschließlich über die kanonische API `PolicyRegistry.load()`; eine optionale explizite Quellwurzel bestimmt nur den Importpfad
+  - meldet `available`, `unconfigured`, `unreadable` und `invalid` je Quelle und behauptet bei Teilergebnissen keine Vollständigkeit
+  - projiziert nur feste Metadaten-Allowlisten, löst keine Quellzeiger auf und übernimmt keine Fragen, Optionen, Begründungen, Prompts, Volltexte, Aktionsdaten oder Receipts
+  - akzeptiert BYUM ausschließlich als `decision-candidate` mit `pending` und `advisory-pointer`; der Lesespiegel verleiht weder Übernahme- noch Ausführungsautorität
 - `contextPack.ts`
   - baut gestufte `short`-, `execution`- und `full`-Kontextpakete ausschließlich aus registrierten Stack-Manifesten
   - akzeptiert keine frei vom Aufrufer wählbare Root und startet keine Komponenten

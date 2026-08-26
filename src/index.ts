@@ -46,12 +46,14 @@ import {
   describeResource,
   evaluatePermission,
   formatDecisions,
+  formatGovernance,
   formatLockCheck,
   formatLockList,
   formatPermission,
   formatResource,
   formatResources,
   listDecisions,
+  listGovernance,
   listLocks,
   listResources
 } from "./controlroom.js";
@@ -1321,6 +1323,33 @@ server.registerTool(
   async ({ status, limit }) => {
     const result = await listDecisions({ status, limit });
     return { content: [{ type: "text", text: formatDecisions(result) }] };
+  }
+);
+
+server.registerTool(
+  "controlcenter_list_governance",
+  {
+    title: "List federated decision, policy and BYUM governance metadata",
+    description:
+      "Returns one read-only, allowlist-only metadata view across the host decision index and an explicitly " +
+      "configured ellmos.policy-registry.v1 registry. Each source is reported as available, unconfigured, " +
+      "unreadable or invalid; partial results never claim completeness, while a valid registry with zero BYUM " +
+      "candidates reports an honest zero. Registry data is loaded only through the canonical PolicyRegistry.load() " +
+      "API. BYUM rows remain pending advisory pointers: this tool never dereferences content, adopts a candidate, " +
+      "writes a register or grants execution authority.",
+    inputSchema: {
+      status: z.string().default("OFFEN")
+        .describe("Decision status class, e.g. OFFEN or ALL."),
+      decisionLimit: z.number().int().positive().max(200).default(50)
+        .describe("Maximum number of allowlisted decision-index rows."),
+      registryLimit: z.number().int().positive().max(500).default(200)
+        .describe("Maximum number of allowlisted registry norms and BYUM candidates per section.")
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  },
+  async ({ status, decisionLimit, registryLimit }) => {
+    const result = await listGovernance({ status, decisionLimit, registryLimit });
+    return { content: [{ type: "text", text: formatGovernance(result) }] };
   }
 );
 

@@ -3,10 +3,11 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 
 /**
- * Read-only view onto the host's lock, permission and decision registers.
+ * Read-only view onto the host's lock, permission, decision, resource and
+ * governance registers.
  *
- * These four queries answer "what is locked on THIS machine right now", which is
- * host-bound by nature. The rules themselves are not reimplemented here: the bridge
+ * These queries answer "what applies on THIS machine right now", which is host-bound
+ * by nature. The rules themselves are not reimplemented here: the bridge
  * script delegates every semantic decision to the host's canonical Python modules
  * (lock_utils.py, permissions.py, lock_scan.py). A second implementation of the lock
  * rules in TypeScript would drift from the spec on the next change, and a lock
@@ -38,6 +39,10 @@ export const CONTROLROOM_ENV = {
   decisions: "ELLMOS_DECISIONS_ROOT",
   /** Path to the ControlRoom resource inventory SQLite file (systems/software). */
   inventory: "ELLMOS_INVENTORY_DB",
+  /** Explicit path to an ellmos.policy-registry.v1 registry. */
+  policyRegistry: "ELLMOS_POLICY_REGISTRY_PATH",
+  /** Optional src root containing the canonical policy_registry Python package. */
+  policyRegistrySrc: "ELLMOS_POLICY_REGISTRY_SRC",
   /** Python interpreter; defaults to "python" with a "python3" fallback. */
   python: "ELLMOS_PYTHON"
 } as const;
@@ -47,6 +52,8 @@ export interface ControlroomConfig {
   rootsFile: string;
   decisionsRoot: string;
   inventoryDb: string;
+  policyRegistryPath: string;
+  policyRegistrySrc: string;
   python: string;
 }
 
@@ -58,6 +65,8 @@ export function resolveControlroomConfig(
     rootsFile: env[CONTROLROOM_ENV.roots]?.trim() ?? "",
     decisionsRoot: env[CONTROLROOM_ENV.decisions]?.trim() ?? "",
     inventoryDb: env[CONTROLROOM_ENV.inventory]?.trim() ?? "",
+    policyRegistryPath: env[CONTROLROOM_ENV.policyRegistry]?.trim() ?? "",
+    policyRegistrySrc: env[CONTROLROOM_ENV.policyRegistrySrc]?.trim() ?? "",
     python: env[CONTROLROOM_ENV.python]?.trim() || "python"
   };
 }
@@ -277,6 +286,59 @@ export async function listDecisions(
   );
 }
 
+function emptyGovernance(config: ControlroomConfig): BridgeResult {
+  return {
+    schema: "controlcenter.controlroom.governance/1",
+    command: "list-governance",
+    verdict: "unknown",
+    complete: false,
+    sources: {
+      decisions: { status: config.decisionsRoot ? "unreadable" : "unconfigured" },
+      policy_registry: { status: config.policyRegistryPath ? "unreadable" : "unconfigured" }
+    },
+    counts: { decisions: 0, registry_entries: 0, byum_candidates: 0 },
+    decisions: [],
+    registry_entries: [],
+    byum_candidates: []
+  };
+}
+
+/**
+ * Federated, allowlist-only view of decision-index metadata and a canonically
+ * validated policy registry. The bridge performs all source validation and never
+ * dereferences a registry pointer.
+ */
+export async function listGovernance(
+  options: QueryOptions & {
+    status?: string;
+    decisionLimit?: number;
+    registryLimit?: number;
+  } = {}
+): Promise<BridgeResult> {
+  const config = options.config ?? resolveControlroomConfig();
+  if (!config.decisionsRoot && !config.policyRegistryPath) {
+    return emptyGovernance(config);
+  }
+
+  const args: string[] = [];
+  if (config.decisionsRoot) args.push("--decisions-root", config.decisionsRoot);
+  if (config.policyRegistryPath) args.push("--policy-registry", config.policyRegistryPath);
+  if (config.policyRegistrySrc) args.push("--policy-registry-src", config.policyRegistrySrc);
+  args.push(
+    "list-governance",
+    "--status", options.status ?? "OFFEN",
+    "--decision-limit", String(options.decisionLimit ?? 50),
+    "--registry-limit", String(options.registryLimit ?? 200)
+  );
+
+  const result = await runnerFor({ ...options, config })(args, options.timeoutMs ?? 30_000);
+  if (result.sources && result.counts) return result;
+
+  // A bridge-level failure (for example a missing interpreter) still preserves the
+  // per-source unknown/unconfigured distinction instead of returning an empty view.
+  return { ...emptyGovernance(config), reason: result.reason ?? result.error };
+}
+
 export async function listResources(
   options: QueryOptions & { type?: string; host?: string; limit?: number } = {}
 ): Promise<BridgeResult> {
@@ -481,6 +543,68 @@ export function formatDecisions(result: BridgeResult): string {
       "Titles and status only. Question texts, options and recommendations stay in the " +
         "register — read them there."
     );
+  }
+
+  return lines.join("\n");
+}
+
+export function formatGovernance(result: BridgeResult): string {
+  const sources = (result.sources as Record<string, Record<string, unknown>> | undefined) ?? {};
+  const decisions = (result.decisions as Record<string, unknown>[] | undefined) ?? [];
+  const registryEntries = (result.registry_entries as Record<string, unknown>[] | undefined) ?? [];
+  const candidates = (result.byum_candidates as Record<string, unknown>[] | undefined) ?? [];
+  const decisionSource = sources.decisions ?? { status: "unreadable" };
+  const registrySource = sources.policy_registry ?? { status: "unreadable" };
+  const lines = [
+    "# Federated governance metadata (read-only)",
+    "",
+    `- Aggregate: **${String(result.verdict ?? "unknown").toUpperCase()}**`,
+    `- Complete: ${result.complete === true ? "yes" : "no"}`,
+    "",
+    "| Source | Status | Detail |",
+    "|---|---|---|",
+    `| decisions | ${String(decisionSource.status)} | stale: ${decisionSource.stale === true ? "yes" : "no"}; entries: ${decisions.length} |`,
+    `| policy_registry | ${String(registrySource.status)} | norms: ${registryEntries.length}; BYUM candidates: ${candidates.length} |`
+  ];
+
+  if (decisions.length > 0) {
+    lines.push("", "## Decision index", "", "| ID | Key | Date | Title | Status | Scope |", "|---|---|---|---|---|---|");
+    for (const entry of decisions) {
+      lines.push(
+        `| ${String(entry.id ?? "")} | ${String(entry.key ?? "")} | ${String(entry.date ?? "")} ` +
+          `| ${String(entry.title ?? "")} | ${String(entry.status ?? "")} | ${String(entry.scope ?? "")} |`
+      );
+    }
+  }
+
+  if (registryEntries.length > 0) {
+    lines.push("", "## Adopted registry metadata", "", "| ID | Kind | Title | Scope | Status | Adoption | Authority | Privacy | Hash |", "|---|---|---|---|---|---|---|---|---|");
+    for (const entry of registryEntries) {
+      lines.push(
+        `| ${String(entry.id ?? "")} | ${String(entry.kind ?? "")} | ${String(entry.title ?? "")} ` +
+          `| ${String(entry.scope ?? "")} | ${String(entry.status ?? "")} | ${String(entry.adoption ?? "")} ` +
+          `| ${String(entry.authority ?? "")} | ${String(entry.privacy ?? "")} | ${String(entry.hash_status ?? "")} |`
+      );
+    }
+  }
+
+  if (candidates.length > 0) {
+    lines.push(
+      "", "## BYUM advisory pointers", "",
+      "| ID | Prediction | Decision / index | Scope | Block | Source hash | Projection | Authority |",
+      "|---|---|---|---|---|---|---|---|"
+    );
+    for (const entry of candidates) {
+      const ref = (entry.decision_ref as Record<string, unknown> | undefined) ?? {};
+      lines.push(
+        `| ${String(entry.id ?? "")} | ${String(entry.prediction_id ?? "")} ` +
+          `| ${String(ref.decision_id ?? "")} / ${String(ref.index_key ?? "")} | ${String(ref.scope ?? entry.scope ?? "")} ` +
+          `| ${String(ref.block_id ?? "")} | ${String(ref.source_sha256 ?? "")} ` +
+          `| ${String(entry.projection_status ?? "")} / ${String(entry.projection_sha256 ?? "")} ` +
+          `| ${String(entry.authority ?? "")} |`
+      );
+    }
+    lines.push("", "Candidates are advisory pointers only. This view grants no adoption or execution authority.");
   }
 
   return lines.join("\n");

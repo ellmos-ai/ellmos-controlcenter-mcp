@@ -22,6 +22,8 @@ What this bridge adds is only *composition* the canonical CLI does not offer:
   * `list-locks` scans the configured roots under a wall-clock budget and reports
     honestly when the budget ran out (a full scan takes minutes over cloud storage).
   * `list-decisions` reads the generated decision index and reports its staleness.
+  * `list-governance` combines that decision projection with allowlisted metadata
+    loaded through the canonical ``PolicyRegistry.load()`` API.
   * `list-resources`/`describe-resource` read `.SYNC/_inventory/inventory.db` directly (no
     canonical CLI exists for it -- it is plain schema data, not embedded business logic like
     the modules above). Register authority sits with the ControlRoom programme's own
@@ -38,18 +40,21 @@ Usage:
     python controlroom_bridge.py --scripts-dir DIR list-locks [--roots-file F] [--budget-seconds N]
     python controlroom_bridge.py --scripts-dir DIR evaluate-permission PATH AGENT ACTION
     python controlroom_bridge.py --decisions-root DIR list-decisions [--status S] [--limit N]
+    python controlroom_bridge.py --decisions-root DIR --policy-registry FILE list-governance
     python controlroom_bridge.py --inventory-db FILE list-resources [--type systems|software|all] [--host H] [--limit N]
     python controlroom_bridge.py --inventory-db FILE describe-resource ID [--type systems|software]
 """
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import sqlite3
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 SCHEMA = "controlcenter.controlroom/1"
 
@@ -58,6 +63,10 @@ SCHEMA = "controlcenter.controlroom/1"
 # paths. Those can describe personal circumstances, so they are deliberately dropped
 # here rather than filtered later — the bridge never emits what it never reads out.
 DECISION_PUBLIC_FIELDS = ("key", "id", "date", "title", "status", "scope", "source_file")
+GOVERNANCE_DECISION_FIELDS = ("key", "id", "date", "title", "status", "scope")
+GOVERNANCE_NORM_KINDS = {"policy", "rule", "decision"}
+BYUM_PROTOCOL = "byum.decision-prediction.v2"
+BYUM_PROJECTION_STATUSES = {"pending", "decision-observed", "validated"}
 
 
 class BridgeError(Exception):
@@ -398,6 +407,216 @@ def cmd_list_decisions(args) -> dict:
     }
 
 
+def _scalar_text(value: object) -> str:
+    if not isinstance(value, str):
+        raise BridgeError("projected metadata must be scalar text")
+    return value.strip()
+
+
+def _governance_decisions(args) -> tuple[dict, list[dict]]:
+    if not args.decisions_root:
+        return {"status": "unconfigured"}, []
+    try:
+        result = cmd_list_decisions(SimpleNamespace(
+            decisions_root=args.decisions_root,
+            status=args.status,
+            limit=args.decision_limit,
+        ))
+    except BridgeError:
+        return {"status": "unreadable", "reason_code": "decision_register_unreadable"}, []
+    except (AttributeError, TypeError):
+        return {"status": "invalid", "reason_code": "decision_index_validation_failed"}, []
+    if result.get("verdict") not in {"ok", "stale"}:
+        return {"status": "unreadable", "reason_code": "decision_index_unreadable"}, []
+    try:
+        projected = [
+            {field: _scalar_text(entry.get(field, "")) for field in GOVERNANCE_DECISION_FIELDS}
+            for entry in result.get("decisions", [])
+        ]
+    except (BridgeError, AttributeError):
+        return {"status": "invalid", "reason_code": "decision_projection_validation_failed"}, []
+    return {
+        "status": "available",
+        "stale": bool(result.get("stale")),
+        "stale_source_count": len(result.get("stale_sources", [])),
+        "match_count": result.get("match_count", len(projected)),
+        "returned": len(projected),
+    }, projected
+
+
+def _hash_status(entry: dict) -> str:
+    value = entry.get("hash")
+    if isinstance(value, dict) and value.get("algorithm") == "sha256" and value.get("value"):
+        return "sha256"
+    return "missing"
+
+
+def _required_text(value: object) -> str:
+    value = _scalar_text(value)
+    if not value:
+        raise BridgeError("required projected metadata is invalid")
+    return value
+
+
+def _optional_text(value: object) -> str | None:
+    if value is None:
+        return None
+    return _required_text(value)
+
+
+def _project_norm(entry: dict) -> dict:
+    return {
+        "id": _required_text(entry.get("id")),
+        "kind": _required_text(entry.get("kind")),
+        "title": _required_text(entry.get("title")),
+        "scope": _required_text(entry.get("scope")),
+        "status": _required_text(entry.get("status")),
+        "adoption": _required_text(entry.get("adoption")),
+        "authority": _optional_text(entry.get("authority")),
+        "privacy": _required_text(entry.get("privacy")),
+        "hash_status": _hash_status(entry),
+    }
+
+
+def _required_sha256(value: object) -> str:
+    value = _required_text(value)
+    if len(value) != 64 or any(char not in "0123456789abcdef" for char in value):
+        raise BridgeError("candidate hash is invalid")
+    return value
+
+
+def _project_byum_candidate(entry: dict) -> dict:
+    source = entry.get("source")
+    provenance = entry.get("provenance")
+    if not isinstance(source, dict) or not isinstance(provenance, dict):
+        raise BridgeError("candidate source or provenance is invalid")
+    if (
+        entry.get("kind") != "decision-candidate"
+        or entry.get("adoption") != "pending"
+        or entry.get("authority") != "advisory-pointer"
+        or source.get("type") != "byum-projection"
+        or provenance.get("protocol") != BYUM_PROTOCOL
+    ):
+        raise BridgeError("BYUM candidate authority boundary is invalid")
+    decision_ref = provenance.get("decision_ref")
+    if not isinstance(decision_ref, dict):
+        raise BridgeError("candidate decision_ref is invalid")
+    locator = decision_ref.get("source_locator")
+    if not isinstance(locator, dict):
+        raise BridgeError("candidate source locator is invalid")
+    projection_status = provenance.get("projection_status")
+    if projection_status not in BYUM_PROJECTION_STATUSES:
+        raise BridgeError("candidate projection status is invalid")
+    hash_value = entry.get("hash")
+    if not isinstance(hash_value, dict) or hash_value.get("algorithm") != "sha256":
+        raise BridgeError("candidate projection hash is invalid")
+
+    return {
+        **_project_norm(entry),
+        "protocol": BYUM_PROTOCOL,
+        "prediction_id": _required_text(provenance.get("prediction_id")),
+        "decision_ref": {
+            "decision_id": _required_text(decision_ref.get("decision_id")),
+            "index_key": _required_text(decision_ref.get("index_key")),
+            "scope": _required_text(decision_ref.get("scope")),
+            "block_id": _required_text(locator.get("block_id")),
+            "source_sha256": _required_sha256(decision_ref.get("source_sha256")),
+        },
+        "projection_status": projection_status,
+        "projection_sha256": _required_sha256(hash_value.get("value")),
+    }
+
+
+def _governance_registry(args) -> tuple[dict, list[dict], list[dict]]:
+    if not args.policy_registry:
+        return {"status": "unconfigured"}, [], []
+    registry_path = Path(args.policy_registry)
+    if not registry_path.is_file():
+        return {"status": "unreadable", "reason_code": "policy_registry_not_found"}, [], []
+    try:
+        with registry_path.open("rb") as handle:
+            handle.read(1)
+    except OSError:
+        return {"status": "unreadable", "reason_code": "policy_registry_unreadable"}, [], []
+
+    if args.policy_registry_src:
+        source_root = Path(args.policy_registry_src)
+        if not source_root.is_dir():
+            return {"status": "unreadable", "reason_code": "policy_registry_package_unreadable"}, [], []
+        sys.path.insert(0, str(source_root))
+    try:
+        module = importlib.import_module("policy_registry")
+        registry_type = getattr(module, "PolicyRegistry")
+    except (ImportError, AttributeError):
+        return {"status": "unreadable", "reason_code": "policy_registry_package_unavailable"}, [], []
+
+    try:
+        data = registry_type(registry_path).load()
+    except Exception:
+        # The path was readable, so JSON/schema/entry failures are invalid data,
+        # not an unavailable source. Never echo exception text or registry content.
+        return {"status": "invalid", "reason_code": "policy_registry_validation_failed"}, [], []
+
+    entries = data.get("entries", []) if isinstance(data, dict) else []
+    if not isinstance(entries, list) or any(not isinstance(entry, dict) for entry in entries):
+        return {"status": "invalid", "reason_code": "policy_registry_validation_failed"}, [], []
+
+    norms: list[dict] = []
+    candidates: list[dict] = []
+    try:
+        for entry in entries:
+            source = entry.get("source") if isinstance(entry.get("source"), dict) else {}
+            provenance = entry.get("provenance") if isinstance(entry.get("provenance"), dict) else {}
+            intended_byum = (
+                source.get("type") == "byum-projection"
+                or provenance.get("protocol") == BYUM_PROTOCOL
+            )
+            if intended_byum:
+                candidates.append(_project_byum_candidate(entry))
+            elif entry.get("kind") in GOVERNANCE_NORM_KINDS:
+                norms.append(_project_norm(entry))
+    except BridgeError:
+        return {"status": "invalid", "reason_code": "byum_candidate_contract_invalid"}, [], []
+
+    norm_rows = norms[: args.registry_limit]
+    candidate_rows = candidates[: args.registry_limit]
+    return {
+        "status": "available",
+        "entry_count": len(entries),
+        "governance_entry_count": len(norms),
+        "governance_returned": len(norm_rows),
+        "byum_candidate_count": len(candidates),
+        "byum_candidates_returned": len(candidate_rows),
+    }, norm_rows, candidate_rows
+
+
+def cmd_list_governance(args) -> dict:
+    decision_source, decisions = _governance_decisions(args)
+    registry_source, registry_entries, byum_candidates = _governance_registry(args)
+    statuses = (decision_source["status"], registry_source["status"])
+    complete = statuses == ("available", "available")
+    available_count = sum(status == "available" for status in statuses)
+    verdict = "complete" if complete else "partial" if available_count else "unknown"
+    return {
+        "schema": "controlcenter.controlroom.governance/1",
+        "command": "list-governance",
+        "verdict": verdict,
+        "complete": complete,
+        "sources": {
+            "decisions": decision_source,
+            "policy_registry": registry_source,
+        },
+        "counts": {
+            "decisions": len(decisions),
+            "registry_entries": len(registry_entries),
+            "byum_candidates": len(byum_candidates),
+        },
+        "decisions": decisions,
+        "registry_entries": registry_entries,
+        "byum_candidates": byum_candidates,
+    }
+
+
 def _open_inventory_ro(db_path: Path) -> sqlite3.Connection:
     """Open the inventory DB read-only via a file: URI (mode=ro) -- never write here."""
     conn = sqlite3.connect(db_path.as_uri() + "?mode=ro", uri=True)
@@ -541,6 +760,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--scripts-dir", default="", help="Directory holding lock_utils.py etc.")
     parser.add_argument("--decisions-root", default="", help="Directory holding the decision chain.")
     parser.add_argument("--inventory-db", default="", help="Path to the resource inventory SQLite file.")
+    parser.add_argument("--policy-registry", default="", help="Path to ellmos.policy-registry.v1 registry.json.")
+    parser.add_argument("--policy-registry-src", default="", help="Optional src root containing policy_registry.")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_check = sub.add_parser("check-lock")
@@ -562,6 +783,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_dec.add_argument("--status", default="OFFEN")
     p_dec.add_argument("--limit", type=int, default=50)
     p_dec.set_defaults(func=cmd_list_decisions)
+
+    p_gov = sub.add_parser("list-governance")
+    p_gov.add_argument("--status", default="OFFEN")
+    p_gov.add_argument("--decision-limit", type=int, default=50)
+    p_gov.add_argument("--registry-limit", type=int, default=200)
+    p_gov.set_defaults(func=cmd_list_governance)
 
     p_res = sub.add_parser("list-resources")
     p_res.add_argument("--type", default="all")
