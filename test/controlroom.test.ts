@@ -159,6 +159,31 @@ async function registryFixture(
   return registry;
 }
 
+async function plansFixture(
+  plans: Record<string, unknown>[] = [{
+    id: "plan:test",
+    name: "Test plan",
+    status: "aktiv",
+    verantwortlich: "fixture",
+    existiert: true,
+    letzte_aktualisierung: "2026-08-29",
+    ort: "C:/PRIVATE/PLAN.md",
+    host_varianten: ["C:/PRIVATE/HOST-PLAN.md"],
+    notiz: "PRIVATE_PLAN_NOTE_MUST_NOT_LEAK"
+  }],
+  schema = "ellmos.plans-register/1"
+): Promise<string> {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-governance-plans-"));
+  const register = path.join(root, "plans-register.json");
+  await fs.writeFile(register, JSON.stringify({
+    schema,
+    generated_at: "2026-08-29",
+    pflege: "PRIVATE_PLAN_REGISTER_NOTE_MUST_NOT_LEAK",
+    plans
+  }), "utf-8");
+  return register;
+}
+
 /** Records what the bridge was asked, and answers with a canned payload. */
 function fakeRunner(payload: BridgeResult, capture?: { args?: string[] }) {
   return async (args: string[]): Promise<BridgeResult> => {
@@ -301,12 +326,14 @@ describe("controlroom fail-closed contract", () => {
     expect(result.complete).toBe(false);
     expect(result.sources).toMatchObject({
       decisions: { status: "unconfigured" },
-      policy_registry: { status: "unconfigured" }
+      policy_registry: { status: "unconfigured" },
+      plans_register: { status: "unconfigured" }
     });
     expect(result.decisions).toEqual([]);
     expect(result.registry_entries).toEqual([]);
     expect(result.byum_candidates).toEqual([]);
-    expect(result.counts).toEqual({ decisions: 0, registry_entries: 0, byum_candidates: 0 });
+    expect(result.plans).toEqual([]);
+    expect(result.counts).toEqual({ decisions: 0, registry_entries: 0, byum_candidates: 0, plans: 0 });
   });
 
   it("fails closed when the Python interpreter is missing", async () => {
@@ -340,7 +367,7 @@ describe("controlroom fail-closed contract", () => {
 // ---------------------------------------------------------------------------
 
 describe("controlroom configuration", () => {
-  it("reads all seven environment variables", () => {
+  it("reads all eight environment variables", () => {
     const config = resolveControlroomConfig({
       ELLMOS_LOCK_SCRIPTS: "/scripts",
       ELLMOS_LOCK_ROOTS: "/roots.json",
@@ -348,6 +375,7 @@ describe("controlroom configuration", () => {
       ELLMOS_INVENTORY_DB: "/inventory.db",
       ELLMOS_POLICY_REGISTRY_PATH: "/policy-registry.json",
       ELLMOS_POLICY_REGISTRY_SRC: "/policy-registry-src",
+      ELLMOS_PLANS_REGISTER: "/plans-register.json",
       ELLMOS_PYTHON: "python3.12"
     });
     expect(config).toEqual({
@@ -357,6 +385,7 @@ describe("controlroom configuration", () => {
       inventoryDb: "/inventory.db",
       policyRegistryPath: "/policy-registry.json",
       policyRegistrySrc: "/policy-registry-src",
+      plansRegister: "/plans-register.json",
       python: "python3.12"
     });
   });
@@ -387,7 +416,8 @@ describe("controlroom configuration", () => {
       config: resolveControlroomConfig({
         ELLMOS_DECISIONS_ROOT: "/decisions",
         ELLMOS_POLICY_REGISTRY_PATH: "/policy-registry.json",
-        ELLMOS_POLICY_REGISTRY_SRC: "/policy-registry-src"
+        ELLMOS_POLICY_REGISTRY_SRC: "/policy-registry-src",
+        ELLMOS_PLANS_REGISTER: "/plans-register.json"
       }),
       runner: fakeRunner({ verdict: "complete", complete: true }, capture)
     });
@@ -395,7 +425,9 @@ describe("controlroom configuration", () => {
       "--decisions-root", "/decisions",
       "--policy-registry", "/policy-registry.json",
       "--policy-registry-src", "/policy-registry-src",
-      "list-governance", "--status", "OFFEN", "--decision-limit", "50", "--registry-limit", "200"
+      "--plans-register", "/plans-register.json",
+      "list-governance", "--status", "OFFEN", "--decision-limit", "50", "--registry-limit", "200",
+      "--plan-limit", "100"
     ]);
   });
 });
@@ -492,17 +524,20 @@ describe("controlroom rendering", () => {
       complete: false,
       sources: {
         decisions: { status: "available", stale: true, stale_source_count: 1 },
-        policy_registry: { status: "unreadable" }
+        policy_registry: { status: "unreadable" },
+        plans_register: { status: "available" }
       },
-      counts: { decisions: 1, registry_entries: 0, byum_candidates: 0 },
+      counts: { decisions: 1, registry_entries: 0, byum_candidates: 0, plans: 1 },
       decisions: [{ key: "D-1", id: "D-1", date: "2026-08-26", title: "Choose safely", status: "OFFEN", scope: "global" }],
       registry_entries: [],
-      byum_candidates: []
+      byum_candidates: [],
+      plans: [{ id: "plan:test", name: "Test plan", status: "aktiv", owner: "fixture", exists: true, updated_at: "2026-08-29" }]
     });
     expect(text).toContain("PARTIAL");
     expect(text).toContain("available");
     expect(text).toContain("unreadable");
     expect(text).toContain("stale: yes");
+    expect(text).toContain("Test plan");
     expect(text).not.toContain("TO-DECIDE-USER.txt");
   });
 });
@@ -512,11 +547,12 @@ describe("controlroom rendering", () => {
 // ---------------------------------------------------------------------------
 
 describe("controlroom governance federation", () => {
-  async function governanceConfig(registryPath: string, stale = false) {
+  async function governanceConfig(registryPath: string, stale = false, plansPath?: string) {
     return resolveControlroomConfig({
       ELLMOS_DECISIONS_ROOT: await decisionFixture(stale),
       ELLMOS_POLICY_REGISTRY_PATH: registryPath,
-      ELLMOS_POLICY_REGISTRY_SRC: POLICY_REGISTRY_FIXTURE_SRC
+      ELLMOS_POLICY_REGISTRY_SRC: POLICY_REGISTRY_FIXTURE_SRC,
+      ELLMOS_PLANS_REGISTER: plansPath ?? await plansFixture()
     });
   }
 
@@ -527,9 +563,10 @@ describe("controlroom governance federation", () => {
     expect(result.complete).toBe(true);
     expect(result.sources).toMatchObject({
       decisions: { status: "available" },
-      policy_registry: { status: "available", byum_candidate_count: 0 }
+      policy_registry: { status: "available", byum_candidate_count: 0 },
+      plans_register: { status: "available", plan_count: 1 }
     });
-    expect(result.counts).toEqual({ decisions: 1, registry_entries: 1, byum_candidates: 0 });
+    expect(result.counts).toEqual({ decisions: 1, registry_entries: 1, byum_candidates: 0, plans: 1 });
     expect(result.byum_candidates).toEqual([]);
   });
 
@@ -539,6 +576,7 @@ describe("controlroom governance federation", () => {
     const norms = result.registry_entries as Record<string, unknown>[];
     const candidates = result.byum_candidates as Record<string, unknown>[];
     const decisions = result.decisions as Record<string, unknown>[];
+    const plans = result.plans as Record<string, unknown>[];
 
     expect(Object.keys(norms[0]).sort()).toEqual([
       "adoption", "authority", "hash_status", "id", "kind", "privacy", "scope", "status", "title"
@@ -551,6 +589,7 @@ describe("controlroom governance federation", () => {
       "block_id", "decision_id", "index_key", "scope", "source_sha256"
     ]);
     expect(Object.keys(decisions[0]).sort()).toEqual(["date", "id", "key", "scope", "status", "title"]);
+    expect(Object.keys(plans[0]).sort()).toEqual(["exists", "id", "name", "owner", "status", "updated_at"]);
     expect(candidates[0].authority).toBe("advisory-pointer");
 
     const serialized = JSON.stringify(result);
@@ -558,7 +597,8 @@ describe("controlroom governance federation", () => {
       "C:/PRIVATE", "PRIVATE_POLICY_SUMMARY", "PRIVATE_POLICY_RATIONALE", "PRIVATE_POLICY_RECEIPT",
       "PRIVATE_POLICY_EXECUTION", "PRIVATE_BYUM_SUMMARY", "PRIVATE_BYUM_PROMPT", "PRIVATE_BYUM_SECURE_TEXT",
       "PRIVATE_BYUM_RECEIPT", "PRIVATE_BYUM_ACTION", "PRIVATE_DECISION_QUESTION",
-      "PRIVATE_DECISION_OPTION", "PRIVATE_DECISION_RECOMMENDATION"
+      "PRIVATE_DECISION_OPTION", "PRIVATE_DECISION_RECOMMENDATION", "C:/PRIVATE/PLAN.md",
+      "C:/PRIVATE/HOST-PLAN.md", "PRIVATE_PLAN_NOTE", "PRIVATE_PLAN_REGISTER_NOTE"
     ]) {
       expect(serialized).not.toContain(forbidden);
     }
@@ -575,6 +615,26 @@ describe("controlroom governance federation", () => {
     expect(result.registry_entries).toEqual([]);
     expect(result.byum_candidates).toEqual([]);
     expect(JSON.stringify(result)).not.toContain("Public policy title");
+  });
+
+  it.each([
+    ["foreign schema", "ellmos.plans-register/999", undefined],
+    ["invalid metadata", "ellmos.plans-register/1", [{
+      id: "plan:test",
+      name: { secret: "PRIVATE_NESTED_PLAN_MUST_NOT_LEAK" },
+      status: "aktiv",
+      verantwortlich: "fixture",
+      existiert: true,
+      letzte_aktualisierung: "2026-08-29"
+    }]]
+  ])("marks a %s plan register invalid and leaks no plan metadata", async (_label, schema, entries) => {
+    const registry = await registryFixture([policyEntry()]);
+    const plans = await plansFixture(entries, schema);
+    const result = await listGovernance({ config: await governanceConfig(registry, false, plans) });
+    expect((result.sources as Record<string, Record<string, unknown>>).plans_register.status).toBe("invalid");
+    expect(result.plans).toEqual([]);
+    expect(result.verdict).toBe("partial");
+    expect(JSON.stringify(result)).not.toContain("PRIVATE_NESTED_PLAN_MUST_NOT_LEAK");
   });
 
   it("keeps stale decisions visible when the registry is unreadable and marks the aggregate partial", async () => {

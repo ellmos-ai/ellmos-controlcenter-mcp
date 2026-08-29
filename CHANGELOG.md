@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Strategic Plan Governance Metadata (Read-Only): `controlcenter_list_governance` (2026-08-29)
+- Extend the existing federated governance view with the already ratified
+  `_control-center/_PLANS/plans-register.json` source (`ellmos.plans-register/1`) instead of adding
+  a plan kind to `policy-registry` or creating another plan store.
+- Add explicit `available`/`unconfigured`/`unreadable`/`invalid` source reporting and a bounded
+  scalar projection of plan ID, name, status, owner, existence and update date. Paths, host
+  variants, notes and register-maintenance text never leave the plan source.
+- Add `ELLMOS_PLANS_REGISTER`, a `planLimit` bound, renderer coverage and fail-closed tests for
+  foreign schemas and non-scalar metadata.
+- Add two plan-source contract cases; the verified full Vitest suite is now 238/238.
+
 ### Federated Governance Metadata (Read-Only): `controlcenter_list_governance` (2026-08-26)
 - Added one read-only MCP tool that composes allowlisted decision-index metadata with an explicitly configured `ellmos.policy-registry.v1` source; the policy side is loaded only through the canonical `PolicyRegistry.load()` API.
 - Report `available`, `unconfigured`, `unreadable`, and `invalid` per source. Partial data never claims completeness, while a valid registry with zero BYUM candidates reports an honest zero.

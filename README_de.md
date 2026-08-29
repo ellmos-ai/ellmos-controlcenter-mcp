@@ -13,7 +13,7 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-236%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-238%20passed-brightgreen.svg)](https://vitest.dev/)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
 [![Privacy](https://img.shields.io/badge/Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg)](SECURITY.md)
@@ -155,7 +155,7 @@ sequenceDiagram
 | `controlcenter_check_lock` | Prüft, ob ein Pfad gesperrt ist — einschließlich der aus Elternordnern geerbten Sperren |
 | `controlcenter_evaluate_permission` | Meldet, was das nächstgelegene `LOCK.permissions`-Register einem Agenten an diesem Pfad erlaubt |
 | `controlcenter_list_decisions` | Listet offene Nutzerentscheidungen mit Kennung, Datum, Titel und Status |
-| `controlcenter_list_governance` | Führt freigegebene Entscheidungs-, Policy- und BYUM-Metadaten rein lesend zusammen, meldet jede Quelle getrennt und übernimmt oder vollstreckt keinen Kandidaten |
+| `controlcenter_list_governance` | Führt freigegebene Entscheidungs-, Policy-, strategische Plan- und BYUM-Metadaten rein lesend zusammen, meldet jede Quelle getrennt und übernimmt oder vollstreckt keinen Kandidaten |
 | `controlcenter_list_resources` | Listet Zeilen aus dem Ressourcen-Inventar des Hosts (Systeme und/oder installierte Software) — reiner Lese-Spiegel; die Hoheit über das Register liegt beim ControlRoom-Programm, nicht hier |
 | `controlcenter_describe_resource` | Volle Zeilendetails zu einer Ressource anhand ihrer Inventar-ID, aus demselben Lese-Spiegel |
 | `controlcenter_list_available_tools` | Listet die Tools von MCP-Servern, die dieser Host **nicht** geladen hat, ohne sie zu laden — siehe [Gateway](#gateway-server-erreichen-die-der-host-nicht-geladen-hat) |
@@ -257,17 +257,19 @@ Ein fehlender, unlesbarer oder schemafremder Katalog lässt keinen Tool-Aufruf s
 ## Host-Register: Sperren, Rechte, Entscheidungen, Governance, Ressourcen
 
 Die sieben Werkzeuge oben beantworten eine andere Frage als der Rest dieses Servers: nicht
-*„Was kann ich konfigurieren?"*, sondern *„Was gilt auf dieser Maschine gerade?"* Sie lesen fünf
+*„Was kann ich konfigurieren?"*, sondern *„Was gilt auf dieser Maschine gerade?"* Sie lesen sechs
 host-lokale Register — Projektsperren, ein agent-neutrales Rechteregister, die Liste offener
-Entscheidungen, ein Policy-Register und ein Ressourcen-Inventar aus Systemen und installierter
-Software.
+Entscheidungen, ein Policy-Register, den strategischen Planindex und ein Ressourcen-Inventar aus
+Systemen und installierter Software.
 
-`controlcenter_list_governance` führt den generierten Entscheidungsindex mit einer ausdrücklich
-konfigurierten Datei im Schema `ellmos.policy-registry.v1` zusammen. Das Register wird ausschließlich
-über die kanonische API `PolicyRegistry.load()` validiert. Jede Quelle meldet `available`,
+`controlcenter_list_governance` führt den generierten Entscheidungsindex, den bestehenden
+strategischen Planindex im Schema `ellmos.plans-register/1` und eine ausdrücklich konfigurierte
+Datei im Schema `ellmos.policy-registry.v1` zusammen. Das Policy-Register wird ausschließlich über
+die kanonische API `PolicyRegistry.load()` validiert. Jede Quelle meldet `available`,
 `unconfigured`, `unreadable` oder `invalid`; Teildaten behaupten nie Vollständigkeit, und ein
-gültiges Register ohne BYUM-Kandidaten meldet ehrlich null. BYUM-Zeilen bleiben ausstehende,
-beratende Zeiger ohne Übernahme- oder Ausführungsautorität.
+gültiges Register ohne BYUM-Kandidaten meldet ehrlich null. Planpfade, Notizen und Hostvarianten
+bleiben in `_PLANS`; BYUM-Zeilen bleiben ausstehende, beratende Zeiger ohne Übernahme- oder
+Ausführungsautorität.
 
 `controlcenter_list_resources` und `controlcenter_describe_resource` sind ein reiner Lese-Spiegel
 von `.SYNC/_inventory/inventory.db`. Die Register-Hoheit liegt bei der eigenen Resolver-Rolle
@@ -307,6 +309,7 @@ nicht eingerichtet hat, gibt es sie schlicht nicht:
 | `ELLMOS_INVENTORY_DB` | Pfad zur Ressourcen-Inventar-SQLite-Datei (`.SYNC/_inventory/inventory.db`). Pflicht für `controlcenter_list_resources` und `controlcenter_describe_resource`. |
 | `ELLMOS_POLICY_REGISTRY_PATH` | Expliziter Pfad zu einem Register im Schema `ellmos.policy-registry.v1`. Pflicht für die Policy-Seite von `controlcenter_list_governance`. |
 | `ELLMOS_POLICY_REGISTRY_SRC` | Optionaler Quellpfad mit dem kanonischen Python-Paket `policy_registry`. |
+| `ELLMOS_PLANS_REGISTER` | Expliziter Pfad zu `_control-center/_PLANS/plans-register.json` im Schema `ellmos.plans-register/1`. Pflicht für die Planseite von `controlcenter_list_governance`. |
 | `ELLMOS_PYTHON` | Interpreter für die Brücke. Standard `python`, Rückfall auf `python3`. |
 
 ### Was diese Werkzeuge bewusst nicht zurückgeben
@@ -316,9 +319,9 @@ Fragetext, die Optionen oder die Empfehlung, die persönliche Umstände enthalte
 stehen im Register selbst.
 
 `controlcenter_list_governance` verwendet feste Feld-Allowlisten. Das Werkzeug gibt niemals
-Quell-URIs, Fragen, Optionen, Empfehlungen, Begründungen, Prompts, Volltexte, Gründe,
-Secure-/Avatar-Inhalte, Aktions- oder Ausführungsdaten und Receipts zurück und löst keinen
-Registerzeiger auf.
+Quell-URIs oder Planpfade, Hostvarianten, Plannotizen, Fragen, Optionen, Empfehlungen,
+Begründungen, Prompts, Volltexte, Gründe, Secure-/Avatar-Inhalte, Aktions- oder Ausführungsdaten
+und Receipts zurück und löst keinen Registerzeiger auf.
 
 ### Was ein Vollscan kostet
 
@@ -611,7 +614,7 @@ Dieser MCP-Server ist Teil des **[ellmos-ai](https://github.com/ellmos-ai)**-Ök
 | [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 22 | Code-Analyse, JSON-Reparatur, Imports, Diffs, Regex | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
 | [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | Dateireparatur, Formatkonvertierung, Batch-Operationen | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 19 | n8n-Workflow-Verwaltung über KI-Assistenten | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
-| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **34** | **MCP-Stack-, Tool- und Skill-Discovery; Profilauflösung und Audit; rein lesende Host-Register für Sperren, Rechte, Entscheidungen, Policies und Ressourcen** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
+| **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **34** | **MCP-Stack-, Tool- und Skill-Discovery; Profilauflösung und Audit; rein lesende Host-Register für Sperren, Rechte, Entscheidungen, Policies, Pläne und Ressourcen** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
 | [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 45 | Local-first LLM-Gedächtnis, Wissen, Zustand, Routing, Schwarm-Orchestrierung | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
 | [ServerCommander](https://github.com/ellmos-ai/ellmos-servercommander-mcp) | 8 | Server-Operationen: Health-Checks, Log-Analyse, Deploy-Dry-Runs, Mail-Diagnose | [`ellmos-servercommander-mcp`](https://www.npmjs.com/package/ellmos-servercommander-mcp) (alpha) |
 | [Blender Use](https://github.com/ellmos-ai/ellmos-blender-use-mcp) | 3 | Headless Blender-Asset-QA und FBX-Reimport-Verifikation | [`ellmos-blender-use-mcp`](https://www.npmjs.com/package/ellmos-blender-use-mcp) (alpha) |

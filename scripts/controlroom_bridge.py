@@ -23,7 +23,8 @@ What this bridge adds is only *composition* the canonical CLI does not offer:
     honestly when the budget ran out (a full scan takes minutes over cloud storage).
   * `list-decisions` reads the generated decision index and reports its staleness.
   * `list-governance` combines that decision projection with allowlisted metadata
-    loaded through the canonical ``PolicyRegistry.load()`` API.
+    loaded through the canonical ``PolicyRegistry.load()`` API and the existing
+    ``ellmos.plans-register/1`` strategic-plan index.
   * `list-resources`/`describe-resource` read `.SYNC/_inventory/inventory.db` directly (no
     canonical CLI exists for it -- it is plain schema data, not embedded business logic like
     the modules above). Register authority sits with the ControlRoom programme's own
@@ -40,7 +41,7 @@ Usage:
     python controlroom_bridge.py --scripts-dir DIR list-locks [--roots-file F] [--budget-seconds N]
     python controlroom_bridge.py --scripts-dir DIR evaluate-permission PATH AGENT ACTION
     python controlroom_bridge.py --decisions-root DIR list-decisions [--status S] [--limit N]
-    python controlroom_bridge.py --decisions-root DIR --policy-registry FILE list-governance
+    python controlroom_bridge.py --decisions-root DIR --policy-registry FILE --plans-register FILE list-governance
     python controlroom_bridge.py --inventory-db FILE list-resources [--type systems|software|all] [--host H] [--limit N]
     python controlroom_bridge.py --inventory-db FILE describe-resource ID [--type systems|software]
 """
@@ -65,6 +66,7 @@ SCHEMA = "controlcenter.controlroom/1"
 DECISION_PUBLIC_FIELDS = ("key", "id", "date", "title", "status", "scope", "source_file")
 GOVERNANCE_DECISION_FIELDS = ("key", "id", "date", "title", "status", "scope")
 GOVERNANCE_NORM_KINDS = {"policy", "rule", "decision"}
+PLANS_SCHEMA = "ellmos.plans-register/1"
 BYUM_PROTOCOL = "byum.decision-prediction.v2"
 BYUM_PROJECTION_STATUSES = {"pending", "decision-observed", "validated"}
 
@@ -590,11 +592,68 @@ def _governance_registry(args) -> tuple[dict, list[dict], list[dict]]:
     }, norm_rows, candidate_rows
 
 
+def _governance_plans(args) -> tuple[dict, list[dict]]:
+    if not args.plans_register:
+        return {"status": "unconfigured"}, []
+    register_path = Path(args.plans_register)
+    if not register_path.is_file():
+        return {"status": "unreadable", "reason_code": "plans_register_not_found"}, []
+    try:
+        if register_path.stat().st_size > 1_048_576:
+            return {"status": "invalid", "reason_code": "plans_register_too_large"}, []
+        data = json.loads(register_path.read_text(encoding="utf-8"))
+    except OSError:
+        return {"status": "unreadable", "reason_code": "plans_register_unreadable"}, []
+    except json.JSONDecodeError:
+        return {"status": "invalid", "reason_code": "plans_register_validation_failed"}, []
+
+    if not isinstance(data, dict) or data.get("schema") != PLANS_SCHEMA:
+        return {"status": "invalid", "reason_code": "plans_register_validation_failed"}, []
+    entries = data.get("plans")
+    if not isinstance(entries, list) or any(not isinstance(entry, dict) for entry in entries):
+        return {"status": "invalid", "reason_code": "plans_register_validation_failed"}, []
+
+    projected: list[dict] = []
+    try:
+        for entry in entries:
+            exists = entry.get("existiert")
+            if not isinstance(exists, bool):
+                raise BridgeError("plan existence metadata must be boolean")
+            updated_at = entry.get("letzte_aktualisierung")
+            if updated_at is not None:
+                updated_at = _required_text(updated_at)
+            projected.append({
+                "id": _required_text(entry.get("id")),
+                "name": _required_text(entry.get("name")),
+                "status": _required_text(entry.get("status")),
+                "owner": _required_text(entry.get("verantwortlich")),
+                "exists": exists,
+                "updated_at": updated_at,
+            })
+    except (BridgeError, AttributeError):
+        return {"status": "invalid", "reason_code": "plans_projection_validation_failed"}, []
+
+    rows = projected[: args.plan_limit]
+    generated_at = data.get("generated_at")
+    if generated_at is not None:
+        try:
+            generated_at = _required_text(generated_at)
+        except BridgeError:
+            return {"status": "invalid", "reason_code": "plans_register_validation_failed"}, []
+    return {
+        "status": "available",
+        "plan_count": len(projected),
+        "returned": len(rows),
+        "generated_at": generated_at,
+    }, rows
+
+
 def cmd_list_governance(args) -> dict:
     decision_source, decisions = _governance_decisions(args)
     registry_source, registry_entries, byum_candidates = _governance_registry(args)
-    statuses = (decision_source["status"], registry_source["status"])
-    complete = statuses == ("available", "available")
+    plans_source, plans = _governance_plans(args)
+    statuses = (decision_source["status"], registry_source["status"], plans_source["status"])
+    complete = statuses == ("available", "available", "available")
     available_count = sum(status == "available" for status in statuses)
     verdict = "complete" if complete else "partial" if available_count else "unknown"
     return {
@@ -605,15 +664,18 @@ def cmd_list_governance(args) -> dict:
         "sources": {
             "decisions": decision_source,
             "policy_registry": registry_source,
+            "plans_register": plans_source,
         },
         "counts": {
             "decisions": len(decisions),
             "registry_entries": len(registry_entries),
             "byum_candidates": len(byum_candidates),
+            "plans": len(plans),
         },
         "decisions": decisions,
         "registry_entries": registry_entries,
         "byum_candidates": byum_candidates,
+        "plans": plans,
     }
 
 
@@ -762,6 +824,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--inventory-db", default="", help="Path to the resource inventory SQLite file.")
     parser.add_argument("--policy-registry", default="", help="Path to ellmos.policy-registry.v1 registry.json.")
     parser.add_argument("--policy-registry-src", default="", help="Optional src root containing policy_registry.")
+    parser.add_argument("--plans-register", default="", help="Path to ellmos.plans-register/1 plans-register.json.")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_check = sub.add_parser("check-lock")
@@ -788,6 +851,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_gov.add_argument("--status", default="OFFEN")
     p_gov.add_argument("--decision-limit", type=int, default=50)
     p_gov.add_argument("--registry-limit", type=int, default=200)
+    p_gov.add_argument("--plan-limit", type=int, default=100)
     p_gov.set_defaults(func=cmd_list_governance)
 
     p_res = sub.add_parser("list-resources")
