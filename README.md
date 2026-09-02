@@ -114,7 +114,7 @@ sequenceDiagram
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.6.0`
+- **Version:** `0.7.0`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI checks:** `npm run test` and `npm run build`

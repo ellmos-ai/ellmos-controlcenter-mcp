@@ -6,7 +6,7 @@
 - TypeScript MCP scaffold in place
 - Initial discovery and profile tools implemented
 - Tests for core logic available
-- Source version `0.6.0`; publication of newer unreleased changes is not implied
+- Source version `0.7.0`, published to npm on 2026-09-02 (governance + plan federation); publication of newer unreleased changes is not implied
 - ControlCenter is no longer read-only in the request path: the gateway forwards tool calls to
   backend MCP servers under a policy gate and an audit log
 - Optional actual-self producer implemented fail-closed; no host trust store or live routing activation is configured by the package

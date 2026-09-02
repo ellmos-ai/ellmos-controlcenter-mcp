@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.7.0 - 2026-09-02
+
 ### Strategic Plan Governance Metadata (Read-Only): `controlcenter_list_governance` (2026-08-29)
 - Extend the existing federated governance view with the already ratified
   `_control-center/_PLANS/plans-register.json` source (`ellmos.plans-register/1`) instead of adding
@@ -19,6 +21,10 @@
 - Keep source URIs, questions, options, recommendations, rationale, prompts, full texts, reasons, secure/avatar content, action or execution payloads, and receipts outside the projection; registry pointers are never dereferenced.
 - Keep BYUM rows strictly pending advisory pointers. A projection that claims execution authority invalidates the registry side and yields no candidate data; this view never adopts, executes, or writes.
 - Added eleven TDD cases across configuration, rendering, source states, canonical-load validation, exact scalar allowlists on both sources, zero candidates, stale partial output, and the BYUM authority boundary. Tool count is now 34 and the verified full Vitest suite is 236/236.
+
+## 0.6.0 - 2026-08-25
+
+_Published from `261e147` on 2026-08-25 without its own changelog section; the entries below were listed under Unreleased until 0.7.0._
 
 ### Resource Inventory Register (Read-Only Mirror): `controlcenter_list_resources` / `controlcenter_describe_resource` (2026-08-25)
 - Added two new read-only host-register tools, `controlcenter_list_resources` and `controlcenter_describe_resource`, extending `scripts/controlroom_bridge.py` with `list-resources`/`describe-resource` subcommands that read `.SYNC/_inventory/inventory.db` (systems + software tables) directly via read-only SQLite (`?mode=ro`) — no new npm dependency, same bridge pattern already used for locks/permissions/decisions.

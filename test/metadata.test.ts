@@ -16,7 +16,7 @@ describe("metadata & manifest parity", () => {
   const ciYml = fs.readFileSync(path.join(root, ".github", "workflows", "ci.yml"), "utf-8");
 
   it("ensures version parity across package.json, server.json, and glama.json", () => {
-    expect(packageJson.version).toBe("0.6.0");
+    expect(packageJson.version).toBe("0.7.0");
     expect(packageJson.version).toBe(serverJson.version);
     expect(packageJson.version).toBe(glamaJson.version);
     expect(serverJson.packages[0].version).toBe(packageJson.version);
