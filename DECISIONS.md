@@ -154,14 +154,17 @@ zum Delegieren (die Daten sind reine Schema-Tabellen, keine eingebettete Fachlog
 zu delegieren wie bei den Lock-Tools. Fail-closed gilt identisch: fehlt `ELLMOS_INVENTORY_DB` oder
 die Datei, ist das Ergebnis `unknown`/`unavailable`, nie ein stillschweigend leeres Inventar.
 
-## Governance-Lesespiegel: föderieren, nicht kanonisieren [C 2026-08-26]
+## Governance-Lesespiegel: föderieren, nicht kanonisieren [C 2026-08-26; Plansicht ergänzt 2026-08-29]
 
-`controlcenter_list_governance` führt zwei bereits bestehende Quellen nur für eine rein lesende
-Operator-Sicht zusammen: den generierten Entscheidungsindex und ein explizit konfiguriertes
+`controlcenter_list_governance` führt drei bereits bestehende Quellen nur für eine rein lesende
+Operator-Sicht zusammen: den generierten Entscheidungsindex, den strategischen Planindex
+`ellmos.plans-register/1` aus `_control-center/_PLANS` und ein explizit konfiguriertes
 `ellmos.policy-registry.v1`-Register. Der Entscheidungsindex bleibt über die bestehende
 List-Decisions-Logik angebunden; das Policy-Register wird ausschließlich durch die kanonische
 `PolicyRegistry.load()`-API geladen und validiert. ControlCenter erhält dadurch keine neue
-Register-Hoheit und führt keine zweite Policy- oder Entscheidungskanonik ein.
+Register-Hoheit und führt keine zweite Policy-, Plan- oder Entscheidungskanonik ein. Die Plansicht
+gibt nur ID, Name, Status, Verantwortlichen, Existenz und Aktualisierungsdatum aus; Pfade, Notizen
+und Hostvarianten verbleiben im Quellregister.
 
 Die Projektion ist eine feste Allowlist und löst keine Quellzeiger auf. Insbesondere bleiben
 Fragetexte, Optionen, Empfehlungen, Begründungen, Prompts, Volltexte, sichere oder Avatar-Inhalte,

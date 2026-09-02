@@ -43,6 +43,8 @@ export const CONTROLROOM_ENV = {
   policyRegistry: "ELLMOS_POLICY_REGISTRY_PATH",
   /** Optional src root containing the canonical policy_registry Python package. */
   policyRegistrySrc: "ELLMOS_POLICY_REGISTRY_SRC",
+  /** Explicit path to the ellmos.plans-register/1 metadata index. */
+  plansRegister: "ELLMOS_PLANS_REGISTER",
   /** Python interpreter; defaults to "python" with a "python3" fallback. */
   python: "ELLMOS_PYTHON"
 } as const;
@@ -54,6 +56,7 @@ export interface ControlroomConfig {
   inventoryDb: string;
   policyRegistryPath: string;
   policyRegistrySrc: string;
+  plansRegister: string;
   python: string;
 }
 
@@ -67,6 +70,7 @@ export function resolveControlroomConfig(
     inventoryDb: env[CONTROLROOM_ENV.inventory]?.trim() ?? "",
     policyRegistryPath: env[CONTROLROOM_ENV.policyRegistry]?.trim() ?? "",
     policyRegistrySrc: env[CONTROLROOM_ENV.policyRegistrySrc]?.trim() ?? "",
+    plansRegister: env[CONTROLROOM_ENV.plansRegister]?.trim() ?? "",
     python: env[CONTROLROOM_ENV.python]?.trim() || "python"
   };
 }
@@ -294,29 +298,32 @@ function emptyGovernance(config: ControlroomConfig): BridgeResult {
     complete: false,
     sources: {
       decisions: { status: config.decisionsRoot ? "unreadable" : "unconfigured" },
-      policy_registry: { status: config.policyRegistryPath ? "unreadable" : "unconfigured" }
+      policy_registry: { status: config.policyRegistryPath ? "unreadable" : "unconfigured" },
+      plans_register: { status: config.plansRegister ? "unreadable" : "unconfigured" }
     },
-    counts: { decisions: 0, registry_entries: 0, byum_candidates: 0 },
+    counts: { decisions: 0, registry_entries: 0, byum_candidates: 0, plans: 0 },
     decisions: [],
     registry_entries: [],
-    byum_candidates: []
+    byum_candidates: [],
+    plans: []
   };
 }
 
 /**
- * Federated, allowlist-only view of decision-index metadata and a canonically
- * validated policy registry. The bridge performs all source validation and never
- * dereferences a registry pointer.
+ * Federated, allowlist-only view of decision-index metadata, a canonically
+ * validated policy registry, and the existing strategic-plan index. The bridge
+ * performs all source validation and never dereferences a registry pointer.
  */
 export async function listGovernance(
   options: QueryOptions & {
     status?: string;
     decisionLimit?: number;
     registryLimit?: number;
+    planLimit?: number;
   } = {}
 ): Promise<BridgeResult> {
   const config = options.config ?? resolveControlroomConfig();
-  if (!config.decisionsRoot && !config.policyRegistryPath) {
+  if (!config.decisionsRoot && !config.policyRegistryPath && !config.plansRegister) {
     return emptyGovernance(config);
   }
 
@@ -324,11 +331,13 @@ export async function listGovernance(
   if (config.decisionsRoot) args.push("--decisions-root", config.decisionsRoot);
   if (config.policyRegistryPath) args.push("--policy-registry", config.policyRegistryPath);
   if (config.policyRegistrySrc) args.push("--policy-registry-src", config.policyRegistrySrc);
+  if (config.plansRegister) args.push("--plans-register", config.plansRegister);
   args.push(
     "list-governance",
     "--status", options.status ?? "OFFEN",
     "--decision-limit", String(options.decisionLimit ?? 50),
-    "--registry-limit", String(options.registryLimit ?? 200)
+    "--registry-limit", String(options.registryLimit ?? 200),
+    "--plan-limit", String(options.planLimit ?? 100)
   );
 
   const result = await runnerFor({ ...options, config })(args, options.timeoutMs ?? 30_000);
@@ -553,8 +562,10 @@ export function formatGovernance(result: BridgeResult): string {
   const decisions = (result.decisions as Record<string, unknown>[] | undefined) ?? [];
   const registryEntries = (result.registry_entries as Record<string, unknown>[] | undefined) ?? [];
   const candidates = (result.byum_candidates as Record<string, unknown>[] | undefined) ?? [];
+  const plans = (result.plans as Record<string, unknown>[] | undefined) ?? [];
   const decisionSource = sources.decisions ?? { status: "unreadable" };
   const registrySource = sources.policy_registry ?? { status: "unreadable" };
+  const planSource = sources.plans_register ?? { status: "unreadable" };
   const lines = [
     "# Federated governance metadata (read-only)",
     "",
@@ -564,7 +575,8 @@ export function formatGovernance(result: BridgeResult): string {
     "| Source | Status | Detail |",
     "|---|---|---|",
     `| decisions | ${String(decisionSource.status)} | stale: ${decisionSource.stale === true ? "yes" : "no"}; entries: ${decisions.length} |`,
-    `| policy_registry | ${String(registrySource.status)} | norms: ${registryEntries.length}; BYUM candidates: ${candidates.length} |`
+    `| policy_registry | ${String(registrySource.status)} | norms: ${registryEntries.length}; BYUM candidates: ${candidates.length} |`,
+    `| plans_register | ${String(planSource.status)} | plans: ${plans.length} |`
   ];
 
   if (decisions.length > 0) {
@@ -586,6 +598,25 @@ export function formatGovernance(result: BridgeResult): string {
           `| ${String(entry.authority ?? "")} | ${String(entry.privacy ?? "")} | ${String(entry.hash_status ?? "")} |`
       );
     }
+  }
+
+  if (plans.length > 0) {
+    lines.push(
+      "", "## Strategic plan index", "",
+      "| ID | Name | Status | Owner | Exists | Updated |",
+      "|---|---|---|---|---|---|"
+    );
+    for (const plan of plans) {
+      lines.push(
+        `| ${String(plan.id ?? "")} | ${String(plan.name ?? "")} | ${String(plan.status ?? "")} ` +
+          `| ${String(plan.owner ?? "")} | ${plan.exists === true ? "yes" : "no"} ` +
+          `| ${String(plan.updated_at ?? "")} |`
+      );
+    }
+    lines.push(
+      "",
+      "Plan paths, notes and host variants stay in the plan register. This view is not a plan authority."
+    );
   }
 
   if (candidates.length > 0) {
