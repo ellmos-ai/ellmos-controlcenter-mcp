@@ -69,7 +69,7 @@ graph TD
     end
     
     subgraph UI ["Management Interface"]
-        B <-->|HTTP / WebSocket (127.0.0.1:3737)| J["Local Dashboard (dashboard.ts)"]
+        B <-->|"HTTP / WebSocket (127.0.0.1:3737)"| J["Local Dashboard (dashboard.ts)"]
     end
 ```
 
