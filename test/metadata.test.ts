@@ -14,6 +14,7 @@ describe("metadata & manifest parity", () => {
   const securityMd = fs.readFileSync(path.join(root, "SECURITY.md"), "utf-8");
   const license = fs.readFileSync(path.join(root, "LICENSE"), "utf-8");
   const ciYml = fs.readFileSync(path.join(root, ".github", "workflows", "ci.yml"), "utf-8");
+  const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf-8");
 
   it("ensures version parity across package.json, server.json, and glama.json", () => {
     expect(packageJson.version).toBe("0.7.0");
@@ -40,8 +41,8 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-08-29");
-    expect(llmsTxt).toContain("Test status: 238/238 Vitest tests passing (100% green)");
+    expect(llmsTxt).toContain("Last-checked: 2026-09-09");
+    expect(llmsTxt).toContain("Test status: 241/241 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("MIT");
@@ -59,11 +60,12 @@ describe("metadata & manifest parity", () => {
       "Ecosystem-ellmos--ai-blue.svg",
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
-      "Vitest-238%20passed-brightgreen.svg",
+      "Vitest-241%20passed-brightgreen.svg",
       "MCP%20Tools-34-blue.svg",
       "Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg",
       "Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg",
       "Security-Local--First%20%7C%20Policy--Gated-blue.svg",
+      "Security%20SLA-48h%20SLA-blue.svg",
       "actions/workflows/ci.yml/badge.svg",
     ];
 
@@ -102,6 +104,7 @@ describe("metadata & manifest parity", () => {
     expect(securityMd).toContain("Gateway Safety Model & Eigendark Invariants");
     expect(securityMd).toContain("controlcenter_invoke");
     expect(securityMd).toContain("gateway-audit.jsonl");
+    expect(securityMd).toContain("security@open-bricks.org");
     expect(securityMd).toContain("security@ellmos.ai");
     expect(securityMd).toContain("support@lukasgeiger.com");
     expect(securityMd).toContain("lukas@open-bricks.org");
@@ -109,13 +112,38 @@ describe("metadata & manifest parity", () => {
     expect(securityMd).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp/security/advisories");
   });
 
-  it("ensures CI workflow is properly configured with Node.js matrix strategy", () => {
+  it("ensures SECURITY.md documents SLAs, umbrella contact, and supported versions", () => {
+    expect(securityMd).toContain("48 hours");
+    expect(securityMd).toContain("48 Stunden");
+    expect(securityMd).toContain("5 business days");
+    expect(securityMd).toContain("5 Werktagen");
+    expect(securityMd).toContain("Supported Versions");
+    expect(securityMd).toContain("Unterstützte Versionen");
+    expect(securityMd).toContain("0.7.x");
+  });
+
+  it("ensures CI workflow is properly configured with multi-OS and Node.js matrix strategy", () => {
     expect(ciYml).toContain("actions/checkout@v4");
     expect(ciYml).toContain("actions/setup-node@v4");
-    expect(ciYml).toContain("matrix:");
-    expect(ciYml).toContain("node-version: [18.x, 20.x, 22.x]");
+    expect(ciYml).toContain("os: [ubuntu-latest, windows-latest, macos-latest]");
+    expect(ciYml).toContain("node-version: [18.x, 20.x, 22.x, 24.x]");
     expect(ciYml).toContain("npm run test");
     expect(ciYml).toContain("npm run build");
+  });
+
+  it("ensures CI workflow includes concurrency control and packaging verification", () => {
+    expect(ciYml).toContain("concurrency:");
+    expect(ciYml).toContain("cancel-in-progress: true");
+    expect(ciYml).toContain("npm pack --dry-run");
+  });
+
+  it("ensures .gitignore is hardened against multi-host conflict files and lock artifacts", () => {
+    expect(gitignore).toContain("*.sync-conflict-*");
+    expect(gitignore).toContain("*-CONFLIT-*");
+    expect(gitignore).toContain("LOCK.*");
+    expect(gitignore).toContain("!package-lock.json");
+    expect(gitignore).toContain(".pytest_cache/");
+    expect(gitignore).toContain(".coverage");
   });
 
   it("ensures sibling ecosystem partner matrix exists in both READMEs", () => {

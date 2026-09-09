@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Technical Hygiene, Multi-OS CI Matrix, .gitignore Hardening & Security SLA Parity (2026-09-09)
+- **CI Workflow Hardening (`ci.yml`):** Added concurrency control (`${{ github.workflow }}-${{ github.ref }}` with `cancel-in-progress: true`), multi-OS runner matrix (`ubuntu-latest`, `windows-latest`, `macos-latest`), Node.js runtime matrix expansion (`18.x`, `20.x`, `22.x`, `24.x`), and packaging dry-run verification (`npm pack --dry-run`).
+- **.gitignore Hardening:** Added explicit patterns for multi-host synchronization conflict copies (`*.sync-conflict-*`, `*.conflict`, `*-CONFLIT-*`, `*-conflict-*`, `*.sync-temp-*`), multi-agent coordination locks (`LOCK.*`, `*.lock`, with `!package-lock.json` exception), and temporary/cache directories.
+- **Security Policy SLA Parity (`SECURITY.md`):** Added umbrella security contact (`security@open-bricks.org`), 48-hour response SLA, 5 business days triage commitment, and bilingual Supported Versions table (`0.7.x`).
+- **README & llms.txt Parity:** Added Security SLA badge (`48h SLA`), synchronized Vitest badge to 241 passed, and refreshed `llms.txt` timestamp to 2026-09-09.
+- **Metadata Contract Tests (`test/metadata.test.ts`):** Added automated assertions verifying CI concurrency, packaging dry-run, .gitignore hardening, security SLAs, umbrella contact, and supported versions table (15/15 metadata tests, 241/241 full suite passing).
+
 ## 0.7.0 - 2026-09-02
 
 ### Strategic Plan Governance Metadata (Read-Only): `controlcenter_list_governance` (2026-08-29)

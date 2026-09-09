@@ -42,13 +42,21 @@ Since version 0.5.0, ControlCenter includes a policy-gated gateway (`controlcent
 
 ### Reporting a Vulnerability
 
-If you discover a security vulnerability, please report it responsibly:
+If you discover a security vulnerability, please report it privately via GitHub **[Private Vulnerability Reporting](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/security/advisories)** or directly via email:
+- **Umbrella Security Contact:** [security@open-bricks.org](mailto:security@open-bricks.org)
+- **Security Contact:** [security@ellmos.ai](mailto:security@ellmos.ai)
+- **Maintainer:** [support@lukasgeiger.com](mailto:support@lukasgeiger.com)
+- **Maintainer:** [lukas@open-bricks.org](mailto:lukas@open-bricks.org)
 
-1. **GitHub Security Advisories:** Open a private advisory via [GitHub Security Advisories](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/security/advisories)
-2. **Security Contact:** Email us directly:
-   - `security@ellmos.ai`
-   - `support@lukasgeiger.com`
-   - `lukas@open-bricks.org`
+We acknowledge receipt of vulnerability reports within 48 hours, provide a preliminary triage assessment within 5 business days, and coordinate remediation steps prior to public disclosure.
+
+### Supported Versions
+
+| Version | Supported | Notes |
+|---|---|---|
+| 0.7.x | :white_check_mark: Supported | Active release branch |
+| < 0.7.0 | :x: Unsupported | Deprecated alpha releases |
+
 3. **Issue Tracker (Non-Sensitive Only):** [GitHub Issues](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/issues)
 
 ---
@@ -86,12 +94,20 @@ Seit Version 0.5.0 verfügt ControlCenter über ein richtliniengesteuertes Gatew
 
 ### Meldung von Sicherheitslücken
 
-Sicherheitsrelevante Schwachstellen melden Sie bitte vertraulich über:
+Sicherheitsrelevante Schwachstellen melden Sie bitte vertraulich über die GitHub-Funktion **[Private Vulnerability Reporting](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/security/advisories)** oder direkt per E-Mail:
+- **Sicherheitskontakt (Dachorganisation):** [security@open-bricks.org](mailto:security@open-bricks.org)
+- **Sicherheitskontakt:** [security@ellmos.ai](mailto:security@ellmos.ai)
+- **Maintainer:** [support@lukasgeiger.com](mailto:support@lukasgeiger.com)
+- **Maintainer:** [lukas@open-bricks.org](mailto:lukas@open-bricks.org)
 
-1. **GitHub Security Advisories:** [GitHub Security Advisories](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/security/advisories)
-2. **Direkter Sicherheitskontakt:**
-   - `security@ellmos.ai`
-   - `support@lukasgeiger.com`
-   - `lukas@open-bricks.org`
+Wir bestätigen den Eingang von Meldungen innerhalb von 48 Stunden, liefern innerhalb von 5 Werktagen eine vorläufige Triage-Einschätzung und stimmen Behebungsmaßnahmen vor einer Veröffentlichung ab.
+
+### Unterstützte Versionen
+
+| Version | Unterstützt | Hinweise |
+|---|---|---|
+| 0.7.x | :white_check_mark: Ja | Aktiver Release-Zweig |
+| < 0.7.0 | :x: Nein | Veraltete Alpha-Versionen |
+
 3. **Öffentlicher Issue Tracker (nur unkritische Fragen):** [GitHub Issues](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/issues)
 

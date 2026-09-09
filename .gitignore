@@ -10,10 +10,34 @@ _reports/
 # mcp-publisher login artifacts (credentials, never commit)
 .mcpregistry_*
 
-# lock system (multi-agent coordination, host-local, never commit)
+# multi-host sync conflict copies
+*.sync-conflict-*
+*.conflict
+*-CONFLIT-*
+*-conflict-*
+*.sync-temp-*
+
+# multi-agent locks (multi-agent coordination, host-local, never commit)
+LOCK.*
+*.lock
 LOCK*.txt
+!package-lock.json
+
+# temporary files & backups
+*.tmp
+*.bak
+*.swp
+*~
 
 # python cache
 __pycache__/
 *.pyc
+
+# test & coverage caches
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.wheel-smoke/
+
 

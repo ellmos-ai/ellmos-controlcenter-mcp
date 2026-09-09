@@ -2,8 +2,8 @@
 
 > MCP control-plane server for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, a local dashboard, and a policy-gated, audited gateway that lists and invokes tools on backend MCP servers the host has not loaded. It prepares configuration and does not change running sessions.
 
-Last-checked: 2026-08-29
-Test status: 238/238 Vitest tests passing (100% green)
+Last-checked: 2026-09-09
+Test status: 241/241 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
 MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
@@ -124,6 +124,6 @@ ellmos-controlcenter-mcp
 - `src/mcpCatalog.ts`: reads `mcps.catalog.v1.json` and joins it onto the directory scan; fail-soft on a missing, unreadable, or foreign-schema catalog.
 - `src/bundles.ts`: capability bundle definitions, suggestions, and tool assignment helpers.
 - `src/dashboard.ts`: local dashboard server.
-- `test/controlroom.test.ts`, `test/catalog.test.ts`, and `test/semanticRouting.test.ts`: unit and integration coverage for the host-register bridge, canonical policy-registry validation, exact scalar governance allowlists, catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, and semantic-route validation (238 tests passing in the full suite).
+- `test/controlroom.test.ts`, `test/catalog.test.ts`, and `test/semanticRouting.test.ts`: unit and integration coverage for the host-register bridge, canonical policy-registry validation, exact scalar governance allowlists, catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, and semantic-route validation (241 tests passing in the full suite).
 
-## Last-checked: 2026-08-29
+## Last-checked: 2026-09-09
