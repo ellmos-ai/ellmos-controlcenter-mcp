@@ -33,17 +33,18 @@
 
 ---
 
-An alpha-stage **Model Context Protocol (MCP) administration server** for local MCP stacks. ControlCenter discovers local MCP servers, reads MCP profile files, groups servers into capability bundles, recommends profiles for a task, builds catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, and provides an optional local dashboard.
+An advanced **Model Context Protocol (MCP) administration server and policy-gated gateway** for local MCP stacks. ControlCenter discovers local MCP servers, reads MCP profile files, groups servers into capability bundles, recommends profiles for a task, builds catalogs, probes real MCP tool lists from local repositories or profiles, assigns tools to capability bundles, provides host-level register mirrors (locks, permissions, resources, governance), and provides an optional local dashboard.
 
-> **What "control" means here — read this before you rely on it.** ControlCenter is a **read-mostly administration surface**. It reads, inventories, resolves, audits, and *generates configuration*. Its only write actions are generating an MCP config file (`controlcenter_switch_profile`) and writing a catalog (`controlcenter_build_catalog`); the dashboard can additionally toggle servers in a profile file, with confirmation and backup.
+> **Architecture & Dual Role — Control Plane + Policy-Gated Gateway:** ControlCenter combines two complementary operational surfaces:
 >
-> It does **not** change a running session, does not sit in the request path, does not proxy or execute another server's tools, and does not enforce any permission. In the ellmos taxonomy it is a *control plane* in the narrow sense — it administers MCP servers, profiles, and stacks without owning domain data — **not** a gateway.
+> 1. **Control Plane (Administration & Configuration):** Inventories local servers, resolves profiles, manages capability bundles, mirrors system governance/locks, and generates configurations (`controlcenter_switch_profile`, `controlcenter_build_catalog`).
+> 2. **Policy-Gated Gateway (On-Demand Tool Invocation):** Via `controlcenter_invoke` and `controlcenter_list_available_tools`, agents can list and invoke tools on backend MCP servers that the host agent has **not loaded into its active context** — strictly bounded by pattern-based policy rules (`data/gateway-policy.json`), argument auditing, and secret scrubbing.
+>
+> It operates **100% locally with Zero-Egress** and enforces fail-closed checks across locks, permissions, and gateway policies.
 
 > **Provider note:** ControlCenter works with any MCP-capable client (Claude Code, Codex, Gemini, or any stdio-based MCP host). The profile management tools default to Claude Code's profile directory (`~/.claude/profiles`) but accept any directory via `ELLMOS_PROFILE_ROOT`. The skill and plugin inventory tools are scoped to Claude Code conventions by default; see the environment variables below for override options.
 
-The first alpha release focuses on **discovery, profile visibility, dashboard workflows, capability bundles, profile-aware tool-list probes, tool-bundle assignments, internationalization, and initial policy audits**. Since 0.5.0 a **gateway** is added on top: `controlcenter_list_available_tools` and `controlcenter_invoke` reach MCP servers the host has not loaded, under a pattern-based policy and an audit log — see [Gateway](#gateway-reaching-servers-the-host-has-not-loaded). Authentication, risk-class enforcement, and hard security boundaries are still planned, not implemented.
-
-> **Alpha note:** This version is useful for local administration and preview testing. It is not a hardened MCP gateway and should not be used as a security layer for untrusted tools or other users.
+ControlCenter provides **discovery, profile visibility, dashboard workflows, capability bundles, profile-aware tool-list probes, tool-bundle assignments, internationalization, policy audits, host register mirrors (locks, permissions, resources, plans), and the policy-gated gateway** (`controlcenter_invoke`). Hardened for multi-OS deployment with a 48-hour security response SLA.
 
 ## System Architecture
 

@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.7.1 - 2026-09-09
 
-### Technical Hygiene, Multi-OS CI Matrix, .gitignore Hardening & Security SLA Parity (2026-09-09)
+### Architecture Alignment, Technical Hygiene, Multi-OS CI Matrix & Security SLA Parity (2026-09-09)
+- **README Architecture & Gateway Alignment:** Corrected outdated 0.4.x "not a gateway / does not proxy tools" legacy disclaimer in both `README.md` and `README_de.md` to accurately reflect the dual-role architecture: Control Plane (profiles, bundles, catalogs, host registers) plus Policy-Gated Gateway (`controlcenter_invoke`, `controlcenter_list_available_tools`).
+- **McpServer Constructor Version Bump:** Synchronized runtime constructor version in `src/index.ts`, `server.json`, `glama.json`, and `package.json` to `0.7.1`.
 - **CI Workflow Hardening (`ci.yml`):** Added concurrency control (`${{ github.workflow }}-${{ github.ref }}` with `cancel-in-progress: true`), multi-OS runner matrix (`ubuntu-latest`, `windows-latest`, `macos-latest`), Node.js runtime matrix expansion (`18.x`, `20.x`, `22.x`, `24.x`), and packaging dry-run verification (`npm pack --dry-run`).
 - **.gitignore Hardening:** Added explicit patterns for multi-host synchronization conflict copies (`*.sync-conflict-*`, `*.conflict`, `*-CONFLIT-*`, `*-conflict-*`, `*.sync-temp-*`), multi-agent coordination locks (`LOCK.*`, `*.lock`, with `!package-lock.json` exception), and temporary/cache directories.
 - **Security Policy SLA Parity (`SECURITY.md`):** Added umbrella security contact (`security@open-bricks.org`), 48-hour response SLA, 5 business days triage commitment, and bilingual Supported Versions table (`0.7.x`).

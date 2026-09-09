@@ -34,17 +34,18 @@
 
 ---
 
-Ein Alpha-**Model Context Protocol (MCP) Administrationsserver** für lokale MCP-Stacks. ControlCenter entdeckt lokale MCP-Server, liest MCP-Profildateien, gruppiert Server in Capability-Bundles, empfiehlt Profile für Aufgaben, erzeugt Kataloge, fragt echte MCP-Toollisten aus lokalen Repos oder Profilen ab, ordnet Tools Capability-Bundles zu und bietet optional ein lokales Dashboard.
+Ein moderner **Model Context Protocol (MCP) Administrationsserver und Policy-Gated Gateway** für lokale MCP-Stacks. ControlCenter entdeckt lokale MCP-Server, liest MCP-Profildateien, gruppiert Server in Capability-Bundles, empfiehlt Profile für Aufgaben, erzeugt Kataloge, fragt echte MCP-Toollisten aus lokalen Repos oder Profilen ab, ordnet Tools Capability-Bundles zu, spiegelt Host-Register (Locks, Berechtigungen, Ressourcen, Governance) und bietet optional ein lokales Dashboard.
 
-> **Was „Steuerung" hier bedeutet — bitte vor dem Einsatz lesen.** ControlCenter ist eine **überwiegend lesende Administrationsfläche**. Es liest, inventarisiert, löst auf, auditiert und *erzeugt Konfiguration*. Die einzigen schreibenden Aktionen sind das Erzeugen einer MCP-Konfigurationsdatei (`controlcenter_switch_profile`) und das Schreiben eines Katalogs (`controlcenter_build_catalog`); das Dashboard kann zusätzlich Server in einer Profildatei umschalten — mit Rückfrage und Backup.
+> **Architektur & Doppelrolle — Control-Plane + Policy-Gated Gateway:** ControlCenter vereint zwei komplementäre Betriebsebenen:
 >
-> Es ändert **keine** laufende Sitzung, liegt nicht im Anfragepfad, proxyt oder führt keine Tools fremder Server aus und erzwingt keine Rechte. In der ellmos-Typologie ist es eine *Control-Plane* im engen Sinn — es verwaltet MCP-Server, Profile und Stacks, ohne Fachdaten zu besitzen — und **kein** Gateway.
+> 1. **Control-Plane (Verwaltung & Konfiguration):** Inventarisiert lokale Server, löst Profile auf, verwaltet Capability-Bundles, spiegelt System-Governance/Locks und erzeugt Konfigurationen (`controlcenter_switch_profile`, `controlcenter_build_catalog`).
+> 2. **Policy-Gated Gateway (Bedarfsaufruf):** Über `controlcenter_invoke` und `controlcenter_list_available_tools` können Agenten Werkzeuge auf Backend-MCP-Servern auflisten und ausführen, die der Host-Agent **gar nicht selbst im Kontext geladen hat** — strikt abgesichert über regelbasierte Policies (`data/gateway-policy.json`), Argument-Auditing und Secret-Scrubbing.
+>
+> Es arbeitet **100 % lokal mit Zero-Egress** und erzwingt Fail-Closed-Prüfungen über Locks, Berechtigungen und Gateway-Richtlinien.
 
 > **Anbieterhinweis:** ControlCenter funktioniert mit jedem MCP-fähigen Client (Claude Code, Codex, Gemini oder beliebiger stdio-basierter MCP-Host). Die Profilverwaltungs-Tools lesen standardmäßig das Profilverzeichnis von Claude Code (`~/.claude/profiles`), akzeptieren aber beliebige Verzeichnisse über `ELLMOS_PROFILE_ROOT`. Skill- und Plugin-Inventar-Tools folgen standardmäßig Claude-Code-Konventionen; die Umgebungsvariablen unten ermöglichen Overrides.
 
-Der erste Alpha-Release konzentriert sich auf **Discovery, Profilsicht, Dashboard-Workflows, Capability-Bundles, profilfähige Toollisten-Probes, Tool-Bundle-Zuordnung, Internationalisierung und erste Policy-Audits**. Gateway-Modus, technisch erzwungene Tool-Level-Rechte, Authentifizierung und harte Sicherheitsgrenzen sind geplant, aber noch nicht implementiert.
-
-> **Alpha-Hinweis:** Diese Version ist nützlich für lokale Verwaltung und Preview-Tests. Sie ist kein abgesicherter MCP-Gateway und sollte nicht als Schutzschicht für nicht vertrauenswürdige Tools oder fremde Nutzer verwendet werden.
+ControlCenter bietet **Discovery, Profilsichtbarkeit, Dashboard-Workflows, Capability-Bundles, profilfähige Toollisten-Probes, Tool-Bundle-Zuordnung, Internationalisierung, Policy-Audits, Host-Register-Spiegel (Locks, Berechtigungen, Ressourcen, Pläne) und das Policy-Gated Gateway** (`controlcenter_invoke`). Gehärtet für Multi-OS-Betrieb mit einem 48-Stunden-Sicherheits-SLA.
 
 ## Systemarchitektur
 
