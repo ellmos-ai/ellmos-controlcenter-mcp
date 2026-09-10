@@ -1,0 +1,95 @@
+# ==============================================================================
+# ellmos-controlcenter-mcp — Local Marketing, Discoverability & Governance Log
+# ==============================================================================
+# Repository: ellmos-ai/ellmos-controlcenter-mcp
+# Canonical Path: C:\_Local_DEV\repos\ellmos-controlcenter-mcp
+# Remote: https://github.com/ellmos-ai/ellmos-controlcenter-mcp.git
+# Ecosystem: ellmos-ai (AI Infrastructure & MCP Control Plane)
+# Umbrella: open-bricks (AI-Native Desktop & Developer Tools)
+# Current Version: 0.7.2
+# Maintenance Path: Pfad B (Discoverability, Visual Design & Governance)
+# Last Updated: 2026-09-10
+# ==============================================================================
+
+[POSITIONING & VALUE PROPOSITION]
+ellmos ControlCenter MCP is the authoritative local control plane and policy-gated gateway
+for Model Context Protocol (MCP) environments. It bridges multi-agent systems (Claude Code,
+Codex, Gemini, Antigravity) with local tool catalogs, dynamic capability bundles, profile
+switching, system governance mirrors (locks, permissions, decisions), and an on-demand
+tool invocation gateway for unloaded backend MCP servers.
+
+Key Differentiators:
+1. Dual-Role Architecture: Seamlessly combines administrative control-plane inspection with
+   a runtime policy-gated gateway that invokes tools on unloaded backend servers.
+2. 100% Local-First & Zero-Egress: All discovery, profile resolution, and gateway forwarding
+   run strictly on localhost (127.0.0.1); zero telemetry, zero cloud dependencies.
+3. Fail-Closed Security & Eigendark Safety: Hardened against prompt injection with untrusted
+   data wrapping, recursive credential scrubbing, finite memory/depth budgets, and connect-
+   per-call process lifecycle management (zero zombie processes).
+4. Host Governance Mirroring: Integrates canonical multi-agent project locks (LOCK*.txt),
+   hierarchical permissions (LOCK.permissions.json), and user decisions.
+
+[TARGET PERSONAS]
+1. AI Infrastructure Engineers & Tooling Architects:
+   - Need to manage growing fleets of MCP servers without overloading agent context windows.
+   - Seek reproducible profile configurations, inheritance chains, and capability bundling.
+2. Multi-Agent System Operators (Claude Code, Codex, Antigravity):
+   - Require dynamic on-demand tool access (`controlcenter_invoke`) without pre-loading dozens
+     of heavy MCP servers into active token windows.
+3. Security-Conscious Teams & Enterprise Developers:
+   - Demand strict zero-egress guarantees, fail-closed policy gates, recursive secret redaction,
+     and structured audit trails (`gateway-audit.jsonl`).
+4. Solo Hackers & Open-Source Maintainers:
+   - Need instant visibility into installed skills, local repositories, and active locks via
+     an intuitive local dashboard (`127.0.0.1:3737`).
+
+[CORE DISCOVERABILITY KEYWORDS & SEARCH PHRASES]
+- "mcp control plane"
+- "model context protocol profile manager"
+- "mcp gateway tool invocation"
+- "policy gated mcp proxy"
+- "dynamic capability bundles mcp"
+- "local mcp server discovery catalog"
+- "zero egress mcp administration"
+- "claude code mcp profile switcher"
+- "multi agent mcp lock manager"
+- "mcp secret scrubber and sanitizer"
+
+[GOVERNANCE & RUNTIME INVARIANTS]
+- INV-LOCAL-01: 100% Local-First & Zero-Egress (Loopback 127.0.0.1 binding only, zero telemetry)
+- INV-GATE-02:  Fail-Closed Gateway Policy Guard (data/gateway-policy.json enforced; missing/invalid denies all)
+- INV-SUB-03:   Ephemeral Child Process Boundaries (Connect-per-call stdio lifecycle; zero lingering background processes)
+- INV-SCRUB-04: Recursive Secret Redaction & Finite Budgets (Pattern scrubbing, 256KB req / 1MB res limits)
+- INV-PRIV-05:  Non-Elevation / RunAsInvoker (Unprivileged user mode; zero sudo/root/UAC requirements)
+- INV-LOCK-06:  Canonical Multi-Agent Lock Awareness (Fail-closed respect of LOCK*.txt project locks)
+- INV-PERM-07:  Nearest Permission Register Introspection (Hierarchical LOCK.permissions.json traversal)
+- INV-GOV-08:   Read-Only Host Governance Federation (Mirrors decisions, policies, plans without mutating)
+- INV-SYNC-09:  Cloud-Sync Conflict Hardening (.gitignore hardened against OneDrive/Dropbox sync copies and lock files)
+- INV-SLA-10:   48-Hour Response & 5-Day Triage SLA (Direct security response via maintainer channels)
+
+[SIBLING ECOSYSTEM SYNERGIES]
+- ellmos-ai/ellmos-filecommander-mcp: High-performance filesystem & process operations
+- ellmos-ai/ellmos-codecommander-mcp: Static analysis, structural refactoring & AST tools
+- ellmos-ai/n8n-manager-mcp: Workflow automation & orchestration
+- ellmos-ai/bach: Autonomous multi-agent operating environment
+- open-bricks/safe-start-for-codex: Pre-flight environment validation
+- open-bricks/automation-master: Multi-agent coordination engine
+
+[RECOMMENDED DISTRIBUTION & REGISTRY CHANNELS]
+- Smithery.ai: Registry listing verified via smithery.yaml
+- Glama.ai: Profile updated with glama.json schema v0.7.2
+- LobeHub MCP Index: Automated plugin submission
+- GitHub Topics: #mcp, #model-context-protocol, #control-plane, #ai-agents, #developer-tools
+- Community: Showcase on Reddit r/ClaudeAI, Discord MCP Channels, and Hacker News
+
+# ------------------------------------------------------------------------------
+# Historical Log of Discoverability & Marketing Checks
+# ------------------------------------------------------------------------------
+2026-08-23: Pfad B initial marketing audit; profile recommendation & capability bundles documented.
+2026-09-09: Pfad A technical hygiene & CI multi-OS matrix update.
+2026-09-10: Pfad B Discoverability, Design & Governance Parity Overhaul (v0.7.2):
+  - 10 Governance & Runtime Invariants table integrated across README, README_de, llms.txt.
+  - Standardized 15-anchor Quick Navigation with 100% bilingual parity.
+  - Created THIRD_PARTY_LICENSES.md and local MARKETING-LOG.txt.
+  - Expanded automated metadata contract test suite in test/metadata.test.ts.
+  - Verified 100% green test suite across 246 tests.

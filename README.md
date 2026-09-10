@@ -12,7 +12,7 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-241%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-246%20passed-brightgreen.svg)](https://vitest.dev/)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
 [![Privacy](https://img.shields.io/badge/Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg)](SECURITY.md)
@@ -29,7 +29,7 @@
 
 ### Quick Navigation
 
-[Quick Start](#install) • [System Architecture](#system-architecture) • [Control & Gateway Flow](#control-plane--gateway-lifecycle) • [Tools (34)](#tools) • [Gateway](#gateway-reaching-servers-the-host-has-not-loaded) • [Security Policy](SECURITY.md) • [llms.txt Context](llms.txt) • [Ecosystem Matrix](#ellmos-ai-ecosystem)
+[Installation](#installation) • [System Architecture](#system-architecture) • [Control & Gateway Flow](#control-plane--gateway-lifecycle) • [Governance Invariants](#governance--runtime-invariants) • [Status](#status) • [Tools (34)](#tools) • [Gateway](#gateway-reaching-servers-the-host-has-not-loaded) • [Capability Bundles](#capability-bundles) • [Profile Switching](#profile-switching) • [Host Registers](#host-registers-locks-permissions-decisions-governance-resources) • [Dashboard](#dashboard) • [Documentation](#documentation) • [Security Policy](SECURITY.md) • [llms.txt Context](llms.txt) • [Ecosystem Matrix](#ellmos-ai-ecosystem)
 
 ---
 
@@ -113,10 +113,27 @@ sequenceDiagram
     end
 ```
 
+## Governance & Runtime Invariants
+
+ControlCenter enforces 10 architectural and runtime invariants to guarantee local-first safety, zero external egress, fail-closed policy gating, and multi-agent coordination resilience across environments:
+
+| ID | Invariant | Description | Enforcement Mechanism |
+|---|---|---|---|
+| `INV-LOCAL-01` | **100% Local-First & Zero-Egress** | All discovery, profile resolution, catalog indexing, and probers execute strictly on localhost. No telemetry or analytics. | Zero outbound network calls; loopback binding only (`127.0.0.1:3737`). |
+| `INV-GATE-02` | **Fail-Closed Gateway Policy Guard** | Remote/unloaded tool invocations via `controlcenter_invoke` strictly require pattern authorization in `data/gateway-policy.json`. | Missing, unreadable, or invalid policy files immediately refuse execution (fail closed). |
+| `INV-SUB-03` | **Ephemeral Child Process Boundaries** | Backend stdio processes for probed and invoked MCP servers are spawned on-demand per call and terminated immediately in a `finally` block. | `connect-per-call` architecture prevents lingering background zombie processes. |
+| `INV-SCRUB-04` | **Recursive Secret Redaction & Finite Budgets** | Forwarded inputs/outputs are recursively scrubbed for credentials across all levels. Finite memory budgets (256 KB req, 1 MB res). | Recursive regex + metadata key scrubbing with maximum depth and content block caps. |
+| `INV-PRIV-05` | **Non-Elevation / RunAsInvoker** | Server operates strictly in unprivileged user space. Never prompts for root/admin elevation. | Operates without root or UAC elevation across Windows, macOS, and Linux. |
+| `INV-LOCK-06` | **Canonical Multi-Agent Lock Awareness** | Respects system-wide `LOCK*.txt`, `LOCK.user.*`, and `LOCK.until.*` tokens fail-closed. | Inspects lock trees via host Python lock utilities; unconfigured returns `unknown`. |
+| `INV-PERM-07` | **Nearest Permission Register Introspection** | Evaluates nearest `LOCK.permissions.json` up directory trees (`deny > ask > allow > default`). | Hierarchical resolution without granting synthetic permissions or modifying state. |
+| `INV-GOV-08` | **Read-Only Host Governance Federation** | Mirrors pending decisions, policies, strategic plans, and BYUM metadata read-only. | Strict scalar projection; never adopts, executes, mutates, or silences items. |
+| `INV-SYNC-09` | **Cloud-Sync Conflict Hardening** | Protects repository against multi-host conflict copies and stray lock files. | Comprehensive `.gitignore` covering `*.sync-conflict-*`, `*-CONFLIT-*`, and `LOCK.*`. |
+| `INV-SLA-10` | **48-Hour Response & 5-Day Triage SLA** | Vulnerability reports receive prompt maintainer response and triage commitments. | Documented in `SECURITY.md` with direct maintainer and umbrella security contacts. |
+
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.7.0`
+- **Version:** `0.7.2`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI checks:** `npm run test` and `npm run build`
@@ -593,6 +610,8 @@ ellmos-controlcenter-mcp/
 | Decisions | [DECISIONS.md](./DECISIONS.md) |
 | Open tasks | [TODO.md](./TODO.md) |
 | Changes | [CHANGELOG.md](./CHANGELOG.md) |
+| Third-party licenses | [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) |
+| Marketing & discoverability | [MARKETING-LOG.txt](./MARKETING-LOG.txt) |
 | LLM crawler summary | [llms.txt](./llms.txt) |
 
 ## ellmos-ai Ecosystem

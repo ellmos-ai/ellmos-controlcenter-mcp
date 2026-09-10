@@ -1,6 +1,6 @@
 {
   "name": "ellmos-controlcenter-mcp",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "mcpName": "io.github.ellmos-ai/ellmos-controlcenter-mcp",
   "description": "MCP control plane: local server, tool and skill discovery, capability bundles, dashboard, policy audits, MCP profile resolution and config generation, plus a policy-gated, audited gateway that lists and invokes tools on backend MCP servers the host has not loaded",
   "type": "module",
@@ -23,6 +23,8 @@
     "README.md",
     "README_de.md",
     "SECURITY.md",
+    "THIRD_PARTY_LICENSES.md",
+    "MARKETING-LOG.txt",
     "START.md",
     "ARCHITECTURE.md",
     "ROADMAP.md",

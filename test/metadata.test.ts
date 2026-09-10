@@ -17,7 +17,7 @@ describe("metadata & manifest parity", () => {
   const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf-8");
 
   it("ensures version parity across package.json, server.json, and glama.json", () => {
-    expect(packageJson.version).toBe("0.7.1");
+    expect(packageJson.version).toBe("0.7.2");
     expect(packageJson.version).toBe(serverJson.version);
     expect(packageJson.version).toBe(glamaJson.version);
     expect(serverJson.packages[0].version).toBe(packageJson.version);
@@ -41,8 +41,8 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-09-09");
-    expect(llmsTxt).toContain("Test status: 241/241 Vitest tests passing (100% green)");
+    expect(llmsTxt).toContain("Last-checked: 2026-09-10");
+    expect(llmsTxt).toContain("Test status: 246/246 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("MIT");
@@ -60,7 +60,7 @@ describe("metadata & manifest parity", () => {
       "Ecosystem-ellmos--ai-blue.svg",
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
-      "Vitest-241%20passed-brightgreen.svg",
+      "Vitest-246%20passed-brightgreen.svg",
       "MCP%20Tools-34-blue.svg",
       "Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg",
       "Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg",
@@ -89,7 +89,18 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures core required documents exist", () => {
-    const required = ["README.md", "README_de.md", "SECURITY.md", "LICENSE", "llms.txt", "CHANGELOG.md", "server.json", "glama.json"];
+    const required = [
+      "README.md",
+      "README_de.md",
+      "SECURITY.md",
+      "LICENSE",
+      "llms.txt",
+      "CHANGELOG.md",
+      "server.json",
+      "glama.json",
+      "THIRD_PARTY_LICENSES.md",
+      "MARKETING-LOG.txt",
+    ];
     for (const file of required) {
       expect(fs.existsSync(path.join(root, file))).toBe(true);
     }
@@ -180,6 +191,76 @@ describe("metadata & manifest parity", () => {
   it("ensures runtime package dependencies remain lean with zero external telemetry", () => {
     const deps = Object.keys(packageJson.dependencies || {});
     expect(deps).toEqual(["@modelcontextprotocol/sdk", "update-notifier", "zod"]);
+  });
+
+  it("ensures READMEs and llms.txt contain Governance & Runtime Invariants (INV-LOCAL-01 to INV-SLA-10)", () => {
+    const invariants = [
+      "INV-LOCAL-01",
+      "INV-GATE-02",
+      "INV-SUB-03",
+      "INV-SCRUB-04",
+      "INV-PRIV-05",
+      "INV-LOCK-06",
+      "INV-PERM-07",
+      "INV-GOV-08",
+      "INV-SYNC-09",
+      "INV-SLA-10",
+    ];
+    for (const inv of invariants) {
+      expect(readmeEn).toContain(inv);
+      expect(readmeDe).toContain(inv);
+      expect(llmsTxt).toContain(inv);
+    }
+  });
+
+  it("ensures quick navigation has 15 anchors with 100% conceptual parity between README.md and README_de.md", () => {
+    const enQuickNav = readmeEn.split("### Quick Navigation")[1]?.split("---")[0]?.trim() || "";
+    const deQuickNav = readmeDe.split("### Schnellnavigation")[1]?.split("---")[0]?.trim() || "";
+
+    const enAnchors = (enQuickNav.match(/\[([^\]]+)\]\(([^)]+)\)/g) || []);
+    const deAnchors = (deQuickNav.match(/\[([^\]]+)\]\(([^)]+)\)/g) || []);
+
+    expect(enAnchors.length).toBe(15);
+    expect(deAnchors.length).toBe(15);
+
+    expect(enQuickNav).toContain("#installation");
+    expect(deQuickNav).toContain("#installation");
+    expect(enQuickNav).toContain("#system-architecture");
+    expect(deQuickNav).toContain("#systemarchitektur");
+    expect(enQuickNav).toContain("#governance--runtime-invariants");
+    expect(deQuickNav).toContain("#governance--und-laufzeit-invarianten");
+    expect(enQuickNav).toContain("SECURITY.md");
+    expect(deQuickNav).toContain("SECURITY.md");
+    expect(enQuickNav).toContain("llms.txt");
+    expect(deQuickNav).toContain("llms.txt");
+  });
+
+  it("ensures THIRD_PARTY_LICENSES.md covers all direct runtime and dev dependencies", () => {
+    const thirdParty = fs.readFileSync(path.join(root, "THIRD_PARTY_LICENSES.md"), "utf-8");
+    expect(thirdParty).toContain("@modelcontextprotocol/sdk");
+    expect(thirdParty).toContain("zod");
+    expect(thirdParty).toContain("update-notifier");
+    expect(thirdParty).toContain("typescript");
+    expect(thirdParty).toContain("vitest");
+    expect(thirdParty).toContain("MIT");
+    expect(thirdParty).toContain("BSD-2-Clause");
+    expect(thirdParty).toContain("Apache-2.0");
+  });
+
+  it("ensures MARKETING-LOG.txt contains target personas, search terms, and governance invariants", () => {
+    const marketingLog = fs.readFileSync(path.join(root, "MARKETING-LOG.txt"), "utf-8");
+    expect(marketingLog).toContain("ellmos-controlcenter-mcp");
+    expect(marketingLog).toContain("0.7.2");
+    expect(marketingLog).toContain("TARGET PERSONAS");
+    expect(marketingLog).toContain("CORE DISCOVERABILITY KEYWORDS & SEARCH PHRASES");
+    expect(marketingLog).toContain("GOVERNANCE & RUNTIME INVARIANTS");
+    expect(marketingLog).toContain("INV-LOCAL-01");
+    expect(marketingLog).toContain("INV-SLA-10");
+  });
+
+  it("ensures package.json includes MARKETING-LOG.txt and THIRD_PARTY_LICENSES.md in files manifest", () => {
+    expect(packageJson.files).toContain("THIRD_PARTY_LICENSES.md");
+    expect(packageJson.files).toContain("MARKETING-LOG.txt");
   });
 });
 

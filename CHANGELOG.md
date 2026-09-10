@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.2 - 2026-09-10
+
+### Discoverability, Visual Design, Governance Invariants & Metadata Contract Parity (Pfad B) (2026-09-10)
+- **10 Governance & Runtime Invariants Matrix:** Integrated the standardized 10 architectural and runtime guarantees (`INV-LOCAL-01` to `INV-SLA-10`) into `README.md`, `README_de.md`, and `llms.txt`, formalizing Zero-Egress, Fail-Closed Gateway Policies, Ephemeral Stdio Lifecycles, Recursive Secret Scrubbing, Non-Elevation, and Multi-Agent Lock/Permission awareness.
+- **Bilingual Quick Navigation Modernization:** Overhauled Quick Navigation with 15 standardized anchors across `README.md` and `README_de.md`, fixing legacy anchor mismatches and achieving 100% conceptual and navigational parity.
+- **Third-Party License Audit (`THIRD_PARTY_LICENSES.md`):** Created full third-party open-source licensing inventory covering runtime (`@modelcontextprotocol/sdk`, `zod`, `update-notifier`) and build dependencies (`typescript`, `vitest`), included in npm packaging manifest.
+- **Local Marketing & Discoverability Ledger (`MARKETING-LOG.txt`):** Created root marketing ledger documenting positioning, target developer personas, core search phrases, ecosystem synergies, and distribution channels.
+- **Shields.io Badges & Version Alignment:** Synchronized badges across English and German documentation (Version `v0.7.2`, Vitest `246 passed`, Security SLA `48h SLA / 5-day triage`), and aligned status metadata.
+- **llms.txt Refresh:** Updated `Last-checked: 2026-09-10`, documented 10 Governance Invariants, and added index references for new discoverability assets.
+- **Contract Test Suite Expansion (`test/metadata.test.ts`):** Added automated assertions verifying the 10 Governance Invariants, Quick Navigation anchor parity, `THIRD_PARTY_LICENSES.md`, `MARKETING-LOG.txt`, and version parity (20/20 metadata tests, 246/246 total suite passing).
+
 ## 0.7.1 - 2026-09-09
 
 ### Architecture Alignment, Technical Hygiene, Multi-OS CI Matrix & Security SLA Parity (2026-09-09)
