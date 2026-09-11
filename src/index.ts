@@ -76,7 +76,7 @@ import {
 
 const server = new McpServer({
   name: "ellmos-controlcenter-mcp",
-  version: "0.7.2"
+  version: "0.7.3"
 });
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");

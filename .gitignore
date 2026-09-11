@@ -16,11 +16,17 @@ _reports/
 *-CONFLIT-*
 *-conflict-*
 *.sync-temp-*
+* (kopie)*
+* (copy)*
+*-WORKSTATION*
+*-ASUS-GEI*
 
 # multi-agent locks (multi-agent coordination, host-local, never commit)
+LOCK
 LOCK.*
 *.lock
 LOCK*.txt
+LOCK.permissions.json
 !package-lock.json
 
 # temporary files & backups
@@ -28,6 +34,7 @@ LOCK*.txt
 *.bak
 *.swp
 *~
+*.orig
 
 # python cache
 __pycache__/
@@ -37,7 +44,16 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .coverage
+.coverage.*
 htmlcov/
 .wheel-smoke/
+.nyc_output/
+.turbo/
+build/
+.tox/
+.mypy_cache/
+wheelhouse/
 
-
+# OS artifacts
+Thumbs.db
+.DS_Store

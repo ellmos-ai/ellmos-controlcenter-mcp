@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.3 - 2026-09-12
+
+### Technical Hygiene, CI Matrix Timeout Hardening, .gitignore Hardening & Metadata Contract Parity (Pfad A) (2026-09-12)
+- **CI Workflow Timeout Hardening (`ci.yml`):** Added explicit `timeout-minutes: 15` runaway guardrail to the multi-OS (`ubuntu-latest`, `windows-latest`, `macos-latest`) and Node.js (`18.x`, `20.x`, `22.x`, `24.x`) test matrix job, preventing hanging runners.
+- **.gitignore Hardening:** Extended .gitignore with multi-host sync conflict patterns (`* (kopie)*`, `* (copy)*`, `*-WORKSTATION*`, `*-ASUS-GEI*`), canonical lock exclusions (`LOCK`, `LOCK.*`, `*.lock`, `LOCK*.txt`, `LOCK.permissions.json` with `!package-lock.json`), and build/cache directories (`.coverage.*`, `.nyc_output/`, `.turbo/`, `build/`, `*.orig`, `.tox/`, `.mypy_cache/`, `wheelhouse/`, `Thumbs.db`, `.DS_Store`).
+- **Manifest & Metadata Harmonization:** Synchronized version `0.7.3` across `package.json`, `server.json`, `glama.json`, `src/index.ts`, `llms.txt`, and documentation (`README.md`, `README_de.md`).
+- **Documentation & LLM Context Freshness:** Updated `llms.txt` with `Last-checked: 2026-09-12` and current verification baselines.
+- **Local Marketing Ledger (`MARKETING-LOG.txt`):** Synchronized current version to `0.7.3` and recorded Pfad A technical hygiene audit for 2026-09-12.
+- **Contract Test Suite Expansion (`test/metadata.test.ts`):** Added automated assertions verifying CI `timeout-minutes: 15` guardrail, extended multi-host and canonical lock gitignore patterns, and changelog/metadata freshness.
+
 ## 0.7.2 - 2026-09-10
 
 ### Discoverability, Visual Design, Governance Invariants & Metadata Contract Parity (Pfad B) (2026-09-10)

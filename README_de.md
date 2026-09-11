@@ -13,7 +13,7 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-246%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-247%20passed-brightgreen.svg)](https://vitest.dev/)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
 [![Privacy](https://img.shields.io/badge/Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg)](SECURITY.md)
@@ -134,7 +134,7 @@ ControlCenter erzwingt 10 architektonische und betriebliche Invarianten, um Loca
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.7.2`
+- **Version:** `0.7.3`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI-Checks:** `npm run test` und `npm run build`

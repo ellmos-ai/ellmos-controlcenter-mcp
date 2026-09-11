@@ -17,7 +17,7 @@ describe("metadata & manifest parity", () => {
   const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf-8");
 
   it("ensures version parity across package.json, server.json, and glama.json", () => {
-    expect(packageJson.version).toBe("0.7.2");
+    expect(packageJson.version).toBe("0.7.3");
     expect(packageJson.version).toBe(serverJson.version);
     expect(packageJson.version).toBe(glamaJson.version);
     expect(serverJson.packages[0].version).toBe(packageJson.version);
@@ -41,8 +41,8 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-09-10");
-    expect(llmsTxt).toContain("Test status: 246/246 Vitest tests passing (100% green)");
+    expect(llmsTxt).toContain("Last-checked: 2026-09-12");
+    expect(llmsTxt).toContain("Test status: 247/247 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("MIT");
@@ -60,7 +60,7 @@ describe("metadata & manifest parity", () => {
       "Ecosystem-ellmos--ai-blue.svg",
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
-      "Vitest-246%20passed-brightgreen.svg",
+      "Vitest-247%20passed-brightgreen.svg",
       "MCP%20Tools-34-blue.svg",
       "Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg",
       "Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg",
@@ -142,19 +142,27 @@ describe("metadata & manifest parity", () => {
     expect(ciYml).toContain("npm run build");
   });
 
-  it("ensures CI workflow includes concurrency control and packaging verification", () => {
+  it("ensures CI workflow includes concurrency control, packaging verification, and timeout guardrails", () => {
     expect(ciYml).toContain("concurrency:");
     expect(ciYml).toContain("cancel-in-progress: true");
+    expect(ciYml).toContain("timeout-minutes: 15");
     expect(ciYml).toContain("npm pack --dry-run");
   });
 
-  it("ensures .gitignore is hardened against multi-host conflict files and lock artifacts", () => {
+  it("ensures .gitignore is hardened against multi-host conflict files, canonical locks, and cache artifacts", () => {
     expect(gitignore).toContain("*.sync-conflict-*");
     expect(gitignore).toContain("*-CONFLIT-*");
+    expect(gitignore).toContain("* (kopie)*");
+    expect(gitignore).toContain("*-WORKSTATION*");
+    expect(gitignore).toContain("LOCK");
     expect(gitignore).toContain("LOCK.*");
     expect(gitignore).toContain("!package-lock.json");
     expect(gitignore).toContain(".pytest_cache/");
     expect(gitignore).toContain(".coverage");
+    expect(gitignore).toContain(".coverage.*");
+    expect(gitignore).toContain(".nyc_output/");
+    expect(gitignore).toContain(".turbo/");
+    expect(gitignore).toContain("build/");
   });
 
   it("ensures sibling ecosystem partner matrix exists in both READMEs", () => {
@@ -250,7 +258,7 @@ describe("metadata & manifest parity", () => {
   it("ensures MARKETING-LOG.txt contains target personas, search terms, and governance invariants", () => {
     const marketingLog = fs.readFileSync(path.join(root, "MARKETING-LOG.txt"), "utf-8");
     expect(marketingLog).toContain("ellmos-controlcenter-mcp");
-    expect(marketingLog).toContain("0.7.2");
+    expect(marketingLog).toContain("0.7.3");
     expect(marketingLog).toContain("TARGET PERSONAS");
     expect(marketingLog).toContain("CORE DISCOVERABILITY KEYWORDS & SEARCH PHRASES");
     expect(marketingLog).toContain("GOVERNANCE & RUNTIME INVARIANTS");
@@ -261,6 +269,13 @@ describe("metadata & manifest parity", () => {
   it("ensures package.json includes MARKETING-LOG.txt and THIRD_PARTY_LICENSES.md in files manifest", () => {
     expect(packageJson.files).toContain("THIRD_PARTY_LICENSES.md");
     expect(packageJson.files).toContain("MARKETING-LOG.txt");
+  });
+
+  it("ensures CHANGELOG.md documents latest 0.7.3 release with Pfad A hygiene details", () => {
+    const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf-8");
+    expect(changelog).toContain("## 0.7.3 - 2026-09-12");
+    expect(changelog).toContain("CI Workflow Timeout Hardening");
+    expect(changelog).toContain(".gitignore Hardening");
   });
 });
 

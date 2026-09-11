@@ -6,9 +6,9 @@
 # Remote: https://github.com/ellmos-ai/ellmos-controlcenter-mcp.git
 # Ecosystem: ellmos-ai (AI Infrastructure & MCP Control Plane)
 # Umbrella: open-bricks (AI-Native Desktop & Developer Tools)
-# Current Version: 0.7.2
-# Maintenance Path: Pfad B (Discoverability, Visual Design & Governance)
-# Last Updated: 2026-09-10
+# Current Version: 0.7.3
+# Maintenance Path: Pfad A (Technical Hygiene & CI Hardening)
+# Last Updated: 2026-09-12
 # ==============================================================================
 
 [POSITIONING & VALUE PROPOSITION]
@@ -77,7 +77,7 @@ Key Differentiators:
 
 [RECOMMENDED DISTRIBUTION & REGISTRY CHANNELS]
 - Smithery.ai: Registry listing verified via smithery.yaml
-- Glama.ai: Profile updated with glama.json schema v0.7.2
+- Glama.ai: Profile updated with glama.json schema v0.7.3
 - LobeHub MCP Index: Automated plugin submission
 - GitHub Topics: #mcp, #model-context-protocol, #control-plane, #ai-agents, #developer-tools
 - Community: Showcase on Reddit r/ClaudeAI, Discord MCP Channels, and Hacker News
@@ -93,3 +93,8 @@ Key Differentiators:
   - Created THIRD_PARTY_LICENSES.md and local MARKETING-LOG.txt.
   - Expanded automated metadata contract test suite in test/metadata.test.ts.
   - Verified 100% green test suite across 246 tests.
+2026-09-12: Pfad A Technical Hygiene, CI Timeout Hardening & Contract Parity (v0.7.3):
+  - Added timeout-minutes: 15 runaway guardrail to GitHub Actions CI test matrix job.
+  - Hardened .gitignore against multi-host sync conflict patterns (* (kopie)*, * (copy)*, *-WORKSTATION*, *-ASUS-GEI*), canonical lock exclusions (LOCK, LOCK.*, *.lock, LOCK*.txt, LOCK.permissions.json, !package-lock.json), and build/cache directories.
+  - Bumped version to 0.7.3 across package.json, server.json, glama.json, src/index.ts, llms.txt, and documentation.
+  - Expanded automated contract test suite in test/metadata.test.ts for CI timeout, extended gitignore, and freshness verification.
