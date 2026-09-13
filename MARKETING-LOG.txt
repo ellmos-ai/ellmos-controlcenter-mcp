@@ -6,9 +6,9 @@
 # Remote: https://github.com/ellmos-ai/ellmos-controlcenter-mcp.git
 # Ecosystem: ellmos-ai (AI Infrastructure & MCP Control Plane)
 # Umbrella: open-bricks (AI-Native Desktop & Developer Tools)
-# Current Version: 0.7.3
-# Maintenance Path: Pfad A (Technical Hygiene & CI Hardening)
-# Last Updated: 2026-09-12
+# Current Version: 0.7.4
+# Maintenance Path: Pfad B (Discoverability, Marketing & Visual Architecture)
+# Last Updated: 2026-09-13
 # ==============================================================================
 
 [POSITIONING & VALUE PROPOSITION]
@@ -98,3 +98,10 @@ Key Differentiators:
   - Hardened .gitignore against multi-host sync conflict patterns (* (kopie)*, * (copy)*, *-WORKSTATION*, *-ASUS-GEI*), canonical lock exclusions (LOCK, LOCK.*, *.lock, LOCK*.txt, LOCK.permissions.json, !package-lock.json), and build/cache directories.
   - Bumped version to 0.7.3 across package.json, server.json, glama.json, src/index.ts, llms.txt, and documentation.
   - Expanded automated contract test suite in test/metadata.test.ts for CI timeout, extended gitignore, and freshness verification.
+2026-09-13: Pfad B Discoverability, Target Personas & Comparative Matrix Overhaul (v0.7.4):
+  - Added structured Target Personas & Discoverability section in README.md and README_de.md covering 4 key developer archetypes and high-intent keyword tags.
+  - Added 10-dimension Comparative Matrix vs Alternatives (Static configs, Monolithic servers, Heavyweight frameworks, Cloud LLMOps) across English and German documentation.
+  - Added Third-Party Licenses & Transparency section linking to THIRD_PARTY_LICENSES.md with 100% permissive open-source attestation.
+  - Updated Quick Navigation to 18 standardized anchors with 100% reciprocal bilingual parity.
+  - Added Verified: 2026-09-13 Shields.io badge and bumped version to 0.7.4 across all manifests (package.json, server.json, glama.json, src/index.ts, llms.txt, READMEs).
+  - Expanded automated metadata contract test suite in test/metadata.test.ts (250 tests passing, 100% green).

@@ -12,7 +12,8 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-247%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-250%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Verified: 2026-09-13](https://img.shields.io/badge/verified-2026--09--13-blue.svg)](CHANGELOG.md)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
 [![Privacy](https://img.shields.io/badge/Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg)](SECURITY.md)
@@ -29,7 +30,7 @@
 
 ### Quick Navigation
 
-[Installation](#installation) • [System Architecture](#system-architecture) • [Control & Gateway Flow](#control-plane--gateway-lifecycle) • [Governance Invariants](#governance--runtime-invariants) • [Status](#status) • [Tools (34)](#tools) • [Gateway](#gateway-reaching-servers-the-host-has-not-loaded) • [Capability Bundles](#capability-bundles) • [Profile Switching](#profile-switching) • [Host Registers](#host-registers-locks-permissions-decisions-governance-resources) • [Dashboard](#dashboard) • [Documentation](#documentation) • [Security Policy](SECURITY.md) • [llms.txt Context](llms.txt) • [Ecosystem Matrix](#ellmos-ai-ecosystem)
+[Installation](#installation) • [Target Personas](#target-personas--discoverability) • [Comparative Matrix](#comparative-matrix-vs-alternatives) • [System Architecture](#system-architecture) • [Control & Gateway Flow](#control-plane--gateway-lifecycle) • [Governance Invariants](#governance--runtime-invariants) • [Status](#status) • [Tools (34)](#tools) • [Gateway](#gateway-reaching-servers-the-host-has-not-loaded) • [Capability Bundles](#capability-bundles) • [Profile Switching](#profile-switching) • [Host Registers](#host-registers-locks-permissions-decisions-governance-resources) • [Dashboard](#dashboard) • [Third-Party Licenses](#third-party-licenses--transparency) • [Documentation](#documentation) • [Security Policy](SECURITY.md) • [llms.txt Context](llms.txt) • [Ecosystem Matrix](#ellmos-ai-ecosystem)
 
 ---
 
@@ -45,6 +46,36 @@ An advanced **Model Context Protocol (MCP) administration server and policy-gate
 > **Provider note:** ControlCenter works with any MCP-capable client (Claude Code, Codex, Gemini, or any stdio-based MCP host). The profile management tools default to Claude Code's profile directory (`~/.claude/profiles`) but accept any directory via `ELLMOS_PROFILE_ROOT`. The skill and plugin inventory tools are scoped to Claude Code conventions by default; see the environment variables below for override options.
 
 ControlCenter provides **discovery, profile visibility, dashboard workflows, capability bundles, profile-aware tool-list probes, tool-bundle assignments, internationalization, policy audits, host register mirrors (locks, permissions, resources, plans), and the policy-gated gateway** (`controlcenter_invoke`). Hardened for multi-OS deployment with a 48-hour security response SLA.
+
+## Target Personas & Discoverability
+
+| Persona | Core Profile & Tech Stack | Architectural Friction & Pain Point | How ControlCenter Solves It |
+|:---|:---|:---|:---|
+| **AI Infrastructure Engineers & MCP Tooling Architects** | Scaling local fleets of MCP servers across multi-agent environments (Claude Code, Codex, Antigravity, Gemini). | Massive agent context window consumption when dozens of MCP servers are loaded simultaneously; config drift across agent profiles. | Dynamic capability bundles (`data/capability-bundles.json`), hash-consistent profile resolution (`controlcenter_resolve_profile`), and on-demand tool probes without active memory overhead. |
+| **Multi-Agent Runtime Developers & Swarm Operators** | Orchestrating autonomous agent loops and workflows (BACH, USMC, LangChain, AutoGen, CrewAI). | Lack of dynamic runtime tool access for tools not pre-declared at agent startup; danger of background process leakage. | Connect-per-call policy-gated gateway (`controlcenter_invoke`) allowing agents to invoke unloaded backend MCP tools with zero lingering zombie processes. |
+| **Enterprise SecOps & Compliance Officers** | Auditing local developer environments, sensitive credentials, and agent autonomy boundaries. | Prompt injection attacks via untrusted tool outputs, API key leakage in stack traces, and unmonitored tool executions. | Strict 100% Local-First & Zero-Egress guarantees, fail-closed policy gating (`data/gateway-policy.json`), recursive credential sanitization, untrusted data wrapping, and append-only audit trails (`gateway-audit.jsonl`). |
+| **Local Homelab Automators & AI Power Users** | Managing desktop agents, workflow engines (n8n), and local developer tools. | Fragmented tooling, opaque agent permissions, conflicting locks, and lack of a central visual overview of active MCP stacks. | Centralized local web dashboard (`127.0.0.1:3737`), bidirectional i18n (EN/DE), and unified host register mirrors for locks (`LOCK*.txt`), permissions (`LOCK.permissions.json`), and decisions. |
+
+**Discovery Keywords & High-Intent Topic Tags:** `mcp-control-plane`, `model-context-protocol`, `mcp-gateway`, `claude-code-profiles`, `policy-gated-execution`, `zero-egress`, `local-first-ai`, `secret-scrubber`, `multi-agent-coordination`, `capability-bundles`, `fail-closed-security`, `mcp-audit-logging`, `developer-tools`.
+
+---
+
+## Comparative Matrix vs Alternatives
+
+| Architectural Criterion | ellmos ControlCenter MCP | Static MCP Configurations (`claude_desktop_config.json`) | Monolithic MCP Meta-Servers | Heavyweight Agent Frameworks (LangChain / CrewAI) | Cloud LLMOps & Remote Gateways |
+|:---|:---|:---|:---|:---|:---|
+| **Architecture & Role** | **Dual Control Plane + Ephemeral Gateway** | Static JSON file | Single massive combined process | Embedded code framework | Remote hosted SaaS / proxy |
+| **Token & Context Efficiency** | **Dynamic On-Demand Tool Invocation (`controlcenter_invoke`)** | Poor (All tools must be pre-loaded into context) | Extreme bloat (Dozens of tools in prompt) | Varies (Tools loaded into Python process memory) | Network payload overhead |
+| **Process Lifecycle** | **Connect-Per-Call stdio (Zero Zombie Processes)** | Always-on persistent background daemons | Single monolithic background process | Tied to application execution thread | Cloud-hosted containers |
+| **Network Egress & Privacy** | **100% Local-First & Zero-Egress (Loopback only)** | Local stdio / HTTP | Local stdio | Depends on cloud LLM integrations | High egress (Tool data sent to cloud servers) |
+| **Policy Gating & Hardening** | **Fail-Closed Pattern Rules + Recursive Secret Scrubbing** | None (Direct unrestricted host access) | Rare / Custom ad-hoc filtering | Inconsistent application-level checks | Organization-level cloud IAM |
+| **Untrusted Data Isolation** | **Enforced GFM Banners for Tool Outputs** | None (Raw strings fed directly to LLM) | None | Manual prompt templates | Cloud provider sandboxing |
+| **Host Governance Awareness** | **Native Multi-Agent Locks (`LOCK*.txt`) & Permissions** | None | None | None | None |
+| **Profile & Stack Management** | **Extends Chains, Dynamic Bundles & Catalog Probes** | Manual JSON editing | Hardcoded server arrays | Programmatic Python definitions | Web dashboard configuration |
+| **Internationalization (i18n)** | **Bilingual Core (English & German runtime output)** | English only | English only | English only | English only |
+| **Security SLA & Supply Chain** | **48h SLA, Zero Transitive Telemetry, Audited Licenses** | Vendor dependent | Unaudited third-party tools | Broad attack surface (100+ pip packages) | Third-party vendor trust |
+
+---
 
 ## System Architecture
 
@@ -598,6 +629,15 @@ ellmos-controlcenter-mcp/
 |-- DECISIONS.md
 `-- TODO.md
 ```
+
+## Third-Party Licenses & Transparency
+
+This project adheres strictly to **100% permissive open-source licensing** across all direct runtime and development dependencies:
+- **0% Copyleft / GPL / AGPL** exposure.
+- Fully audited and compatible with commercial, enterprise, and local-first deployments.
+- Audited dependencies: `@modelcontextprotocol/sdk` (MIT), `zod` (MIT), `update-notifier` (BSD-2-Clause), `typescript` (Apache-2.0), `vitest` (MIT).
+
+Full SPDX license texts, copyright notices, and compliance attestations are documented in [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md).
 
 ## Documentation
 

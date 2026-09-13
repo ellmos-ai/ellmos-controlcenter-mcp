@@ -2,8 +2,8 @@
 
 > MCP control-plane server for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, a local dashboard, and a policy-gated, audited gateway that lists and invokes tools on backend MCP servers the host has not loaded. It prepares configuration and does not change running sessions.
 
-Last-checked: 2026-09-12
-Test status: 247/247 Vitest tests passing (100% green)
+Last-checked: 2026-09-13
+Test status: 250/250 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
 MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
@@ -122,12 +122,17 @@ ellmos-controlcenter-mcp
 - Broad web searches collide with Elmo/ELMO motion-control, HR software, and voice-generator pages; use the full package name or MCP-specific phrases.
 - Good listing context: MCP control planes, local MCP server catalogs, profile management, policy audits, and MCP dashboard tooling.
 
+## Target Personas & Comparative Advantage
+
+- **Target Personas:** AI Infrastructure Engineers (fleet scaling, bundle management), Multi-Agent Runtime Developers (on-demand tool invocation via gateway without zombie processes), Enterprise SecOps (fail-closed policy guard, recursive secret redaction, zero-egress), and Local Homelab Automators (local dashboard, multi-agent lock awareness).
+- **Comparative Advantages:** Dual control-plane + ephemeral connect-per-call gateway; dynamic on-demand tool calls (`controlcenter_invoke`) saving massive context window space vs static configurations; 100% local-first loopback architecture; fail-closed policy file (`data/gateway-policy.json`); native multi-agent lock & permission register introspection; 100% permissive dependencies with zero copyleft.
+
 ## Important Files
 
-- `README.md`: full English documentation.
-- `README_de.md`: German documentation.
+- `README.md`: full English documentation with Target Personas and Comparative Matrix.
+- `README_de.md`: German documentation with Zielgruppen and Vergleichsmatrix.
 - `SECURITY.md`: bilingual security policy and zero-egress model.
-- `THIRD_PARTY_LICENSES.md`: third-party open-source dependency licenses and notices.
+- `THIRD_PARTY_LICENSES.md`: third-party open-source dependency licenses, audit summary, and notices.
 - `MARKETING-LOG.txt`: local marketing, discoverability, search phrases, and governance log.
 - `CHANGELOG.md`: version history and release logs.
 - `server.json`: MCP registry metadata.
@@ -139,6 +144,6 @@ ellmos-controlcenter-mcp
 - `src/mcpCatalog.ts`: reads `mcps.catalog.v1.json` and joins it onto the directory scan; fail-soft on a missing, unreadable, or foreign-schema catalog.
 - `src/bundles.ts`: capability bundle definitions, suggestions, and tool assignment helpers.
 - `src/dashboard.ts`: local dashboard server.
-- `test/controlroom.test.ts`, `test/catalog.test.ts`, and `test/semanticRouting.test.ts`: unit and integration coverage for the host-register bridge, canonical policy-registry validation, exact scalar governance allowlists, catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, and semantic-route validation (246 tests passing in the full suite).
+- `test/controlroom.test.ts`, `test/catalog.test.ts`, `test/semanticRouting.test.ts`, and `test/metadata.test.ts`: unit and integration coverage for the host-register bridge, canonical policy-registry validation, exact scalar governance allowlists, catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, semantic-route validation, and metadata contract suites (250 tests passing in the full suite).
 
-## Last-checked: 2026-09-10
+## Last-checked: 2026-09-13

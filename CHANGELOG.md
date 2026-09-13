@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.4 - 2026-09-13
+
+### Discoverability, Target Personas, Comparative Matrix & 18-Anchor Nav Parity (Pfad B) (2026-09-13)
+- **Target Personas & Discoverability Framework:** Integrated structured persona specifications across `README.md` and `README_de.md` addressing 4 core developer and operator archetypes (AI Infrastructure Engineers, Multi-Agent Runtime Developers, Enterprise SecOps & Compliance, and Local Homelab Automators), paired with indexed high-intent discovery topic tags.
+- **10-Dimension Comparative Matrix vs Alternatives:** Added comprehensive architectural comparison against Static MCP Configurations (`claude_desktop_config.json`), Monolithic MCP Meta-Servers, Heavyweight Agent Frameworks (LangChain/CrewAI), and Cloud LLMOps / Remote Gateways across 10 technical dimensions (context efficiency, process lifecycle, local-first safety, policy gating, secret redaction, and multi-agent governance).
+- **Third-Party Open-Source Licensing Section:** Added dedicated Third-Party Licenses & Transparency section in both English and German documentation linking directly to `THIRD_PARTY_LICENSES.md`, attesting 100% permissive open-source dependencies (MIT, BSD-2-Clause, Apache-2.0) and 0% copyleft exposure.
+- **Quick Navigation Parity Expansion (18 Anchors):** Expanded Quick Navigation to 18 reciprocal anchors across `README.md` and `README_de.md`, ensuring 100% conceptual and navigational link symmetry.
+- **Manifest & Metadata Harmonization:** Synchronized version `0.7.4` across `package.json`, `server.json`, `glama.json`, `src/index.ts`, `llms.txt`, and documentation (`README.md`, `README_de.md`).
+- **Verified Date Badge:** Added Shields.io verification badge (`verified-2026--09--13-blue.svg`) linked to CHANGELOG.md.
+- **Metadata Contract Test Suite Expansion (`test/metadata.test.ts`):** Added automated assertions validating version `0.7.4`, 18-anchor Quick Navigation parity, Target Personas sections, Comparative Matrix sections, Third-Party Licensing sections, and CHANGELOG entry presence (250 tests passing, 100% green).
+
 ## 0.7.3 - 2026-09-12
 
 ### Technical Hygiene, CI Matrix Timeout Hardening, .gitignore Hardening & Metadata Contract Parity (Pfad A) (2026-09-12)

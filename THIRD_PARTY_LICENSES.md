@@ -129,3 +129,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 - **License:** MIT License
 - **Repository:** https://github.com/DefinitelyTyped/DefinitelyTyped
 - **SPDX Identifier:** `MIT`
+
+---
+
+## Compliance & Audit Summary / Lizenz- & Audit-Übersicht
+
+- **Audit Date / Prüfdatum:** 2026-09-13
+- **Audited By / Prüfer:** Gemini / Antigravity Agent (Pfad B Discoverability, Marketing & License Audit)
+- **Permissive Open-Source Ratio:** 100% (MIT, BSD-2-Clause, Apache-2.0)
+- **Copyleft Exposure (GPL / LGPL / AGPL):** 0%
+- **Commercial & Local-First Use:** Fully Permitted / Uneingeschränkt zulässig
+- **Network Egress / Telemetry:** 0% (Zero outbound tracking or metrics collection)

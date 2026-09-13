@@ -17,7 +17,7 @@ describe("metadata & manifest parity", () => {
   const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf-8");
 
   it("ensures version parity across package.json, server.json, and glama.json", () => {
-    expect(packageJson.version).toBe("0.7.3");
+    expect(packageJson.version).toBe("0.7.4");
     expect(packageJson.version).toBe(serverJson.version);
     expect(packageJson.version).toBe(glamaJson.version);
     expect(serverJson.packages[0].version).toBe(packageJson.version);
@@ -41,8 +41,8 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-09-12");
-    expect(llmsTxt).toContain("Test status: 247/247 Vitest tests passing (100% green)");
+    expect(llmsTxt).toContain("Last-checked: 2026-09-13");
+    expect(llmsTxt).toContain("Test status: 250/250 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("MIT");
@@ -60,7 +60,8 @@ describe("metadata & manifest parity", () => {
       "Ecosystem-ellmos--ai-blue.svg",
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
-      "Vitest-247%20passed-brightgreen.svg",
+      "Vitest-250%20passed-brightgreen.svg",
+      "verified-2026--09--13-blue.svg",
       "MCP%20Tools-34-blue.svg",
       "Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg",
       "Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg",
@@ -221,29 +222,95 @@ describe("metadata & manifest parity", () => {
     }
   });
 
-  it("ensures quick navigation has 15 anchors with 100% conceptual parity between README.md and README_de.md", () => {
+  it("ensures quick navigation has 18 anchors with 100% conceptual parity between README.md and README_de.md", () => {
     const enQuickNav = readmeEn.split("### Quick Navigation")[1]?.split("---")[0]?.trim() || "";
     const deQuickNav = readmeDe.split("### Schnellnavigation")[1]?.split("---")[0]?.trim() || "";
 
     const enAnchors = (enQuickNav.match(/\[([^\]]+)\]\(([^)]+)\)/g) || []);
     const deAnchors = (deQuickNav.match(/\[([^\]]+)\]\(([^)]+)\)/g) || []);
 
-    expect(enAnchors.length).toBe(15);
-    expect(deAnchors.length).toBe(15);
+    expect(enAnchors.length).toBe(18);
+    expect(deAnchors.length).toBe(18);
 
     expect(enQuickNav).toContain("#installation");
     expect(deQuickNav).toContain("#installation");
+    expect(enQuickNav).toContain("#target-personas--discoverability");
+    expect(deQuickNav).toContain("#zielgruppen--auffindbarkeit");
+    expect(enQuickNav).toContain("#comparative-matrix-vs-alternatives");
+    expect(deQuickNav).toContain("#vergleichsmatrix-gegenueber-alternativen");
     expect(enQuickNav).toContain("#system-architecture");
     expect(deQuickNav).toContain("#systemarchitektur");
     expect(enQuickNav).toContain("#governance--runtime-invariants");
     expect(deQuickNav).toContain("#governance--und-laufzeit-invarianten");
+    expect(enQuickNav).toContain("#third-party-licenses--transparency");
+    expect(deQuickNav).toContain("#drittanbieter-lizenzen--transparenz");
     expect(enQuickNav).toContain("SECURITY.md");
     expect(deQuickNav).toContain("SECURITY.md");
     expect(enQuickNav).toContain("llms.txt");
     expect(deQuickNav).toContain("llms.txt");
   });
 
-  it("ensures THIRD_PARTY_LICENSES.md covers all direct runtime and dev dependencies", () => {
+  it("ensures Target Personas & Discoverability section is present in both READMEs with 4 core archetypes", () => {
+    expect(readmeEn).toContain("## Target Personas & Discoverability");
+    expect(readmeDe).toContain("## Zielgruppen & Auffindbarkeit");
+
+    const archetypesEn = [
+      "AI Infrastructure Engineers & MCP Tooling Architects",
+      "Multi-Agent Runtime Developers & Swarm Operators",
+      "Enterprise SecOps & Compliance Officers",
+      "Local Homelab Automators & AI Power Users",
+    ];
+    for (const archetype of archetypesEn) {
+      expect(readmeEn).toContain(archetype);
+    }
+
+    const archetypesDe = [
+      "KI-Infrastruktur-Ingenieure & MCP-Architekten",
+      "Multi-Agenten-Entwickler & Swarm-Operatoren",
+      "Enterprise SecOps & Compliance-Verantwortliche",
+      "Lokale Homelab-Automatisierer & Power-User",
+    ];
+    for (const archetype of archetypesDe) {
+      expect(readmeDe).toContain(archetype);
+    }
+
+    expect(readmeEn).toContain("Discovery Keywords & High-Intent Topic Tags");
+    expect(readmeDe).toContain("Suchbegriffe & Themen-Tags");
+  });
+
+  it("ensures Comparative Matrix vs Alternatives is present in both READMEs across alternatives", () => {
+    expect(readmeEn).toContain("## Comparative Matrix vs Alternatives");
+    expect(readmeDe).toContain("## Vergleichsmatrix gegenüber Alternativen");
+
+    const alternativesEn = [
+      "Static MCP Configurations",
+      "Monolithic MCP Meta-Servers",
+      "Heavyweight Agent Frameworks",
+      "Cloud LLMOps & Remote Gateways",
+    ];
+    for (const alt of alternativesEn) {
+      expect(readmeEn).toContain(alt);
+    }
+
+    const alternativesDe = [
+      "Statische MCP-Konfiguration",
+      "Monolithische MCP-Meta-Server",
+      "Schwergewichtige Agenten-Frameworks",
+      "Cloud-LLMOps & Remote Gateways",
+    ];
+    for (const alt of alternativesDe) {
+      expect(readmeDe).toContain(alt);
+    }
+  });
+
+  it("ensures dedicated Third-Party Licenses & Transparency section is present in both READMEs", () => {
+    expect(readmeEn).toContain("## Third-Party Licenses & Transparency");
+    expect(readmeDe).toContain("## Drittanbieter-Lizenzen & Transparenz");
+    expect(readmeEn).toContain("0% Copyleft / GPL / AGPL");
+    expect(readmeDe).toContain("0% Copyleft / GPL / AGPL");
+  });
+
+  it("ensures THIRD_PARTY_LICENSES.md covers all direct runtime and dev dependencies with audit summary", () => {
     const thirdParty = fs.readFileSync(path.join(root, "THIRD_PARTY_LICENSES.md"), "utf-8");
     expect(thirdParty).toContain("@modelcontextprotocol/sdk");
     expect(thirdParty).toContain("zod");
@@ -252,18 +319,22 @@ describe("metadata & manifest parity", () => {
     expect(thirdParty).toContain("vitest");
     expect(thirdParty).toContain("MIT");
     expect(thirdParty).toContain("BSD-2-Clause");
-    expect(thirdParty).toContain("Apache-2.0");
+    expect(thirdParty).toContain("Audit Date / Prüfdatum");
+    expect(thirdParty).toContain("2026-09-13");
+    expect(thirdParty).toContain("Permissive Open-Source Ratio");
+    expect(thirdParty).toContain("100%");
   });
 
   it("ensures MARKETING-LOG.txt contains target personas, search terms, and governance invariants", () => {
     const marketingLog = fs.readFileSync(path.join(root, "MARKETING-LOG.txt"), "utf-8");
     expect(marketingLog).toContain("ellmos-controlcenter-mcp");
-    expect(marketingLog).toContain("0.7.3");
+    expect(marketingLog).toContain("0.7.4");
     expect(marketingLog).toContain("TARGET PERSONAS");
     expect(marketingLog).toContain("CORE DISCOVERABILITY KEYWORDS & SEARCH PHRASES");
     expect(marketingLog).toContain("GOVERNANCE & RUNTIME INVARIANTS");
     expect(marketingLog).toContain("INV-LOCAL-01");
     expect(marketingLog).toContain("INV-SLA-10");
+    expect(marketingLog).toContain("Pfad B Discoverability, Target Personas & Comparative Matrix Overhaul (v0.7.4)");
   });
 
   it("ensures package.json includes MARKETING-LOG.txt and THIRD_PARTY_LICENSES.md in files manifest", () => {
@@ -271,11 +342,12 @@ describe("metadata & manifest parity", () => {
     expect(packageJson.files).toContain("MARKETING-LOG.txt");
   });
 
-  it("ensures CHANGELOG.md documents latest 0.7.3 release with Pfad A hygiene details", () => {
+  it("ensures CHANGELOG.md documents latest 0.7.4 release with Pfad B discoverability details", () => {
     const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf-8");
-    expect(changelog).toContain("## 0.7.3 - 2026-09-12");
-    expect(changelog).toContain("CI Workflow Timeout Hardening");
-    expect(changelog).toContain(".gitignore Hardening");
+    expect(changelog).toContain("## 0.7.4 - 2026-09-13");
+    expect(changelog).toContain("Discoverability, Target Personas, Comparative Matrix & 18-Anchor Nav Parity");
+    expect(changelog).toContain("Target Personas & Discoverability Framework");
+    expect(changelog).toContain("10-Dimension Comparative Matrix vs Alternatives");
   });
 });
 
