@@ -141,6 +141,21 @@ def _describe_lock(lock_utils, lock_path: Path, scope: str, is_legacy: bool,
     }
 
 
+def _twin_config(scripts_dir: Path):
+    """twin_resolution-Block aus der lock_roots.json des Hosts, oder None.
+
+    Wird bewusst hier gelesen statt in lock_utils: die Bruecke kennt das
+    scripts-Verzeichnis des Hosts ohnehin, und lock_utils soll fuer diese
+    Abfrage keine Konfiguration von sich aus laden muessen."""
+    roots = scripts_dir / "lock_roots.json"
+    if not roots.is_file():
+        return None
+    try:
+        return json.loads(roots.read_text(encoding="utf-8")).get("twin_resolution")
+    except (OSError, ValueError):
+        return None
+
+
 def cmd_check_lock(args) -> dict:
     """Is this path locked, counting locks inherited from any parent directory?"""
     lock_utils, _ = _load_canonical(Path(args.scripts_dir))
@@ -161,16 +176,38 @@ def cmd_check_lock(args) -> dict:
 
     found: list[dict] = []
     errors: list[str] = []
+    twin_cfg = _twin_config(Path(args.scripts_dir))
     for distance, directory in enumerate(_ancestors(target)):
-        try:
-            active = lock_utils.active_locks(directory)
-        except OSError as exc:
-            errors.append(f"{directory}: {exc}")
-            continue
-        for name, scope, is_legacy in active:
-            found.append(
-                _describe_lock(lock_utils, directory / name, scope, is_legacy, directory, distance)
-            )
+        # Der Zwilling im jeweils anderen Baum zaehlt mit (Zwei-Baeume-Regel,
+        # T-20260913-785936980): ein Klon und sein OneDrive-Spiegel binden
+        # einander. Frisch geklonte Repos koennen den unversionierten
+        # LOCK.user.* gar nicht enthalten -- ohne diesen Schritt liest man
+        # dort aus einer leeren Stelle ein "clear".
+        directories = [directory]
+        if twin_cfg is not None and hasattr(lock_utils, "twin_dirs_for_path"):
+            twins, twin_status = lock_utils.twin_dirs_for_path(directory, twin_cfg)
+            if twin_status in ("index-missing", "pointer-unreadable"):
+                # Fail-closed wie ueberall in diesem Modul: eine Stelle, die
+                # nicht gelesen werden konnte, ist kein Beweis fuer Abwesenheit.
+                errors.append(
+                    f"{directory}: twin resolution {twin_status} -- a lock on the "
+                    f"other tree would be invisible"
+                )
+                continue
+            directories.extend(twins)
+        for source_dir in directories:
+            try:
+                active = lock_utils.active_locks(source_dir)
+            except OSError as exc:
+                errors.append(f"{source_dir}: {exc}")
+                continue
+            for name, scope, is_legacy in active:
+                entry = _describe_lock(
+                    lock_utils, source_dir / name, scope, is_legacy, source_dir, distance
+                )
+                if source_dir != directory:
+                    entry["from_twin"] = True
+                found.append(entry)
 
     if errors:
         # Part of the ancestor chain could not be read, so absence of a lock is not
