@@ -12,11 +12,11 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-250%20passed-brightgreen.svg)](https://vitest.dev/)
-[![Verified: 2026-09-13](https://img.shields.io/badge/verified-2026--09--13-blue.svg)](CHANGELOG.md)
+[![Vitest](https://img.shields.io/badge/Vitest-252%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Verified: 2026-09-14](https://img.shields.io/badge/verified-2026--09--14-blue.svg)](CHANGELOG.md)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
-[![Privacy](https://img.shields.io/badge/Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg)](SECURITY.md)
+[![Privacy](https://img.shields.io/badge/Privacy-Local--First%20%7C%20Explicit%20HTTPS-success.svg)](SECURITY.md)
 [![Security](https://img.shields.io/badge/Security-Local--First%20%7C%20Policy--Gated-blue.svg)](SECURITY.md)
 [![Security SLA](https://img.shields.io/badge/Security%20SLA-48h%20SLA-blue.svg)](SECURITY.md)
 [![Ecosystem](https://img.shields.io/badge/Ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
@@ -41,7 +41,7 @@ An advanced **Model Context Protocol (MCP) administration server and policy-gate
 > 1. **Control Plane (Administration & Configuration):** Inventories local servers, resolves profiles, manages capability bundles, mirrors system governance/locks, and generates configurations (`controlcenter_switch_profile`, `controlcenter_build_catalog`).
 > 2. **Policy-Gated Gateway (On-Demand Tool Invocation):** Via `controlcenter_invoke` and `controlcenter_list_available_tools`, agents can list and invoke tools on backend MCP servers that the host agent has **not loaded into its active context** — strictly bounded by pattern-based policy rules (`data/gateway-policy.json`), argument auditing, and secret scrubbing.
 >
-> It operates **100% locally with Zero-Egress** and enforces fail-closed checks across locks, permissions, and gateway policies.
+> Administration and discovery are local-first with no telemetry or background egress. An explicitly configured gateway call may contact a remote HTTPS backend; redirects are refused and an optional host allowlist can narrow the destination set. Lock and permission tools fail closed when their authority sources cannot be verified.
 
 > **Provider note:** ControlCenter works with any MCP-capable client (Claude Code, Codex, Gemini, or any stdio-based MCP host). The profile management tools default to Claude Code's profile directory (`~/.claude/profiles`) but accept any directory via `ELLMOS_PROFILE_ROOT`. The skill and plugin inventory tools are scoped to Claude Code conventions by default; see the environment variables below for override options.
 
@@ -53,10 +53,10 @@ ControlCenter provides **discovery, profile visibility, dashboard workflows, cap
 |:---|:---|:---|:---|
 | **AI Infrastructure Engineers & MCP Tooling Architects** | Scaling local fleets of MCP servers across multi-agent environments (Claude Code, Codex, Antigravity, Gemini). | Massive agent context window consumption when dozens of MCP servers are loaded simultaneously; config drift across agent profiles. | Dynamic capability bundles (`data/capability-bundles.json`), hash-consistent profile resolution (`controlcenter_resolve_profile`), and on-demand tool probes without active memory overhead. |
 | **Multi-Agent Runtime Developers & Swarm Operators** | Orchestrating autonomous agent loops and workflows (BACH, USMC, LangChain, AutoGen, CrewAI). | Lack of dynamic runtime tool access for tools not pre-declared at agent startup; danger of background process leakage. | Connect-per-call policy-gated gateway (`controlcenter_invoke`) allowing agents to invoke unloaded backend MCP tools with zero lingering zombie processes. |
-| **Enterprise SecOps & Compliance Officers** | Auditing local developer environments, sensitive credentials, and agent autonomy boundaries. | Prompt injection attacks via untrusted tool outputs, API key leakage in stack traces, and unmonitored tool executions. | Strict 100% Local-First & Zero-Egress guarantees, fail-closed policy gating (`data/gateway-policy.json`), recursive credential sanitization, untrusted data wrapping, and append-only audit trails (`gateway-audit.jsonl`). |
+| **Enterprise SecOps & Compliance Officers** | Auditing local developer environments, sensitive credentials, and agent autonomy boundaries. | Prompt injection attacks via untrusted tool outputs, API key leakage in stack traces, and unmonitored tool executions. | Local-first administration with no telemetry or background egress, explicit HTTPS boundaries for remote gateway calls, fail-closed policy loading (`data/gateway-policy.json`), bounded credential sanitization, untrusted data wrapping, and append-only audit trails (`gateway-audit.jsonl`). |
 | **Local Homelab Automators & AI Power Users** | Managing desktop agents, workflow engines (n8n), and local developer tools. | Fragmented tooling, opaque agent permissions, conflicting locks, and lack of a central visual overview of active MCP stacks. | Centralized local web dashboard (`127.0.0.1:3737`), bidirectional i18n (EN/DE), and unified host register mirrors for locks (`LOCK*.txt`), permissions (`LOCK.permissions.json`), and decisions. |
 
-**Discovery Keywords & High-Intent Topic Tags:** `mcp-control-plane`, `model-context-protocol`, `mcp-gateway`, `claude-code-profiles`, `policy-gated-execution`, `zero-egress`, `local-first-ai`, `secret-scrubber`, `multi-agent-coordination`, `capability-bundles`, `fail-closed-security`, `mcp-audit-logging`, `developer-tools`.
+**Discovery Keywords & High-Intent Topic Tags:** `mcp-control-plane`, `model-context-protocol`, `mcp-gateway`, `claude-code-profiles`, `policy-gated-execution`, `no-telemetry`, `local-first-ai`, `secret-scrubber`, `multi-agent-coordination`, `capability-bundles`, `fail-closed-security`, `mcp-audit-logging`, `developer-tools`.
 
 ---
 
@@ -67,7 +67,7 @@ ControlCenter provides **discovery, profile visibility, dashboard workflows, cap
 | **Architecture & Role** | **Dual Control Plane + Ephemeral Gateway** | Static JSON file | Single massive combined process | Embedded code framework | Remote hosted SaaS / proxy |
 | **Token & Context Efficiency** | **Dynamic On-Demand Tool Invocation (`controlcenter_invoke`)** | Poor (All tools must be pre-loaded into context) | Extreme bloat (Dozens of tools in prompt) | Varies (Tools loaded into Python process memory) | Network payload overhead |
 | **Process Lifecycle** | **Connect-Per-Call stdio (Zero Zombie Processes)** | Always-on persistent background daemons | Single monolithic background process | Tied to application execution thread | Cloud-hosted containers |
-| **Network Egress & Privacy** | **100% Local-First & Zero-Egress (Loopback only)** | Local stdio / HTTP | Local stdio | Depends on cloud LLM integrations | High egress (Tool data sent to cloud servers) |
+| **Network Egress & Privacy** | **Local-first; no telemetry/background egress; explicit remote HTTPS gateway targets are supported** | Local stdio / HTTP | Local stdio | Depends on cloud LLM integrations | High egress (Tool data sent to cloud servers) |
 | **Policy Gating & Hardening** | **Fail-Closed Pattern Rules + Recursive Secret Scrubbing** | None (Direct unrestricted host access) | Rare / Custom ad-hoc filtering | Inconsistent application-level checks | Organization-level cloud IAM |
 | **Untrusted Data Isolation** | **Enforced GFM Banners for Tool Outputs** | None (Raw strings fed directly to LLM) | None | Manual prompt templates | Cloud provider sandboxing |
 | **Host Governance Awareness** | **Native Multi-Agent Locks (`LOCK*.txt`) & Permissions** | None | None | None | None |
@@ -146,14 +146,14 @@ sequenceDiagram
 
 ## Governance & Runtime Invariants
 
-ControlCenter enforces 10 architectural and runtime invariants to guarantee local-first safety, zero external egress, fail-closed policy gating, and multi-agent coordination resilience across environments:
+ControlCenter enforces 10 architectural and runtime invariants to guarantee local-first administration, explicit outbound boundaries, fail-closed policy loading, and multi-agent coordination resilience across environments:
 
 | ID | Invariant | Description | Enforcement Mechanism |
 |---|---|---|---|
-| `INV-LOCAL-01` | **100% Local-First & Zero-Egress** | All discovery, profile resolution, catalog indexing, and probers execute strictly on localhost. No telemetry or analytics. | Zero outbound network calls; loopback binding only (`127.0.0.1:3737`). |
+| `INV-LOCAL-01` | **Local-First & Explicit Egress** | Discovery, profile resolution, catalog indexing, and the dashboard execute locally with no telemetry or background egress. Explicit gateway calls may reach remote HTTPS backends. | Dashboard binds to loopback (`127.0.0.1:3737`); remote HTTP is refused, redirects are refused, and an optional host allowlist narrows HTTPS targets. |
 | `INV-GATE-02` | **Fail-Closed Gateway Policy Guard** | Remote/unloaded tool invocations via `controlcenter_invoke` strictly require pattern authorization in `data/gateway-policy.json`. | Missing, unreadable, or invalid policy files immediately refuse execution (fail closed). |
 | `INV-SUB-03` | **Ephemeral Child Process Boundaries** | Backend stdio processes for probed and invoked MCP servers are spawned on-demand per call and terminated immediately in a `finally` block. | `connect-per-call` architecture prevents lingering background zombie processes. |
-| `INV-SCRUB-04` | **Recursive Secret Redaction & Finite Budgets** | Forwarded inputs/outputs are recursively scrubbed for credentials across all levels. Finite memory budgets (256 KB req, 1 MB res). | Recursive regex + metadata key scrubbing with maximum depth and content block caps. |
+| `INV-SCRUB-04` | **Bounded Result Redaction & Finite Budgets** | Results are traversed recursively: narrow credential patterns are redacted everywhere, while key-based wiping applies only to structured metadata so requested content is not silently rewritten. Requests are size-bounded and argument values are omitted from the audit log. | Recursive narrow-pattern redaction, structured-metadata key scrubbing, maximum depth and content-block caps, 256 KB request and 1 MB response defaults. |
 | `INV-PRIV-05` | **Non-Elevation / RunAsInvoker** | Server operates strictly in unprivileged user space. Never prompts for root/admin elevation. | Operates without root or UAC elevation across Windows, macOS, and Linux. |
 | `INV-LOCK-06` | **Canonical Multi-Agent Lock Awareness** | Respects system-wide `LOCK*.txt`, `LOCK.user.*`, and `LOCK.until.*` tokens fail-closed. | Inspects lock trees via host Python lock utilities; unconfigured returns `unknown`. |
 | `INV-PERM-07` | **Nearest Permission Register Introspection** | Evaluates nearest `LOCK.permissions.json` up directory trees (`deny > ask > allow > default`). | Hierarchical resolution without granting synthetic permissions or modifying state. |
@@ -635,7 +635,7 @@ ellmos-controlcenter-mcp/
 This project adheres strictly to **100% permissive open-source licensing** across all direct runtime and development dependencies:
 - **0% Copyleft / GPL / AGPL** exposure.
 - Fully audited and compatible with commercial, enterprise, and local-first deployments.
-- Audited dependencies: `@modelcontextprotocol/sdk` (MIT), `zod` (MIT), `update-notifier` (BSD-2-Clause), `typescript` (Apache-2.0), `vitest` (MIT).
+- Audited direct dependencies: `@modelcontextprotocol/sdk` (MIT), `zod` (MIT), `typescript` (Apache-2.0), `vite`/`vitest` (MIT), `@types/node` (MIT), and `@emnapi/core`/`@emnapi/runtime` (MIT).
 
 Full SPDX license texts, copyright notices, and compliance attestations are documented in [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md).
 

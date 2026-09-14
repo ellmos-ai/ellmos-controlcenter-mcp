@@ -5,6 +5,7 @@ import * as path from "path";
 describe("metadata & manifest parity", () => {
   const root = path.resolve(__dirname, "..");
   const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf-8"));
+  const packageLock = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf-8"));
   const serverJson = JSON.parse(fs.readFileSync(path.join(root, "server.json"), "utf-8"));
   const glamaJson = JSON.parse(fs.readFileSync(path.join(root, "glama.json"), "utf-8"));
   const llmsTxt = fs.readFileSync(path.join(root, "llms.txt"), "utf-8");
@@ -16,11 +17,17 @@ describe("metadata & manifest parity", () => {
   const ciYml = fs.readFileSync(path.join(root, ".github", "workflows", "ci.yml"), "utf-8");
   const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf-8");
 
-  it("ensures version parity across package.json, server.json, and glama.json", () => {
+  it("ensures version parity across package.json, package-lock.json, server.json, and glama.json", () => {
     expect(packageJson.version).toBe("0.7.4");
+    expect(packageLock.version).toBe(packageJson.version);
+    expect(packageLock.packages[""].version).toBe(packageJson.version);
     expect(packageJson.version).toBe(serverJson.version);
     expect(packageJson.version).toBe(glamaJson.version);
     expect(serverJson.packages[0].version).toBe(packageJson.version);
+    expect(packageJson.engines.node).toBe(">=20.0.0");
+    expect(readmeEn).toContain("node-%3E%3D20-brightgreen.svg");
+    expect(readmeDe).toContain("node-%3E%3D20-brightgreen.svg");
+    expect(llmsTxt).toContain("Runtime: Node.js >=20");
   });
 
   it("ensures tool count matches across index.ts, glama.json, and llms.txt", () => {
@@ -41,8 +48,8 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-09-13");
-    expect(llmsTxt).toContain("Test status: 250/250 Vitest tests passing (100% green)");
+    expect(llmsTxt).toContain("Last-checked: 2026-09-14");
+    expect(llmsTxt).toContain("Test status: 252/252 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("MIT");
@@ -60,11 +67,11 @@ describe("metadata & manifest parity", () => {
       "Ecosystem-ellmos--ai-blue.svg",
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
-      "Vitest-250%20passed-brightgreen.svg",
-      "verified-2026--09--13-blue.svg",
+      "Vitest-252%20passed-brightgreen.svg",
+      "verified-2026--09--14-blue.svg",
       "MCP%20Tools-34-blue.svg",
       "Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg",
-      "Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg",
+      "Privacy-Local--First%20%7C%20Explicit%20HTTPS-success.svg",
       "Security-Local--First%20%7C%20Policy--Gated-blue.svg",
       "Security%20SLA-48h%20SLA-blue.svg",
       "actions/workflows/ci.yml/badge.svg",
@@ -138,7 +145,7 @@ describe("metadata & manifest parity", () => {
     expect(ciYml).toContain("actions/checkout@v4");
     expect(ciYml).toContain("actions/setup-node@v4");
     expect(ciYml).toContain("os: [ubuntu-latest, windows-latest, macos-latest]");
-    expect(ciYml).toContain("node-version: [18.x, 20.x, 22.x, 24.x]");
+    expect(ciYml).toContain("node-version: [20.x, 22.x, 24.x]");
     expect(ciYml).toContain("npm run test");
     expect(ciYml).toContain("npm run build");
   });
@@ -197,9 +204,11 @@ describe("metadata & manifest parity", () => {
     }
   });
 
-  it("ensures runtime package dependencies remain lean with zero external telemetry", () => {
+  it("ensures runtime package dependencies remain lean without an automatic update client", () => {
     const deps = Object.keys(packageJson.dependencies || {});
-    expect(deps).toEqual(["@modelcontextprotocol/sdk", "update-notifier", "zod"]);
+    expect(deps).toEqual(["@modelcontextprotocol/sdk", "zod"]);
+    expect(indexTs).not.toContain("update-notifier");
+    expect(indexTs).not.toContain("updateNotifier");
   });
 
   it("ensures READMEs and llms.txt contain Governance & Runtime Invariants (INV-LOCAL-01 to INV-SLA-10)", () => {
@@ -220,6 +229,16 @@ describe("metadata & manifest parity", () => {
       expect(readmeDe).toContain(inv);
       expect(llmsTxt).toContain(inv);
     }
+  });
+
+  it("keeps egress and redaction claims within the implemented gateway boundary", () => {
+    for (const document of [readmeEn, readmeDe, llmsTxt]) {
+      expect(document).toContain("INV-LOCAL-01");
+      expect(document).toContain("HTTPS");
+      expect(document).not.toContain("100% Local-First & Zero-Egress");
+    }
+    expect(readmeEn).toContain("key-based wiping applies only to structured metadata");
+    expect(readmeDe).toContain("Key-basiertes Entfernen gilt nur für strukturierte Metadaten");
   });
 
   it("ensures quick navigation has 18 anchors with 100% conceptual parity between README.md and README_de.md", () => {
@@ -314,13 +333,12 @@ describe("metadata & manifest parity", () => {
     const thirdParty = fs.readFileSync(path.join(root, "THIRD_PARTY_LICENSES.md"), "utf-8");
     expect(thirdParty).toContain("@modelcontextprotocol/sdk");
     expect(thirdParty).toContain("zod");
-    expect(thirdParty).toContain("update-notifier");
+    expect(thirdParty).not.toContain("update-notifier");
     expect(thirdParty).toContain("typescript");
     expect(thirdParty).toContain("vitest");
     expect(thirdParty).toContain("MIT");
-    expect(thirdParty).toContain("BSD-2-Clause");
     expect(thirdParty).toContain("Audit Date / Prüfdatum");
-    expect(thirdParty).toContain("2026-09-13");
+    expect(thirdParty).toContain("2026-09-14");
     expect(thirdParty).toContain("Permissive Open-Source Ratio");
     expect(thirdParty).toContain("100%");
   });

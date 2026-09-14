@@ -2,8 +2,8 @@
 
 > MCP control-plane server for local MCP stack discovery, MCP profile inspection, capability bundle recommendation, policy audits, i18n-aware outputs, a local dashboard, and a policy-gated, audited gateway that lists and invokes tools on backend MCP servers the host has not loaded. It prepares configuration and does not change running sessions.
 
-Last-checked: 2026-09-13
-Test status: 250/250 Vitest tests passing (100% green)
+Last-checked: 2026-09-14
+Test status: 252/252 Vitest tests passing (100% green)
 Canonical repository: https://github.com/ellmos-ai/ellmos-controlcenter-mcp
 npm package: https://www.npmjs.com/package/ellmos-controlcenter-mcp
 MCP registry name: io.github.ellmos-ai/ellmos-controlcenter-mcp
@@ -27,10 +27,10 @@ Gateway hardening: forwarded payloads are treated as untrusted foreign data. Res
 
 ## Governance & Runtime Invariants
 
-1. `INV-LOCAL-01`: 100% Local-First & Zero-Egress (strict loopback binding 127.0.0.1:3737, no outbound telemetry).
+1. `INV-LOCAL-01`: Local-First & Explicit Egress (dashboard loopback binding, no telemetry or background egress; explicit gateway calls may reach remote HTTPS backends).
 2. `INV-GATE-02`: Fail-Closed Gateway Policy Guard (data/gateway-policy.json enforcement; denies unknown/invalid).
 3. `INV-SUB-03`: Ephemeral Child Process Boundaries (connect-per-call stdio lifecycle; zero lingering background processes).
-4. `INV-SCRUB-04`: Recursive Secret Redaction & Finite Budgets (regex/key wiping across all levels, 256KB req / 1MB res caps).
+4. `INV-SCRUB-04`: Bounded Result Redaction & Finite Budgets (narrow credential patterns throughout results, key wiping only in structured metadata, 256KB request / 1MB response caps).
 5. `INV-PRIV-05`: Non-Elevation / RunAsInvoker (operates strictly in unprivileged user space).
 6. `INV-LOCK-06`: Canonical Multi-Agent Lock Awareness (respects LOCK*.txt, LOCK.user.*, LOCK.until.* fail-closed).
 7. `INV-PERM-07`: Nearest Permission Register Introspection (evaluates LOCK.permissions.json up directory trees).
@@ -124,14 +124,14 @@ ellmos-controlcenter-mcp
 
 ## Target Personas & Comparative Advantage
 
-- **Target Personas:** AI Infrastructure Engineers (fleet scaling, bundle management), Multi-Agent Runtime Developers (on-demand tool invocation via gateway without zombie processes), Enterprise SecOps (fail-closed policy guard, recursive secret redaction, zero-egress), and Local Homelab Automators (local dashboard, multi-agent lock awareness).
-- **Comparative Advantages:** Dual control-plane + ephemeral connect-per-call gateway; dynamic on-demand tool calls (`controlcenter_invoke`) saving massive context window space vs static configurations; 100% local-first loopback architecture; fail-closed policy file (`data/gateway-policy.json`); native multi-agent lock & permission register introspection; 100% permissive dependencies with zero copyleft.
+- **Target Personas:** AI Infrastructure Engineers (fleet scaling, bundle management), Multi-Agent Runtime Developers (on-demand tool invocation via gateway without zombie processes), Enterprise SecOps (fail-closed policy loading, bounded result redaction, explicit HTTPS egress), and Local Homelab Automators (local dashboard, multi-agent lock awareness).
+- **Comparative Advantages:** Dual control-plane + ephemeral connect-per-call gateway; dynamic on-demand tool calls (`controlcenter_invoke`) saving substantial context-window space versus static configurations; local-first administration without telemetry or background egress; explicit remote HTTPS boundaries; fail-closed policy file (`data/gateway-policy.json`); native multi-agent lock and permission-register introspection; permissively licensed direct dependencies.
 
 ## Important Files
 
 - `README.md`: full English documentation with Target Personas and Comparative Matrix.
 - `README_de.md`: German documentation with Zielgruppen and Vergleichsmatrix.
-- `SECURITY.md`: bilingual security policy and zero-egress model.
+- `SECURITY.md`: bilingual security policy, no-telemetry/background-egress default, and explicit remote HTTPS gateway boundary.
 - `THIRD_PARTY_LICENSES.md`: third-party open-source dependency licenses, audit summary, and notices.
 - `MARKETING-LOG.txt`: local marketing, discoverability, search phrases, and governance log.
 - `CHANGELOG.md`: version history and release logs.
@@ -144,6 +144,6 @@ ellmos-controlcenter-mcp
 - `src/mcpCatalog.ts`: reads `mcps.catalog.v1.json` and joins it onto the directory scan; fail-soft on a missing, unreadable, or foreign-schema catalog.
 - `src/bundles.ts`: capability bundle definitions, suggestions, and tool assignment helpers.
 - `src/dashboard.ts`: local dashboard server.
-- `test/controlroom.test.ts`, `test/catalog.test.ts`, `test/semanticRouting.test.ts`, and `test/metadata.test.ts`: unit and integration coverage for the host-register bridge, canonical policy-registry validation, exact scalar governance allowlists, catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, semantic-route validation, and metadata contract suites (250 tests passing in the full suite).
+- `test/controlroom.test.ts`, `test/catalog.test.ts`, `test/semanticRouting.test.ts`, and `test/metadata.test.ts`: unit and integration coverage for the host-register bridge, canonical policy-registry validation, exact scalar governance allowlists, catalog, profiles, bundles, policy rules, strict map validation, deployed-only endpoint verification, deterministic collision handling, semantic-route validation, and metadata contract suites (252 tests passing in the full suite).
 
-## Last-checked: 2026-09-13
+## Last-checked: 2026-09-14

@@ -13,11 +13,11 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-250%20passed-brightgreen.svg)](https://vitest.dev/)
-[![Verified: 2026-09-13](https://img.shields.io/badge/verified-2026--09--13-blue.svg)](CHANGELOG.md)
+[![Vitest](https://img.shields.io/badge/Vitest-252%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Verified: 2026-09-14](https://img.shields.io/badge/verified-2026--09--14-blue.svg)](CHANGELOG.md)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
-[![Privacy](https://img.shields.io/badge/Privacy-Zero--Egress%20%7C%20100%25%20Offline-success.svg)](SECURITY.md)
+[![Privacy](https://img.shields.io/badge/Privacy-Local--First%20%7C%20Explicit%20HTTPS-success.svg)](SECURITY.md)
 [![Security](https://img.shields.io/badge/Security-Local--First%20%7C%20Policy--Gated-blue.svg)](SECURITY.md)
 [![Security SLA](https://img.shields.io/badge/Security%20SLA-48h%20SLA-blue.svg)](SECURITY.md)
 [![Ecosystem](https://img.shields.io/badge/Ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
@@ -42,7 +42,7 @@ Ein moderner **Model Context Protocol (MCP) Administrationsserver und Policy-Gat
 > 1. **Control-Plane (Verwaltung & Konfiguration):** Inventarisiert lokale Server, löst Profile auf, verwaltet Capability-Bundles, spiegelt System-Governance/Locks und erzeugt Konfigurationen (`controlcenter_switch_profile`, `controlcenter_build_catalog`).
 > 2. **Policy-Gated Gateway (Bedarfsaufruf):** Über `controlcenter_invoke` und `controlcenter_list_available_tools` können Agenten Werkzeuge auf Backend-MCP-Servern auflisten und ausführen, die der Host-Agent **gar nicht selbst im Kontext geladen hat** — strikt abgesichert über regelbasierte Policies (`data/gateway-policy.json`), Argument-Auditing und Secret-Scrubbing.
 >
-> Es arbeitet **100 % lokal mit Zero-Egress** und erzwingt Fail-Closed-Prüfungen über Locks, Berechtigungen und Gateway-Richtlinien.
+> Verwaltung und Discovery sind lokal-first ohne Telemetrie oder ausgehende Hintergrundaufrufe. Ein ausdrücklich konfigurierter Gateway-Aufruf kann ein entferntes HTTPS-Backend kontaktieren; Redirects werden verweigert und eine optionale Host-Allowlist kann die Zielmenge begrenzen. Lock- und Berechtigungswerkzeuge arbeiten fail-closed, wenn ihre Autoritätsquellen nicht verifiziert werden können.
 
 > **Anbieterhinweis:** ControlCenter funktioniert mit jedem MCP-fähigen Client (Claude Code, Codex, Gemini oder beliebiger stdio-basierter MCP-Host). Die Profilverwaltungs-Tools lesen standardmäßig das Profilverzeichnis von Claude Code (`~/.claude/profiles`), akzeptieren aber beliebige Verzeichnisse über `ELLMOS_PROFILE_ROOT`. Skill- und Plugin-Inventar-Tools folgen standardmäßig Claude-Code-Konventionen; die Umgebungsvariablen unten ermöglichen Overrides.
 
@@ -54,10 +54,10 @@ ControlCenter bietet **Discovery, Profilsichtbarkeit, Dashboard-Workflows, Capab
 |:---|:---|:---|:---|
 | **KI-Infrastruktur-Ingenieure & MCP-Architekten** | Skalierung lokaler MCP-Server-Flotten in Multi-Agenten-Umgebungen (Claude Code, Codex, Antigravity, Gemini). | Hoher Token-Verbrauch im Kontextfenster, wenn Dutzende Server gleichzeitig geladen werden; Konfigurationsdrift zwischen Agenten-Profilen. | Dynamische Fähigkeiten-Bündel (`data/capability-bundles.json`), hash-konsistente Profil-Auflösung (`controlcenter_resolve_profile`) und bedarfsgesteuerte Werkzeug-Prüfungen ohne dauerhaften Speicher-Overhead. |
 | **Multi-Agenten-Entwickler & Swarm-Operatoren** | Orchestrierung autonomer Agenten-Schleifen und Workflows (BACH, USMC, LangChain, AutoGen, CrewAI). | Fehlender dynamischer Zugriff auf Werkzeuge, die beim Start des Agenten nicht vorab deklariert wurden; Gefahr von Hintergrund-Zombie-Prozessen. | Ephemeres, richtliniengesteuertes Gateway (`controlcenter_invoke`) mit Connect-per-Call-Architektur: Aufruf ungeladener Backend-Tools ohne persistente Restprozesse. |
-| **Enterprise SecOps & Compliance-Verantwortliche** | Auditierung lokaler Entwicklerumgebungen, Schutz sensibler Zugangsdaten und Autonomie-Grenzen für Agenten. | Prompt-Injection-Risiken durch ungeprüfte Werkzeugausgaben, API-Schlüssel-Lecks in Stacktraces und unüberwachte Werkzeugausführungen. | Strikte 100% Local-First- und Zero-Egress-Garantien, Fail-Closed-Richtliniengate (`data/gateway-policy.json`), rekursive Geheimnis-Bereinigung, Kennzeichnung unvertrauenswürdiger Daten und Audit-Trail (`gateway-audit.jsonl`). |
+| **Enterprise SecOps & Compliance-Verantwortliche** | Auditierung lokaler Entwicklerumgebungen, Schutz sensibler Zugangsdaten und Autonomie-Grenzen für Agenten. | Prompt-Injection-Risiken durch ungeprüfte Werkzeugausgaben, API-Schlüssel-Lecks in Stacktraces und unüberwachte Werkzeugausführungen. | Local-first-Verwaltung ohne Telemetrie oder Hintergrund-Egress, explizite HTTPS-Grenzen für entfernte Gateway-Aufrufe, fail-closed geladenes Richtliniengate (`data/gateway-policy.json`), begrenzte Geheimnis-Bereinigung, Kennzeichnung unvertrauenswürdiger Daten und Audit-Trail (`gateway-audit.jsonl`). |
 | **Lokale Homelab-Automatisierer & Power-User** | Verwaltung von Desktop-Agenten, Workflow-Engines (n8n) und lokalen Entwicklerwerkzeugen. | Fragmentierte Tools, intransparente Agenten-Berechtigungen, konkurrierende Datei-Locks und fehlende visuelle Übersicht über aktive MCP-Stacks. | Zentrales lokales Web-Dashboard (`127.0.0.1:3737`), zweisprachige i18n-Architektur (EN/DE) und einheitliche Host-Register-Spiegel für Locks (`LOCK*.txt`), Berechtigungen (`LOCK.permissions.json`) und Entscheidungen. |
 
-**Suchbegriffe & Themen-Tags:** `mcp-control-plane`, `model-context-protocol`, `mcp-gateway`, `claude-code-profiles`, `policy-gated-execution`, `zero-egress`, `local-first-ai`, `secret-scrubber`, `multi-agent-coordination`, `capability-bundles`, `fail-closed-security`, `mcp-audit-logging`, `developer-tools`.
+**Suchbegriffe & Themen-Tags:** `mcp-control-plane`, `model-context-protocol`, `mcp-gateway`, `claude-code-profiles`, `policy-gated-execution`, `no-telemetry`, `local-first-ai`, `secret-scrubber`, `multi-agent-coordination`, `capability-bundles`, `fail-closed-security`, `mcp-audit-logging`, `developer-tools`.
 
 ---
 
@@ -68,7 +68,7 @@ ControlCenter bietet **Discovery, Profilsichtbarkeit, Dashboard-Workflows, Capab
 | **Architektur & Rolle** | **Duale Control Plane + Ephemeres Gateway** | Statische JSON-Konfigurationsdatei | Einzelner monolithischer Sammelprozess | Eingebettetes Programm-Framework | Remote gehostetes SaaS / Proxy |
 | **Token- & Kontexteffizienz** | **Dynamischer On-Demand-Aufruf (`controlcenter_invoke`)** | Schlecht (Alle Tools müssen dauerhaft im Kontext liegen) | Extremes Bloat (Dutzende Tools im Prompt) | Variabel (Tools im Python-Speicher geladen) | Netzwerk-Payload-Overhead |
 | **Prozess-Lebenszyklus** | **Connect-per-Call stdio (Keine Zombie-Prozesse)** | Dauerhafte Hintergrund-Dämonen | Einzelner monolithischer Hintergrundprozess | An den Thread der Host-Anwendung gebunden | Cloud-Container / Serverless |
-| **Netzwerk-Egress & Datenschutz** | **100% Local-First & Zero-Egress (Nur Loopback)** | Lokales stdio / HTTP | Lokales stdio | Abhängig von angebundenen Cloud-LLMs | Hoher Egress (Tool-Daten fließen in die Cloud) |
+| **Netzwerk-Egress & Datenschutz** | **Local-first; keine Telemetrie oder Hintergrundaufrufe; explizite entfernte HTTPS-Gateway-Ziele werden unterstützt** | Lokales stdio / HTTP | Lokales stdio | Abhängig von angebundenen Cloud-LLMs | Hoher Egress (Tool-Daten fließen in die Cloud) |
 | **Richtlinien & Härtung** | **Fail-Closed Pattern-Rules + Rekursive Geheimnis-Bereinigung** | Keine (Direkter, unbeschränkter Host-Zugriff) | Selten / Nur ad-hoc Filterung | Uneinheitliche Applikationsprüfungen | Unternehmensweites Cloud-IAM |
 | **Isolation unvertrauenswürdiger Daten** | **Erzwungene GFM-Banner für Werkzeug-Ausgaben** | Keine (Rohdaten direkt an LLM) | Keine | Manuelle Prompt-Templates | Sandboxen des Cloud-Anbieters |
 | **Host-Governance-Integration** | **Native Multi-Agenten-Locks (`LOCK*.txt`) & Berechtigungen** | Keine | Keine | Keine | Keine |
@@ -147,14 +147,14 @@ sequenceDiagram
 
 ## Governance- und Laufzeit-Invarianten
 
-ControlCenter erzwingt 10 architektonische und betriebliche Invarianten, um Local-First-Sicherheit, Zero-Egress, Fail-Closed-Richtlinienprüfung und Multi-Agenten-Resilienz zu gewährleisten:
+ControlCenter erzwingt 10 architektonische und betriebliche Invarianten, um Local-first-Verwaltung, explizite ausgehende Grenzen, fail-closed geladenen Richtlinien und Multi-Agenten-Resilienz zu gewährleisten:
 
 | ID | Invariante | Beschreibung | Durchsetzungs-Mechanismus |
 |---|---|---|---|
-| `INV-LOCAL-01` | **100% Local-First & Zero-Egress** | Alle Discovery-, Profil-, Katalog- und Probing-Abläufe laufen strikt auf localhost. Keine Telemetrie oder Analyse. | Null ausgehende Netzwerkaufrufe; strikte Loopback-Bindung (`127.0.0.1:3737`). |
+| `INV-LOCAL-01` | **Local-First & expliziter Egress** | Discovery, Profilauflösung, Katalogindexierung und Dashboard laufen lokal ohne Telemetrie oder Hintergrund-Egress. Explizite Gateway-Aufrufe dürfen entfernte HTTPS-Backends erreichen. | Das Dashboard bindet an Loopback (`127.0.0.1:3737`); entferntes HTTP und Redirects werden verweigert, eine optionale Host-Allowlist begrenzt HTTPS-Ziele. |
 | `INV-GATE-02` | **Fail-Closed Gateway-Policy-Guard** | Werkzeugaufrufe über `controlcenter_invoke` erfordern strikte Freigabe in `data/gateway-policy.json`. | Fehlende, unlesbare oder fehlerhafte Richtliniendateien verweigern jeden Aufruf (Fail-Closed). |
 | `INV-SUB-03` | **Ephemere Subprozess-Grenzen** | Backend-stdio-Prozesse für MCP-Server werden pro Aufruf gestartet und im `finally`-Block sofort beendet. | `connect-per-call`-Architektur verhindert verwaiste Hintergrund-Zombie-Prozesse. |
-| `INV-SCRUB-04` | **Rekursive Secret-Schwärzung & Finite Budgets** | Ein- und Ausgaben werden rekursiv über alle Tiefen nach Secrets bereinigt. Feste Limits (256 KB req, 1 MB res). | Rekursives Regex- & Key-Scrubbing mit maximalen Tiefe- und Block-Schranken. |
+| `INV-SCRUB-04` | **Begrenzte Ergebnis-Schwärzung & finite Budgets** | Ergebnisse werden rekursiv durchlaufen: enge Credential-Muster werden überall geschwärzt, Key-basiertes Entfernen gilt nur für strukturierte Metadaten, damit angeforderte Inhalte nicht still umgeschrieben werden. Requests sind größenbegrenzt; Argumentwerte gelangen nicht ins Audit-Log. | Rekursive Schwärzung enger Muster, Key-Scrubbing strukturierter Metadaten, maximale Tiefen- und Blockgrenzen sowie Standardlimits von 256 KB für Requests und 1 MB für Responses. |
 | `INV-PRIV-05` | **Keine Privilegien-Eskalation (RunAsInvoker)** | Der Server arbeitet rein im unprivilegierten Benutzerkontext. Niemals Admin-/Root-Anforderungen. | Funktioniert ohne UAC- oder Sudo-Rechte auf Windows, macOS und Linux. |
 | `INV-LOCK-06` | **Kanonische Multi-Agenten-Lock-Prüfung** | Beachtet systemweite `LOCK*.txt`-, `LOCK.user.*`- und `LOCK.until.*`-Sperren Fail-Closed. | Prüft Lock-Bäume über kanonische Host-Utilities; unkonfiguriert meldet `unknown`. |
 | `INV-PERM-07` | **Hierarchische Berechtigungs-Prüfung** | Wertet die nächstgelegene `LOCK.permissions.json` hierarchisch aus (`deny > ask > allow > default`). | Transparente Prüfung ohne Vergabe synthetischer Rechte oder Zustandsänderungen. |
@@ -644,7 +644,7 @@ ellmos-controlcenter-mcp/
 Dieses Projekt folgt einer strikten **100% permissiven Open-Source-Lizenzierung** über alle direkten Laufzeit- und Entwicklungsabhängigkeiten hinweg:
 - **0% Copyleft / GPL / AGPL** Risiken.
 - Vollständig auditiert und kompatibel mit kommerzieller, unternehmensweiter und lokaler Nutzung.
-- Auditierte Bibliotheken: `@modelcontextprotocol/sdk` (MIT), `zod` (MIT), `update-notifier` (BSD-2-Clause), `typescript` (Apache-2.0), `vitest` (MIT).
+- Auditierte direkte Abhängigkeiten: `@modelcontextprotocol/sdk` (MIT), `zod` (MIT), `typescript` (Apache-2.0), `vite`/`vitest` (MIT), `@types/node` (MIT) und `@emnapi/core`/`@emnapi/runtime` (MIT).
 
 Vollständige SPDX-Lizenztexte, Urheberrechtshinweise und Compliance-Bestätigungen sind in [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) dokumentiert.
 

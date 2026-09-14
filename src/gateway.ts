@@ -230,7 +230,11 @@ export async function loadGatewayPolicy(
     raw = await fs.readFile(configPath, "utf-8");
   } catch (error) {
     if (isErrnoException(error) && error.code === "ENOENT") {
-      return { ...DEFAULT_GATEWAY_POLICY, sourcePath: configPath, isDefault: true };
+      throw new GatewayPolicyError(
+        `Gateway policy ${configPath} does not exist`,
+        "gateway-policy-missing",
+        { configPath }
+      );
     }
     throw new GatewayPolicyError(
       `Gateway policy ${configPath} could not be read: ${formatError(error)}`,
