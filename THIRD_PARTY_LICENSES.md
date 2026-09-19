@@ -72,71 +72,41 @@ SOFTWARE.
 
 ---
 
-### 3. `update-notifier`
-- **Purpose:** Update notifications for CLI applications.
-- **License:** BSD 2-Clause "Simplified" License
-- **Copyright:** (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-- **Repository:** https://github.com/yeoman/update-notifier
-- **SPDX Identifier:** `BSD-2-Clause`
-
-```text
-BSD 2-Clause License
-
-Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-```
-
----
-
 ## Direct Development Dependencies / Entwicklungs-Abhängigkeiten
 
-### 4. `typescript`
+### 3. `typescript`
 - **Purpose:** TypeScript language compiler and static type checking.
 - **License:** Apache License 2.0
 - **Copyright:** (c) Microsoft Corporation
 - **Repository:** https://github.com/microsoft/TypeScript
 - **SPDX Identifier:** `Apache-2.0`
 
-### 5. `vitest`
-- **Purpose:** Fast unit test runner powered by Vite.
+### 4. `vitest` & `vite`
+- **Purpose:** Unit-test runner and its explicitly constrained Node-18-compatible build tool peer.
 - **License:** MIT License
-- **Copyright:** (c) 2021-Present Anthony Fu, Matias Capeletto and Vitest contributors
-- **Repository:** https://github.com/vitest-dev/vitest
+- **Copyright:** Vitest and Vite contributors
+- **Repositories:** https://github.com/vitest-dev/vitest and https://github.com/vitejs/vite
 - **SPDX Identifier:** `MIT`
 
-### 6. `@types/node` & `@types/update-notifier`
-- **Purpose:** TypeScript type definitions for Node.js runtime and update-notifier.
+### 5. `@types/node`
+- **Purpose:** TypeScript type definitions for the Node.js runtime.
 - **License:** MIT License
 - **Repository:** https://github.com/DefinitelyTyped/DefinitelyTyped
+- **SPDX Identifier:** `MIT`
+
+### 6. `@emnapi/core` & `@emnapi/runtime`
+- **Purpose:** Development-time native/WASI compatibility dependencies used by the test toolchain.
+- **License:** MIT License
+- **Repository:** https://github.com/toyobayashi/emnapi
 - **SPDX Identifier:** `MIT`
 
 ---
 
 ## Compliance & Audit Summary / Lizenz- & Audit-Übersicht
 
-- **Audit Date / Prüfdatum:** 2026-09-13
-- **Audited By / Prüfer:** Gemini / Antigravity Agent (Pfad B Discoverability, Marketing & License Audit)
-- **Permissive Open-Source Ratio:** 100% (MIT, BSD-2-Clause, Apache-2.0)
+- **Audit Date / Prüfdatum:** 2026-09-14
+- **Audited By / Prüfer:** Gemini / Antigravity Agent (initial Pfad B audit); Codex release review (2026-09-14)
+- **Permissive Open-Source Ratio:** 100% (MIT, Apache-2.0)
 - **Copyleft Exposure (GPL / LGPL / AGPL):** 0%
 - **Commercial & Local-First Use:** Fully Permitted / Uneingeschränkt zulässig
-- **Network Egress / Telemetry:** 0% (Zero outbound tracking or metrics collection)
+- **Network Egress / Telemetry:** No telemetry or automatic background update checks; explicit gateway calls may contact configured HTTPS backends.

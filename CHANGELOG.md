@@ -2,6 +2,17 @@
 
 ## 0.7.4 - 2026-09-13
 
+### Release review corrections (2026-09-14)
+- Replace absolute Zero-Egress and loopback-only claims with the implemented boundary: local-first administration without telemetry or background egress, plus explicitly configured remote HTTPS gateway calls.
+- Describe result redaction precisely: narrow credential patterns across result content, key-based wiping only in structured metadata, and bounded requests whose values are omitted from audit logs rather than rewritten.
+- Refresh production transitive overrides (`fast-uri`, `hono`, `qs`) and complete the direct development-dependency license inventory; `npm audit --omit=dev` reports zero findings after a clean install.
+- Bring the root and workspace package-lock versions forward from stale 0.7.0 to 0.7.4 and cover both fields in the metadata parity test.
+- Correct `STATE.md`: source is 0.7.4 while npm remains at 0.7.0 until a separately authorized current-version release.
+- Add regression assertions for the implemented egress and redaction boundaries and for a missing-policy invocation; full suite now passes 252/252 tests.
+- Remove the automatic TTY update checker and its runtime dependency so starts perform no background registry request.
+- Make a missing gateway policy fail closed instead of silently substituting the built-in open policy.
+- Set the supported runtime to Node.js 20 or newer, matching the installed production dependency `@hono/node-server`; keep Vitest's Vite peer on the compatible 6.4 line.
+
 ### Discoverability, Target Personas, Comparative Matrix & 18-Anchor Nav Parity (Pfad B) (2026-09-13)
 - **Target Personas & Discoverability Framework:** Integrated structured persona specifications across `README.md` and `README_de.md` addressing 4 core developer and operator archetypes (AI Infrastructure Engineers, Multi-Agent Runtime Developers, Enterprise SecOps & Compliance, and Local Homelab Automators), paired with indexed high-intent discovery topic tags.
 - **10-Dimension Comparative Matrix vs Alternatives:** Added comprehensive architectural comparison against Static MCP Configurations (`claude_desktop_config.json`), Monolithic MCP Meta-Servers, Heavyweight Agent Frameworks (LangChain/CrewAI), and Cloud LLMOps / Remote Gateways across 10 technical dimensions (context efficiency, process lifecycle, local-first safety, policy gating, secret redaction, and multi-agent governance).

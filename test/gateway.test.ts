@@ -162,11 +162,11 @@ describe("gateway policy", () => {
     expect(evaluateGatewayPolicy(policy, "other", "gateway_echo").allowed).toBe(true);
   });
 
-  it("falls back to the built-in open policy only when no file exists", async () => {
+  it("fails closed when the policy file does not exist", async () => {
     const root = await createTempDirectory("gateway-policy-missing-");
-    const policy = await loadGatewayPolicy(path.join(root, "absent.json"));
-    expect(policy.mode).toBe("open");
-    expect(policy.isDefault).toBe(true);
+    await expect(loadGatewayPolicy(path.join(root, "absent.json"))).rejects.toMatchObject({
+      code: "gateway-policy-missing"
+    });
   });
 
   it("rejects malformed policy files instead of allowing everything", async () => {
@@ -430,6 +430,23 @@ describe("gateway invocation", () => {
       profileName: "base",
       profileRoot,
       policyPath,
+      auditLogPath,
+      timeoutMs: 5000
+    });
+
+    expect(result.outcome).toBe("policy-unavailable");
+    expect(result.delivered).toBe(false);
+  });
+
+  it("refuses every invocation while the policy file is missing", async () => {
+    const { root, profileRoot, auditLogPath } = await createWorkingProfile("gateway-invoke-missing-policy-");
+
+    const result = await invokeGatewayTool({
+      serverName: "fixture",
+      toolName: "gateway_echo",
+      profileName: "base",
+      profileRoot,
+      policyPath: path.join(root, "missing-policy.json"),
       auditLogPath,
       timeoutMs: 5000
     });

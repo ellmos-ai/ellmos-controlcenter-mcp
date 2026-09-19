@@ -8,7 +8,7 @@
 # Umbrella: open-bricks (AI-Native Desktop & Developer Tools)
 # Current Version: 0.7.4
 # Maintenance Path: Pfad B (Discoverability, Marketing & Visual Architecture)
-# Last Updated: 2026-09-13
+# Last Updated: 2026-09-14
 # ==============================================================================
 
 [POSITIONING & VALUE PROPOSITION]
@@ -21,8 +21,9 @@ tool invocation gateway for unloaded backend MCP servers.
 Key Differentiators:
 1. Dual-Role Architecture: Seamlessly combines administrative control-plane inspection with
    a runtime policy-gated gateway that invokes tools on unloaded backend servers.
-2. 100% Local-First & Zero-Egress: All discovery, profile resolution, and gateway forwarding
-   run strictly on localhost (127.0.0.1); zero telemetry, zero cloud dependencies.
+2. Local-First with Explicit Egress: Discovery, profile resolution, and the dashboard run
+   locally with no telemetry or background egress. Explicit gateway calls may target remote
+   HTTPS backends; redirects are refused and an optional host allowlist narrows destinations.
 3. Fail-Closed Security & Eigendark Safety: Hardened against prompt injection with untrusted
    data wrapping, recursive credential scrubbing, finite memory/depth budgets, and connect-
    per-call process lifecycle management (zero zombie processes).
@@ -37,7 +38,7 @@ Key Differentiators:
    - Require dynamic on-demand tool access (`controlcenter_invoke`) without pre-loading dozens
      of heavy MCP servers into active token windows.
 3. Security-Conscious Teams & Enterprise Developers:
-   - Demand strict zero-egress guarantees, fail-closed policy gates, recursive secret redaction,
+   - Demand no telemetry/background egress, explicit remote-target boundaries, fail-closed policy loading, bounded secret redaction,
      and structured audit trails (`gateway-audit.jsonl`).
 4. Solo Hackers & Open-Source Maintainers:
    - Need instant visibility into installed skills, local repositories, and active locks via
@@ -50,13 +51,13 @@ Key Differentiators:
 - "policy gated mcp proxy"
 - "dynamic capability bundles mcp"
 - "local mcp server discovery catalog"
-- "zero egress mcp administration"
+- "no telemetry mcp administration"
 - "claude code mcp profile switcher"
 - "multi agent mcp lock manager"
 - "mcp secret scrubber and sanitizer"
 
 [GOVERNANCE & RUNTIME INVARIANTS]
-- INV-LOCAL-01: 100% Local-First & Zero-Egress (Loopback 127.0.0.1 binding only, zero telemetry)
+- INV-LOCAL-01: Local-First & Explicit Egress (loopback dashboard, no telemetry/background egress, explicit remote HTTPS gateway calls)
 - INV-GATE-02:  Fail-Closed Gateway Policy Guard (data/gateway-policy.json enforced; missing/invalid denies all)
 - INV-SUB-03:   Ephemeral Child Process Boundaries (Connect-per-call stdio lifecycle; zero lingering background processes)
 - INV-SCRUB-04: Recursive Secret Redaction & Finite Budgets (Pattern scrubbing, 256KB req / 1MB res limits)
@@ -105,3 +106,4 @@ Key Differentiators:
   - Updated Quick Navigation to 18 standardized anchors with 100% reciprocal bilingual parity.
   - Added Verified: 2026-09-13 Shields.io badge and bumped version to 0.7.4 across all manifests (package.json, server.json, glama.json, src/index.ts, llms.txt, READMEs).
   - Expanded automated metadata contract test suite in test/metadata.test.ts (250 tests passing, 100% green).
+2026-09-14: Release review corrected absolute egress/redaction claims, made missing policies fail closed, removed automatic update checks, refreshed production overrides (`npm audit --omit=dev`: 0), and verified 252 tests.
