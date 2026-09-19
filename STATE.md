@@ -6,7 +6,7 @@
 - TypeScript MCP scaffold in place
 - Initial discovery and profile tools implemented
 - Tests for core logic available
-- Source version `0.7.4`; npm remains at `0.7.0` from 2026-09-02. Publication of the newer source changes is not implied.
+- Source version `0.7.4`, published to npm as `0.7.4` on 2026-09-19 and tagged `v0.7.4`.
 - ControlCenter is no longer read-only in the request path: the gateway forwards tool calls to
   backend MCP servers under a policy gate and an audit log
 - Optional actual-self producer implemented fail-closed; no host trust store or live routing activation is configured by the package
