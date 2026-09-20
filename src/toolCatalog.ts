@@ -10,6 +10,7 @@ import {
 } from "./catalog.js";
 import { t } from "./i18n/index.js";
 import { resolveMcpProfile, type ResolvedProfile } from "./profiles.js";
+import { prepareSupervisedStdioLaunch } from "./processSupervisor.js";
 
 export const DEFAULT_TOOL_SCAN_TIMEOUT_MS = 5000;
 
@@ -290,11 +291,12 @@ export function createTransport(
       : undefined;
 
   if (target.transportKind === "stdio" && target.command) {
+    const launch = prepareSupervisedStdioLaunch(target.command, target.args, target.env);
     const transport = new StdioClientTransport({
-      command: target.command,
-      args: target.args,
+      command: launch.command,
+      args: launch.args,
       cwd: target.cwd,
-      env: target.env,
+      env: launch.env,
       stderr: "pipe"
     });
     transport.stderr?.on("data", () => {

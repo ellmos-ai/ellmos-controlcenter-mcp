@@ -37,6 +37,7 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
 - `toolCatalog.ts`
   - modelliert Toolscan-Ziele aus lokalen Repos und aufgelösten Claude-Profilen
   - startet lokale und profildefinierte Stdio-MCP-Server kontrolliert über die SDK-Client-Transport-Schicht
+  - nutzt auf Windows bei gesetztem `ELLMOS_PROCESS_SUPERVISOR` den Job-Object-Supervisor für direkte Kinder und Nachkommen
   - unterstützt Nicht-Node-Kommandos sowie URL-basierte Streamable-HTTP- und SSE-Konfigurationen
   - ruft echte MCP-`list_tools`-Antworten ab
   - normalisiert Toolnamen, Titel, Beschreibungen, Input-Schemas und Annotationen
@@ -53,7 +54,7 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
 - `gateway.ts`
   - erreicht Backend-MCP-Server, die der Host **nicht** geladen hat, und leitet einen Toolaufruf dorthin weiter
   - baut auf den Zielen und Transports aus `toolCatalog.ts` auf und führt keine zweite Client-Schicht ein
-  - öffnet die Verbindung je Aufruf und schließt sie im `finally` — es wird keine Sitzung gehalten, damit keine Stdio-Kindprozesse zurückbleiben
+  - öffnet die Verbindung je Aufruf und schließt sie im `finally`; der Windows-Job-Object-Supervisor bindet bei Konfiguration auch Nachkommen an den Aufruf
   - prüft jeden Aufruf gegen `data/gateway-policy.json`; eine defekte Policy lehnt jeden Aufruf ab statt auf „alles erlaubt" zurückzufallen
   - trennt unbekannter Server, nicht erreichbarer Server, unbekanntes Tool und Tool-Fehler des Zielservers; nur die letzte Klasse heißt „zugestellt"
   - meldet einen nicht befragbaren Server als unbekannt statt als toolfrei und kennzeichnet unvollständige Listen ausdrücklich als unvollständig

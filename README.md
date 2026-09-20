@@ -66,7 +66,7 @@ ControlCenter provides **discovery, profile visibility, dashboard workflows, cap
 |:---|:---|:---|:---|:---|:---|
 | **Architecture & Role** | **Dual Control Plane + Ephemeral Gateway** | Static JSON file | Single massive combined process | Embedded code framework | Remote hosted SaaS / proxy |
 | **Token & Context Efficiency** | **Dynamic On-Demand Tool Invocation (`controlcenter_invoke`)** | Poor (All tools must be pre-loaded into context) | Extreme bloat (Dozens of tools in prompt) | Varies (Tools loaded into Python process memory) | Network payload overhead |
-| **Process Lifecycle** | **Connect-Per-Call stdio (Zero Zombie Processes)** | Always-on persistent background daemons | Single monolithic background process | Tied to application execution thread | Cloud-hosted containers |
+| **Process Lifecycle** | **Connect-Per-Call stdio + optional Windows Job Object (descendant-safe cleanup)** | Always-on persistent background daemons | Single monolithic background process | Tied to application execution thread | Cloud-hosted containers |
 | **Network Egress & Privacy** | **Local-first; no telemetry/background egress; explicit remote HTTPS gateway targets are supported** | Local stdio / HTTP | Local stdio | Depends on cloud LLM integrations | High egress (Tool data sent to cloud servers) |
 | **Policy Gating & Hardening** | **Fail-Closed Pattern Rules + Recursive Secret Scrubbing** | None (Direct unrestricted host access) | Rare / Custom ad-hoc filtering | Inconsistent application-level checks | Organization-level cloud IAM |
 | **Untrusted Data Isolation** | **Enforced GFM Banners for Tool Outputs** | None (Raw strings fed directly to LLM) | None | Manual prompt templates | Cloud provider sandboxing |
@@ -230,9 +230,10 @@ remaining servers stay reachable on demand.
 named in `profile` can be addressed. That set is the gateway's primary boundary — there is no way
 to point it at an arbitrary command.
 
-**Lifecycle.** The connection is opened for the call and closed afterwards. No backend process is
-kept running between invocations. The cost is roughly 200–500 ms per call on a cold stdio server;
-the benefit is that ControlCenter never leaves child processes behind.
+**Lifecycle.** The connection is opened for the call and closed afterwards. On Windows, configure
+`ELLMOS_PROCESS_SUPERVISOR` with the local Job-Object supervisor to bind descendants as well as
+the direct stdio child. The cost is roughly 200–500 ms per call on a cold stdio server; the result
+is bounded cleanup instead of an unverified direct-child-only kill.
 
 **Failure modes are kept apart.** Four different things can go wrong, and they mean different
 things:

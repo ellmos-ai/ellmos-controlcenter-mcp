@@ -597,6 +597,8 @@ interface CallToolShape {
  *
  * The connection is opened per call and closed in `finally`: ControlCenter must
  * not leave stdio children behind, so no session is held between invocations.
+ * On Windows the configured Job-Object supervisor also owns descendants of the
+ * direct stdio child.
  */
 export async function invokeGatewayTool(options: GatewayInvokeOptions): Promise<GatewayInvocationResult> {
   const startedAt = Date.now();
