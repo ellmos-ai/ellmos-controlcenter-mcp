@@ -118,6 +118,8 @@ function formatCatalogNote(catalog: McpCatalog): string {
       return labels.messages.mcpCatalogUnreadable(catalog.catalogPath);
     case "schema_mismatch":
       return labels.messages.mcpCatalogSchemaMismatch(catalog.catalogPath, catalog.schema ?? "-");
+    case "invalid":
+      return labels.messages.mcpCatalogInvalid(catalog.catalogPath, catalog.error ?? "invalid content");
   }
 }
 
@@ -251,6 +253,8 @@ async function readRequestedToolCatalog(options: {
   profileRoot?: string;
   serverName?: string;
   timeoutMs?: number;
+  maxParallelProbes?: number;
+  maxResponseBytes?: number;
 }): Promise<{ sourceLabel: string; toolCatalog: ServerToolCatalog[] }> {
   const labels = t();
   if (options.profileName && options.profileName.trim().length > 0) {
@@ -259,7 +263,9 @@ async function readRequestedToolCatalog(options: {
       sourceLabel: labels.messages.sourceProfile(options.profileName, profileRoot),
       toolCatalog: await scanProfileServerTools(options.profileName, profileRoot, {
         serverName: options.serverName,
-        timeoutMs: options.timeoutMs
+        timeoutMs: options.timeoutMs,
+        maxParallelProbes: options.maxParallelProbes,
+        maxResponseBytes: options.maxResponseBytes
       })
     };
   }
@@ -269,7 +275,9 @@ async function readRequestedToolCatalog(options: {
     sourceLabel: labels.messages.sourceLocalRepos(mcpRoot),
     toolCatalog: await scanLocalServerTools(mcpRoot, {
       serverName: options.serverName,
-      timeoutMs: options.timeoutMs
+      timeoutMs: options.timeoutMs,
+      maxParallelProbes: options.maxParallelProbes,
+      maxResponseBytes: options.maxResponseBytes
     })
   };
 }
@@ -473,6 +481,7 @@ server.registerTool(
       `- ${labels.tables.server.kind}: ${entry.mcpKind ?? labels.common.notAvailable}`,
       `- ${labels.common.keywords}: ${entry.namespace ?? labels.common.notAvailable}`,
       `- npm: ${entry.npm ?? labels.common.notAvailable}`,
+      `- ${labels.messages.mcpCapabilityTags}: ${entry.capabilityTags.length > 0 ? entry.capabilityTags.join(", ") : labels.common.notAvailable}`,
       `- ${labels.tables.server.persistentState}: ${
         entry.persistentState === true
           ? labels.common.yes
@@ -591,13 +600,15 @@ server.registerTool(
       profileName: z.string().optional().describe(inputText("profileName")),
       profileRoot: z.string().optional().describe(inputText("profileRoot")),
       serverName: z.string().optional().describe(inputText("serverName")),
-      timeoutMs: z.number().int().positive().max(60000).optional().describe(inputText("listToolsTimeoutMs"))
+      timeoutMs: z.number().int().positive().max(60000).optional().describe(inputText("listToolsTimeoutMs")),
+      maxParallelProbes: z.number().int().min(1).max(32).optional().describe(inputText("maxParallelProbes")),
+      maxResponseBytes: z.number().int().min(1024).max(16777216).optional().describe(inputText("maxResponseBytes"))
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
   },
-  async ({ mcpRoot, profileName, profileRoot, serverName, timeoutMs }) => {
+  async ({ mcpRoot, profileName, profileRoot, serverName, timeoutMs, maxParallelProbes, maxResponseBytes }) => {
     const labels = t();
-    const { sourceLabel, toolCatalog } = await readRequestedToolCatalog({ mcpRoot, profileName, profileRoot, serverName, timeoutMs });
+    const { sourceLabel, toolCatalog } = await readRequestedToolCatalog({ mcpRoot, profileName, profileRoot, serverName, timeoutMs, maxParallelProbes, maxResponseBytes });
     const output = [
       labels.headings.toolCatalog,
       "",
@@ -671,14 +682,16 @@ server.registerTool(
       profileRoot: z.string().optional().describe(inputText("profileRoot")),
       serverName: z.string().optional().describe(inputText("simpleServerName")),
       bundleConfigPath: z.string().optional().describe(inputText("bundleConfigPath")),
-      timeoutMs: z.number().int().positive().max(60000).optional().describe(inputText("timeoutMs"))
+      timeoutMs: z.number().int().positive().max(60000).optional().describe(inputText("timeoutMs")),
+      maxParallelProbes: z.number().int().min(1).max(32).optional().describe(inputText("maxParallelProbes")),
+      maxResponseBytes: z.number().int().min(1024).max(16777216).optional().describe(inputText("maxResponseBytes"))
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
   },
-  async ({ mcpRoot, profileName, profileRoot, serverName, bundleConfigPath, timeoutMs }) => {
+  async ({ mcpRoot, profileName, profileRoot, serverName, bundleConfigPath, timeoutMs, maxParallelProbes, maxResponseBytes }) => {
     const labels = t();
     const [{ sourceLabel, toolCatalog }, definitions] = await Promise.all([
-      readRequestedToolCatalog({ mcpRoot, profileName, profileRoot, serverName, timeoutMs }),
+      readRequestedToolCatalog({ mcpRoot, profileName, profileRoot, serverName, timeoutMs, maxParallelProbes, maxResponseBytes }),
       loadBundleDefinitions(bundleConfigPath)
     ]);
     const assignments = buildBundleToolAssignments(toolCatalog, definitions);
@@ -953,19 +966,21 @@ server.registerTool(
       bundleConfigPath: z.string().optional().describe(inputText("bundleConfigPath")),
       includeTools: z.boolean().default(false).describe(inputText("includeTools")),
       includeToolAssignments: z.boolean().default(false).describe(inputText("includeToolAssignments")),
-      timeoutMs: z.number().int().positive().max(60000).optional().describe(inputText("timeoutMs"))
+      timeoutMs: z.number().int().positive().max(60000).optional().describe(inputText("timeoutMs")),
+      maxParallelProbes: z.number().int().min(1).max(32).optional().describe(inputText("maxParallelProbes")),
+      maxResponseBytes: z.number().int().min(1024).max(16777216).optional().describe(inputText("maxResponseBytes"))
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
   },
-  async ({ mcpRoot, outputPath, profileName, profileRoot, bundleConfigPath, includeTools, includeToolAssignments, timeoutMs }) => {
+  async ({ mcpRoot, outputPath, profileName, profileRoot, bundleConfigPath, includeTools, includeToolAssignments, timeoutMs, maxParallelProbes, maxResponseBytes }) => {
     const labels = t();
     const resolvedRoot = mcpRoot ?? DEFAULT_MCP_ROOT;
     const resolvedOutputPath = outputPath ?? path.join(PROJECT_ROOT, "data", "server-catalog.json");
     const servers = await scanLocalServers(resolvedRoot);
     const shouldScanTools = includeTools || includeToolAssignments;
-    const toolCatalog = shouldScanTools ? await buildToolCatalog(servers, { timeoutMs }) : null;
+    const toolCatalog = shouldScanTools ? await buildToolCatalog(servers, { timeoutMs, maxParallelProbes, maxResponseBytes }) : null;
     const profileToolCatalog = shouldScanTools && profileName
-      ? await scanProfileServerTools(profileName, profileRoot ?? DEFAULT_PROFILE_ROOT, { timeoutMs })
+      ? await scanProfileServerTools(profileName, profileRoot ?? DEFAULT_PROFILE_ROOT, { timeoutMs, maxParallelProbes, maxResponseBytes })
       : null;
     const allToolCatalogs = [...(toolCatalog ?? []), ...(profileToolCatalog ?? [])];
     const bundleDefinitions = includeToolAssignments ? await loadBundleDefinitions(bundleConfigPath) : null;

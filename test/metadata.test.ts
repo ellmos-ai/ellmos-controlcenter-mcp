@@ -48,8 +48,8 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-09-14");
-    expect(llmsTxt).toContain("Test status: 252/252 Vitest tests passing (100% green)");
+    expect(llmsTxt).toContain("Last-checked: 2026-09-20");
+    expect(llmsTxt).toContain("Test status: 257/257 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("MIT");
@@ -67,7 +67,7 @@ describe("metadata & manifest parity", () => {
       "Ecosystem-ellmos--ai-blue.svg",
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
-      "Vitest-252%20passed-brightgreen.svg",
+      "Vitest-257%20passed-brightgreen.svg",
       "verified-2026--09--14-blue.svg",
       "MCP%20Tools-34-blue.svg",
       "Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg",

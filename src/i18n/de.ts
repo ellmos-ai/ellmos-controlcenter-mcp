@@ -163,6 +163,7 @@ export const de: Translations = {
     mcpCatalogMissing: (catalogPath) => `MCP-Katalog nicht gefunden (${catalogPath}) - Art und Zustandshoheit bleiben leer.`,
     mcpCatalogUnreadable: (catalogPath) => `MCP-Katalog nicht lesbar (${catalogPath}) - Art und Zustandshoheit bleiben leer.`,
     mcpCatalogSchemaMismatch: (catalogPath, schema) => `MCP-Katalog hat ein fremdes Schema (${catalogPath}, gefunden: ${schema}, erwartet: ellmos.mcps.v1) - Art und Zustandshoheit bleiben leer.`,
+    mcpCatalogInvalid: (catalogPath, reason) => `MCP-Katalog ist ungültig (${catalogPath}: ${reason}) - Einträge bleiben leer.`,
     mcpRootUnreadable: (root) => `MCP-Root nicht lesbar: ${root}`,
     mcpServerUnknown: (serverId, root) => `MCP-Server '${serverId}' ist weder unter ${root} noch im Katalog bekannt.`,
     mcpServerCatalogOnly: (root) => `Nur im Katalog geführt, kein Verzeichnis unter ${root}.`,
@@ -170,7 +171,8 @@ export const de: Translations = {
     mcpWraps: "Umhüllt",
     mcpWrapsTarget: "Umhüllungsziel",
     mcpTargetKind: "Zielart",
-    mcpComposition: "Komposition"
+    mcpComposition: "Komposition",
+    mcpCapabilityTags: "Capability-Tags"
   },
   policy: {
     invalidServerConfig: "Server-Konfiguration ist kein Objekt.",
@@ -288,6 +290,8 @@ export const de: Translations = {
     simpleServerName: "Optionaler Servername für einen gezielten Scan.",
     timeoutMs: "Timeout pro MCP-Tool-Scan in Millisekunden. Standard: 5000.",
     listToolsTimeoutMs: "Timeout pro Connect- und list_tools-Anfrage in Millisekunden. Standard: 5000.",
+    maxParallelProbes: "Maximale Zahl gleichzeitig laufender Tool-Probes. Standard: 4; Maximum: 32.",
+    maxResponseBytes: "Aggregierte maximale Antwortgröße eines Tool-Scans in Bytes. Standard: 1048576.",
     capabilityQuery: "Stichwörter oder Fähigkeitsbegriffe für ein deterministisches lexikalisches Kandidatenranking.",
     capabilityLimit: "Maximale Anzahl zurückgegebener Kandidaten. Standard: 10; Maximum: 100.",
     resolutionPath: "Pfad zu einer hash-konsistenten system-explorer.resolution.v1-JSON-Datei. Die Quellenprüfung darin bleibt bis zu einem externen Receipt eine nicht vertrauenswürdige Behauptung.",
@@ -330,6 +334,8 @@ export const de: Translations = {
     toolScopeLocal: "Lokale Repos",
     scan: "Scannen",
     timeoutLabel: "Timeout in Millisekunden",
+    parallelLabel: "Maximale parallele Probes",
+    responseBudgetLabel: "Aggregiertes Antwortbudget in Bytes",
     noToolScan: "Noch kein Tool-Scan ausgeführt.",
     noAction: "Noch keine Aktion ausgeführt.",
     noDescription: "Keine Beschreibung",

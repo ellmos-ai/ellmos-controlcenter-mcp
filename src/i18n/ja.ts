@@ -163,6 +163,7 @@ export const ja: Translations = {
     mcpCatalogMissing: (catalogPath) => `MCP カタログが見つかりません (${catalogPath}) — 種別と状態の所有者は空のままです。`,
     mcpCatalogUnreadable: (catalogPath) => `MCP カタログを読み取れません (${catalogPath}) — 種別と状態の所有者は空のままです。`,
     mcpCatalogSchemaMismatch: (catalogPath, schema) => `MCP カタログのスキーマが異なります (${catalogPath}、検出: ${schema}、想定: ellmos.mcps.v1) — 種別と状態の所有者は空のままです。`,
+    mcpCatalogInvalid: (catalogPath, reason) => `MCP カタログが不正です (${catalogPath}: ${reason}) — エントリは空のままです。`,
     mcpRootUnreadable: (root) => `MCP ルートを読み取れません: ${root}`,
     mcpServerUnknown: (serverId, root) => `MCP サーバー '${serverId}' は ${root} にもカタログにも存在しません。`,
     mcpServerCatalogOnly: (root) => `カタログのみに登録され、${root} にディレクトリがありません。`,
@@ -170,7 +171,8 @@ export const ja: Translations = {
     mcpWraps: "ラップ対象",
     mcpWrapsTarget: "ラップ先",
     mcpTargetKind: "対象の種別",
-    mcpComposition: "構成"
+    mcpComposition: "構成",
+    mcpCapabilityTags: "Capability タグ"
   },
   policy: {
     invalidServerConfig: "サーバー設定がオブジェクトではありません。",
@@ -288,6 +290,8 @@ export const ja: Translations = {
     simpleServerName: "対象スキャン用の任意のサーバー名。",
     timeoutMs: "MCP ツールスキャンごとのタイムアウト、ミリ秒。既定: 5000。",
     listToolsTimeoutMs: "接続および list_tools リクエストごとのタイムアウト、ミリ秒。既定: 5000。",
+    maxParallelProbes: "同時に実行するツールプローブの最大数。既定: 4、最大: 32。",
+    maxResponseBytes: "1 回のツールスキャンの合計レスポンス上限（バイト）。既定: 1048576。",
     capabilityQuery: "決定論的な語彙候補ランキングに使うキーワードまたは機能用語。",
     capabilityLimit: "返す候補の最大数。既定値: 10、最大値: 100。",
     resolutionPath: "ハッシュ整合性のある system-explorer.resolution.v1 JSON へのパス。外部レシートがない限り、ソース検証は信頼されない宣言です。",
@@ -330,6 +334,8 @@ export const ja: Translations = {
     toolScopeLocal: "ローカルリポジトリ",
     scan: "スキャン",
     timeoutLabel: "タイムアウト、ミリ秒",
+    parallelLabel: "最大並列プローブ数",
+    responseBudgetLabel: "合計レスポンス予算（バイト）",
     noToolScan: "ツールスキャンはまだ実行されていません。",
     noAction: "アクションはまだ実行されていません。",
     noDescription: "説明なし",

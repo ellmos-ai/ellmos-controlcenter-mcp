@@ -7,6 +7,7 @@ import {
   findCatalogEntry,
   getMcpCatalogPath,
   loadMcpCatalog,
+  CAPABILITY_TAG_SCHEMA,
   MCP_CATALOG_FILENAME,
   scanLocalServerLandscape
 } from "../src/mcpCatalog.js";
@@ -37,7 +38,8 @@ const CATALOG = {
       namespace: "al_*",
       npm: "alpha-mcp",
       persistent_state: false,
-      state_owner: {}
+      state_owner: {},
+      capability_tags: { schema: CAPABILITY_TAG_SCHEMA, tags: ["Read", "control-plane"] }
     },
     {
       id: "beta-mcp",
@@ -97,6 +99,7 @@ describe("mcp catalog discovery", () => {
 
     const alpha = landscape.servers.find((server) => server.directoryName === "alpha-mcp");
     expect(alpha?.catalog).toMatchObject({ mcpKind: "tool", persistentState: false, namespace: "al_*" });
+    expect(alpha?.catalog?.capabilityTags).toEqual(["control-plane", "read"]);
 
     const beta = landscape.servers.find((server) => server.directoryName === "beta-mcp");
     expect(beta?.catalog).toMatchObject({ mcpKind: "stack", persistentState: true, composition: "beta-stack" });
@@ -155,6 +158,32 @@ describe("mcp catalog discovery", () => {
     expect(catalog.status).toBe("schema_mismatch");
     expect(catalog.schema).toBe("ellmos.mcps.v99");
     expect(catalog.entries).toEqual([]);
+  });
+
+  it("rejects duplicate capability tags and wrong tag types instead of dropping them", async () => {
+    const root = await populatedRoot();
+    await writeCatalog(root, {
+      schema: "ellmos.mcps.v1",
+      mcps: [
+        {
+          id: "alpha-mcp",
+          capability_tags: { schema: CAPABILITY_TAG_SCHEMA, tags: ["read", "READ"] }
+        }
+      ]
+    });
+
+    const duplicateCatalog = await loadMcpCatalog(root, {});
+    expect(duplicateCatalog.status).toBe("invalid");
+    expect(duplicateCatalog.entries).toEqual([]);
+    expect(duplicateCatalog.error).toContain("duplicate");
+
+    await writeCatalog(root, {
+      schema: "ellmos.mcps.v1",
+      mcps: [{ id: "alpha-mcp", capability_tags: { schema: CAPABILITY_TAG_SCHEMA, tags: ["read", 7] } }]
+    });
+    const typedCatalog = await loadMcpCatalog(root, {});
+    expect(typedCatalog.status).toBe("invalid");
+    expect(typedCatalog.error).toContain("array of strings");
   });
 
   it("flags a corrupt catalog instead of throwing", async () => {
@@ -231,7 +260,8 @@ describe("mcp catalog discovery", () => {
           wrapsTarget: null,
           targetKind: null,
           composition: null,
-          source: null
+          source: null,
+          capabilityTags: []
         },
         {
           id: "first-mcp",
@@ -245,7 +275,8 @@ describe("mcp catalog discovery", () => {
           wrapsTarget: null,
           targetKind: null,
           composition: null,
-          source: null
+          source: null,
+          capabilityTags: []
         }
       ]
     };

@@ -12,7 +12,7 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-252%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-257%20passed-brightgreen.svg)](https://vitest.dev/)
 [![Verified: 2026-09-14](https://img.shields.io/badge/verified-2026--09--14-blue.svg)](CHANGELOG.md)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
@@ -164,7 +164,7 @@ ControlCenter enforces 10 architectural and runtime invariants to guarantee loca
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.7.3`
+- **Version:** `0.7.4`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI checks:** `npm run test` and `npm run build`
@@ -297,9 +297,9 @@ ControlCenter reads three hand-curated catalogs instead of hard-coding individua
 | `stacks.catalog.json` | `ellmos.stacks.catalog.v1` | `.AI/.STACKS` (`ELLMOS_STACKS_ROOT`) | `controlcenter_list_stacks`, `controlcenter_describe_stack`, `controlcenter_context_pack` |
 | `mcps.catalog.v1.json` | `ellmos.mcps.v1` | `.AI/.MCP` (`ELLMOS_MCP_CATALOG`) | `controlcenter_list_local_servers`, `controlcenter_describe_mcp`, `controlcenter_status` |
 
-The MCP catalog contributes what a directory scan cannot see: `mcp_kind` (`tool`, `adapter`, `stack`, `control-plane`), whether a server keeps persistent state, and which component owns that state per namespace. The directory scan stays the source for what is actually installed, so both directions are reported: a scanned server without a catalog entry keeps empty catalog fields, and a catalog entry without a directory is listed separately rather than dropped. Entries are joined on the catalog `id` first and on the npm package name second, because a server may publish under a different name than its directory.
+The MCP catalog contributes what a directory scan cannot see: `mcp_kind` (`tool`, `adapter`, `stack`, `control-plane`), whether a server keeps persistent state, which component owns that state per namespace, and optional declared capability tags. A tag block is versioned as `capability_tags: {"schema":"ellmos.capability-tags.v1","tags":["catalog","read-only"]}`; tags are normalized to lower case, sorted, and treated as metadata only. Duplicate, mistyped, or malformed tags make the catalog explicitly `invalid` instead of silently dropping data. The directory scan stays the source for what is actually installed, so both directions are reported: a scanned server without a catalog entry keeps empty catalog fields, and a catalog entry without a directory is listed separately rather than dropped. Entries are joined on the catalog `id` first and on the npm package name second, because a server may publish under a different name than its directory.
 
-A missing, unreadable, or foreign-schema catalog never fails a tool call. The enriched fields degrade to empty and the output names the reason, so an absent catalog is distinguishable from a server that genuinely holds no state. An unreadable MCP root is likewise reported as unreadable instead of as an empty result.
+A missing, unreadable, foreign-schema, or structurally invalid catalog never fails a tool call. The enriched fields degrade to empty and the output names the reason, so an absent catalog is distinguishable from a server that genuinely holds no state. An unreadable MCP root is likewise reported as unreadable instead of as an empty result.
 
 ## Host registers: locks, permissions, decisions, governance, resources
 
@@ -596,7 +596,9 @@ This is the basis for future tool-bloat management: instead of exposing many ind
 
 ## Tool Catalog
 
-`controlcenter_list_tools` can start local stdio MCP servers or resolved Claude profile servers and call the standard MCP `list_tools` request. Profile scans support arbitrary stdio commands, including non-Node launchers, and URL-based remote configs using Streamable HTTP or legacy SSE. The scan is explicit, uses a per-server timeout, does not call any reported tool, and closes each spawned local server after reading the tool list.
+`controlcenter_list_tools` can start local stdio MCP servers or resolved Claude profile servers and call the standard MCP `list_tools` request. Profile scans support arbitrary stdio commands, including non-Node launchers, and URL-based remote configs using Streamable HTTP or legacy SSE. The versioned header/auth contract is `ellmos.tool-scan-headers.v1`: configured static `headers` are passed to the SSE event-stream GET and every MCP message POST; the installed SDK transport contract is used, redirects are refused, and configured header/environment values are masked from probe errors. Every transport is closed after the probe.
+
+The scan is explicit, uses a per-server timeout, does not call any reported tool, and applies finite defaults of four concurrent probes and a 1 MiB aggregate response budget. `maxParallelProbes` is bounded to 1–32 and `maxResponseBytes` to 1 KiB–16 MiB. A budget-exhausted or not-started target is returned as `status: incomplete` with an unknown tool count; it is never reported as a successful empty server. These controls are available on `controlcenter_list_tools`, `controlcenter_assign_tool_bundles`, `controlcenter_build_catalog`, and the dashboard scan.
 
 `controlcenter_build_catalog` accepts `includeTools: true` to persist the same probe results alongside the local server catalog.
 

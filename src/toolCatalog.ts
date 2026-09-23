@@ -2,7 +2,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
+import type { FetchLike, Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import {
   createLocalServerMcpConfig,
   scanLocalServers,
@@ -13,10 +13,17 @@ import { resolveMcpProfile, type ResolvedProfile } from "./profiles.js";
 import { prepareSupervisedStdioLaunch } from "./processSupervisor.js";
 
 export const DEFAULT_TOOL_SCAN_TIMEOUT_MS = 5000;
+export const DEFAULT_TOOL_SCAN_MAX_PARALLEL_PROBES = 4;
+export const DEFAULT_TOOL_SCAN_MAX_RESPONSE_BYTES = 1024 * 1024;
+export const TOOL_SCAN_HEADER_CONTRACT = "ellmos.tool-scan-headers.v1";
+const MIN_TOOL_SCAN_PARALLEL_PROBES = 1;
+const MAX_TOOL_SCAN_PARALLEL_PROBES = 32;
+const MIN_TOOL_SCAN_RESPONSE_BYTES = 1024;
+const MAX_TOOL_SCAN_RESPONSE_BYTES = 16 * 1024 * 1024;
 
 export type ToolCatalogSource = "local-repository" | "profile";
 export type ToolCatalogTransportKind = "stdio" | "streamable-http" | "sse" | "unsupported";
-export type ToolCatalogStatus = "ok" | "failed" | "unsupported";
+export type ToolCatalogStatus = "ok" | "failed" | "incomplete" | "unsupported";
 
 export interface McpToolSummary {
   name: string;
@@ -41,11 +48,22 @@ export interface ServerToolCatalog {
   toolCount: number | null;
   tools: McpToolSummary[];
   error: string | null;
+  /** False means that the target was not fully probed; no success is implied. */
+  complete: boolean;
+}
+
+export interface ToolScanBudget {
+  maxResponseBytes: number;
+  usedResponseBytes: number;
 }
 
 export interface ToolCatalogOptions {
   timeoutMs?: number;
   serverName?: string;
+  maxParallelProbes?: number;
+  maxResponseBytes?: number;
+  /** Shared by one aggregate scan; callers normally leave this unset. */
+  budget?: ToolScanBudget;
 }
 
 export interface ToolCatalogTarget {
@@ -73,6 +91,27 @@ export function normalizeToolScanTimeout(timeoutMs: number | undefined): number 
     return DEFAULT_TOOL_SCAN_TIMEOUT_MS;
   }
   return Math.min(Math.max(Math.trunc(timeoutMs), 500), 60000);
+}
+
+export function normalizeToolScanParallelism(maxParallelProbes: number | undefined): number {
+  if (typeof maxParallelProbes !== "number" || !Number.isFinite(maxParallelProbes)) {
+    return DEFAULT_TOOL_SCAN_MAX_PARALLEL_PROBES;
+  }
+  return Math.min(Math.max(Math.trunc(maxParallelProbes), MIN_TOOL_SCAN_PARALLEL_PROBES), MAX_TOOL_SCAN_PARALLEL_PROBES);
+}
+
+export function normalizeToolScanResponseBytes(maxResponseBytes: number | undefined): number {
+  if (typeof maxResponseBytes !== "number" || !Number.isFinite(maxResponseBytes)) {
+    return DEFAULT_TOOL_SCAN_MAX_RESPONSE_BYTES;
+  }
+  return Math.min(Math.max(Math.trunc(maxResponseBytes), MIN_TOOL_SCAN_RESPONSE_BYTES), MAX_TOOL_SCAN_RESPONSE_BYTES);
+}
+
+export function createToolScanBudget(maxResponseBytes: number | undefined = undefined): ToolScanBudget {
+  return {
+    maxResponseBytes: normalizeToolScanResponseBytes(maxResponseBytes),
+    usedResponseBytes: 0
+  };
 }
 
 export function filterTargetsForToolScan(
@@ -113,8 +152,76 @@ export function filterServersForToolScan(
   );
 }
 
+class ToolScanResponseBudgetExceeded extends Error {
+  constructor() {
+    super("response budget exceeded");
+    this.name = "ToolScanResponseBudgetExceeded";
+  }
+}
+
+function reserveResponseBytes(budget: ToolScanBudget, bytes: number): boolean {
+  if (bytes <= 0) return true;
+  if (budget.usedResponseBytes + bytes > budget.maxResponseBytes) return false;
+  budget.usedResponseBytes += bytes;
+  return true;
+}
+
 function formatError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function sanitizeError(error: unknown, target: ToolCatalogTarget): string {
+  let message = formatError(error);
+  const sensitiveValues = [
+    ...Object.values(target.headers ?? {}),
+    ...Object.values(target.env ?? {})
+  ].filter((value) => value.length > 0);
+  for (const value of sensitiveValues) {
+    message = message.split(value).join("***");
+  }
+  if (target.url) {
+    message = message.split(target.url).join(maskUrl(target.url) ?? "***");
+  }
+  return message;
+}
+
+function budgetedFetch(budget: ToolScanBudget): FetchLike {
+  const fetchImpl = globalThis.fetch.bind(globalThis) as FetchLike;
+  return async (url, init) => {
+    const response = await fetchImpl(url, init);
+    if (!response.body) return response;
+
+    const reader = response.body.getReader();
+    const body = new ReadableStream<Uint8Array>({
+      async pull(controller) {
+        try {
+          const { done, value } = await reader.read();
+          if (done) {
+            controller.close();
+            return;
+          }
+          const bytes = value?.byteLength ?? 0;
+          if (!reserveResponseBytes(budget, bytes)) {
+            await reader.cancel();
+            controller.error(new ToolScanResponseBudgetExceeded());
+            return;
+          }
+          controller.enqueue(value);
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+      cancel(reason) {
+        return reader.cancel(reason);
+      }
+    });
+
+    return new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers
+    });
+  };
 }
 
 function asStringArray(value: unknown): string[] {
@@ -276,6 +383,8 @@ export function createProfileToolCatalogTargets(profile: ResolvedProfile): ToolC
 export interface TransportHardening {
   /** Pass "error" to refuse HTTP redirects on remote transports. */
   redirect?: RequestRedirect;
+  /** Wrap all remote response bodies so one aggregate scan budget is enforced. */
+  fetch?: FetchLike;
 }
 
 export function createTransport(
@@ -306,11 +415,11 @@ export function createTransport(
   }
 
   if (target.transportKind === "streamable-http" && target.url) {
-    return new StreamableHTTPClientTransport(new URL(target.url), { requestInit });
+    return new StreamableHTTPClientTransport(new URL(target.url), { requestInit, fetch: hardening.fetch });
   }
 
   if (target.transportKind === "sse" && target.url) {
-    return new SSEClientTransport(new URL(target.url), { requestInit });
+    return new SSEClientTransport(new URL(target.url), { requestInit, fetch: hardening.fetch });
   }
 
   return null;
@@ -337,8 +446,17 @@ function createBaseCatalogEntry(
     durationMs: Date.now() - startedAt,
     toolCount: status === "ok" ? tools.length : null,
     tools,
-    error
+    error,
+    complete: status === "ok"
   };
+}
+
+function createIncompleteCatalogEntry(
+  target: ToolCatalogTarget,
+  reason: string,
+  startedAt = Date.now()
+): ServerToolCatalog {
+  return createBaseCatalogEntry(target, "incomplete", startedAt, reason);
 }
 
 export async function readToolCatalogTarget(
@@ -346,9 +464,13 @@ export async function readToolCatalogTarget(
   options: ToolCatalogOptions = {}
 ): Promise<ServerToolCatalog> {
   const timeoutMs = normalizeToolScanTimeout(options.timeoutMs);
+  const budget = options.budget ?? createToolScanBudget(options.maxResponseBytes);
   const startedAt = Date.now();
   if (target.transportKind === "unsupported") {
     return createBaseCatalogEntry(target, "unsupported", startedAt, target.error ?? t().common.unsupportedStartForm);
+  }
+  if (budget.usedResponseBytes >= budget.maxResponseBytes) {
+    return createIncompleteCatalogEntry(target, "not scanned: aggregate response budget exhausted", startedAt);
   }
 
   let transport: Transport | null = null;
@@ -358,19 +480,32 @@ export async function readToolCatalogTarget(
   );
 
   try {
-    transport = createTransport(target);
+    const remote = target.transportKind === "sse" || target.transportKind === "streamable-http";
+    transport = createTransport(target, {
+      redirect: remote ? "error" : undefined,
+      fetch: remote ? budgetedFetch(budget) : undefined
+    });
     if (!transport) {
       return createBaseCatalogEntry(target, "unsupported", startedAt, target.error ?? t().common.unsupportedStartForm);
     }
     await client.connect(transport, { timeout: timeoutMs });
     const result = await client.listTools(undefined, { timeout: timeoutMs });
+    if (target.transportKind === "stdio") {
+      const serializedBytes = Buffer.byteLength(JSON.stringify(result), "utf-8");
+      if (!reserveResponseBytes(budget, serializedBytes)) {
+        return createIncompleteCatalogEntry(target, "not scanned: aggregate response budget exceeded", startedAt);
+      }
+    }
     const tools = result.tools
       .map(normalizeTool)
       .sort((a, b) => a.name.localeCompare(b.name));
 
     return createBaseCatalogEntry(target, "ok", startedAt, null, tools);
   } catch (error) {
-    return createBaseCatalogEntry(target, "failed", startedAt, formatError(error));
+    if (error instanceof ToolScanResponseBudgetExceeded) {
+      return createIncompleteCatalogEntry(target, "not scanned: aggregate response budget exceeded", startedAt);
+    }
+    return createBaseCatalogEntry(target, "failed", startedAt, sanitizeError(error, target));
   } finally {
     try {
       await client.close();
@@ -385,6 +520,34 @@ export async function readToolCatalogTarget(
   }
 }
 
+async function scanTargetsWithBudget(
+  targets: ToolCatalogTarget[],
+  options: ToolCatalogOptions
+): Promise<ServerToolCatalog[]> {
+  const budget = options.budget ?? createToolScanBudget(options.maxResponseBytes);
+  const maxParallelProbes = normalizeToolScanParallelism(options.maxParallelProbes);
+  const catalogs: ServerToolCatalog[] = new Array(targets.length);
+  let nextIndex = 0;
+
+  async function worker(): Promise<void> {
+    while (true) {
+      const index = nextIndex++;
+      if (index >= targets.length) return;
+      const target = targets[index];
+      if (target.transportKind !== "unsupported" && budget.usedResponseBytes >= budget.maxResponseBytes) {
+        catalogs[index] = createIncompleteCatalogEntry(target, "not scanned: aggregate response budget exhausted");
+        continue;
+      }
+      catalogs[index] = await readToolCatalogTarget(target, { ...options, budget });
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(maxParallelProbes, Math.max(targets.length, 1)) }, () => worker())
+  );
+  return catalogs;
+}
+
 export async function readServerToolCatalog(
   server: LocalServerSummary,
   options: ToolCatalogOptions = {}
@@ -397,11 +560,7 @@ export async function buildToolCatalog(
   options: ToolCatalogOptions = {}
 ): Promise<ServerToolCatalog[]> {
   const selectedServers = filterServersForToolScan(servers, options.serverName);
-  const catalogs: ServerToolCatalog[] = [];
-  for (const server of selectedServers) {
-    catalogs.push(await readServerToolCatalog(server, options));
-  }
-  return catalogs;
+  return scanTargetsWithBudget(selectedServers.map(createLocalServerToolTarget), options);
 }
 
 export async function scanLocalServerTools(
@@ -418,9 +577,5 @@ export async function scanProfileServerTools(
 ): Promise<ServerToolCatalog[]> {
   const profile = await resolveMcpProfile(profileName, profileRoot);
   const targets = filterTargetsForToolScan(createProfileToolCatalogTargets(profile), options.serverName);
-  const catalogs: ServerToolCatalog[] = [];
-  for (const target of targets) {
-    catalogs.push(await readToolCatalogTarget(target, options));
-  }
-  return catalogs;
+  return scanTargetsWithBudget(targets, options);
 }

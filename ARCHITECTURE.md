@@ -17,8 +17,9 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
   - liest den handgepflegten MCP-Katalog `mcps.catalog.v1.json` (Schema `ellmos.mcps.v1`) aus dem MCP-Root oder aus `ELLMOS_MCP_CATALOG`
   - verknüpft Katalogeinträge mit dem Verzeichnis-Scan zuerst über die Katalog-`id`, danach über den npm-Paketnamen
   - meldet beide Richtungen: gescannte Server ohne Katalogeintrag und Katalogeinträge ohne Verzeichnis
-  - ergänzt Art (`mcp_kind`), eigenen Zustand, Zustandshoheit je Namensraum, Umhüllung und Komposition
-  - wirft nie: fehlender, unlesbarer oder schemafremder Katalog wird über einen Status gemeldet, ein unlesbarer Root als unlesbar statt als leeres Ergebnis
+  - ergänzt Art (`mcp_kind`), eigenen Zustand, Zustandshoheit je Namensraum, Umhüllung, Komposition und deklarierte `capability_tags`
+  - validiert Capability-Tags als `ellmos.capability-tags.v1`, normalisiert sie read-only und meldet Typ-/Duplikatfehler als `invalid`
+  - wirft nie: fehlender, unlesbarer, schemafremder oder ungültiger Katalog wird über einen Status gemeldet, ein unlesbarer Root als unlesbar statt als leeres Ergebnis
 - `profiles.ts`
   - liest Claude-Profile aus `~/.claude/profiles`
   - extrahiert Servernamen und Profilbeziehungen
@@ -41,7 +42,9 @@ Der Server ist absichtlich klein gestartet und in wenige Kernmodule geteilt:
   - unterstützt Nicht-Node-Kommandos sowie URL-basierte Streamable-HTTP- und SSE-Konfigurationen
   - ruft echte MCP-`list_tools`-Antworten ab
   - normalisiert Toolnamen, Titel, Beschreibungen, Input-Schemas und Annotationen
-  - begrenzt Probe-Laufzeiten per Timeout und beendet gestartete Prozesse wieder
+  - reicht den versionierten Header-/Auth-Vertrag `ellmos.tool-scan-headers.v1` aus Profilen an SSE-GET und MCP-POST weiter, verweigert Redirects und maskiert konfigurierte Geheimwerte in Fehlern
+  - begrenzt Probe-Laufzeiten per Timeout, parallele Probes und aggregierte Antwortbytes; nicht geprüfte Ziele bleiben `incomplete` mit unbekannter Toolzahl
+  - beendet gestartete Prozesse und Remote-Transporte wieder
 - `gatewayHardening.ts`
   - setzt die Eigendark-Härtungsvorgaben aus `TODO.md` (P1, 2026-08-15) für den Invoke-Pfad um
   - redigiert weitergereichte Ergebnisse rekursiv über alle Ebenen: Schlüsselnamen, die ein Geheimnis benennen, und eng gefasste Credential-Muster im Fließtext

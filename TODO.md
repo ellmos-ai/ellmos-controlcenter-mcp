@@ -1,11 +1,32 @@
 # TODO
 
+## TASKPLAN-Formalisierung — 2026-09-20
+
+Der Review-Stand wurde gegen `package.json`, `package-lock.json`, `STATE.md`, `ROADMAP.md`,
+`ARCHITECTURE.md`, `DECISIONS.md`, Quellcode, Tests, Paket- und Registry-Gates abgeglichen.
+Die sechs folgenden Aufgaben sind als offene lokale TASKPLAN-Aufgaben unter `root_id=repos`
+registriert; `#2201` ist nach aktueller Prüfung erledigt. Aufwand und Scope bleiben Teil des Registers:
+
+- [x] `#2201` (`easy`, `local`): README-Status auf die veröffentlichte ControlCenter-Version 0.7.4 synchronisieren (beide Statusblöcke aktualisiert; npm test 252/252 und Build grün).
+- [x] `#2202` (`medium`, `local`): Legacy-SSE-Transport um abgesichertes Auth- und Header-Handling ergänzen (SDK-Headerpfad, Redirect-Refusal, Maskierung, Cleanup-Fixture und Build/Test verifiziert).
+- [x] `#2203` (`medium`, `local`): Tool-Scan mit begrenztem Response- und Parallelitätsbudget absichern (validierte Defaults/Overrides, ehrliches `incomplete`, Parallelitäts-/Budgettests und Build/Test verifiziert).
+- `#2204` (`special`, `local`): Gateway-Risikoklassen aus MCP-Tool-Annotationen policy-gesteuert erzwingen.
+- [x] `#2205` (`medium`, `local`): Versioniertes Capability-Tag- und Katalogmodell für MCP-Server definieren (Schema `ellmos.capability-tags.v1`, Normalisierung, Invalid-Zustand, Read-only-Ausgabe, sechs Sprachen und Fixtures verifiziert).
+- `#2206` (`large`, `local`): Semantische Skill-Suche als optionalen, provenance-markierten Embedding-Ranker umsetzen.
+- `#2207` (`special`, `local`): Thematische Cluster und virtuelle MCP-/Adapter-Grenze als freigabepflichtige Architektur ausarbeiten.
+
+`#2204`, `#2206` und `#2207` bleiben wegen Architektur-, Ressourcen- bzw. Nutzerfreigaben
+sichtbar und werden nicht als autonom freigegebene Runtime-Arbeit behandelt. Connection-Pooling
+wurde nicht als eigene Aufgabe angelegt: `DECISIONS.md` hält die absichtliche Connect-per-Call-
+Grenze fest. Alle Aufgaben enthalten Quelle, Ableitung, Annahmen, Ergebnis, DoD, Tests und
+Blocker im TASKPLAN-Register. Es wurde kein Publish ausgelöst.
+
 ## P0
 
 - [x] Profilschema robuster lesen
 - Katalogformat stabilisieren
 - [x] Fehlerausgaben für fehlende Profile nutzerfreundlicher machen
-- Capability-Bundles konfigurierbar machen statt nur heuristisch
+- [x] Capability-Bundles konfigurierbar machen statt nur heuristisch (über `ELLMOS_BUNDLE_CONFIG`/`bundleConfigPath`, validiertes Schema und Tests nachgewiesen)
 - [x] Policy-Regeln konfigurierbar machen
 
 ## P1
@@ -16,8 +37,8 @@
 - [x] Dashboard-Ansicht der Tool-Zuordnung ergänzen
 - [x] i18n-Grundlage für MCP-Ausgaben und Dashboard mit Deutsch/Englisch ergänzen
 - [x] Stub-Sprachen `es`, `zh`, `ja` und `ru` mit echten Übersetzungen füllen
-- Remote-Auth und Header-Handling für Legacy-SSE ergänzen
-- Capability-Tags in `server.json` oder separatem Catalog persistieren
+- [x] Remote-Auth und Header-Handling für Legacy-SSE ergänzen (Profil-Header an GET/POST, Redirects fail-closed, maskierte Fehler, Cleanup).
+- [x] Capability-Tags im MCP-Katalog persistieren (versioniertes `capability_tags`-Objekt, read-only Ausgabe, keine Installations-/Ausführungsautorität).
 - [x] Automatischen Scan für Skills und Plugins (mit Subkomponenten-Erkennung) implementieren
 - [x] **Skill-Finder / Skill-Erkennung — ERLEDIGT 2026-06-27 (lexikalischer Kern, build grün, 57 Tests):** Tool `controlcenter_find_skill`
   (bzw. `controlcenter_suggest_skill`) — Freitext-Aufgabe/Intent gegen den bereits gescannten
@@ -112,9 +133,9 @@
   unvertrauenswürdige Daten. **Offen geblieben:** *opake sitzungsgebundene Capabilities* — der
   Gateway hält keine Sitzung und gibt kein Capability-Handle aus, es gibt also derzeit nichts, das
   opak gemacht werden könnte; wird relevant, sobald Pooling oder Handles eingeführt werden.
-- [ ] Härtung auf den Toolscan-Pfad (`controlcenter_list_tools`) ausdehnen: er teilt die
-  Transportpolitik über den gemeinsamen Code, unterliegt aber noch keinen Response- oder
-  Parallelitätsbudgets.
+- [x] Härtung auf den Toolscan-Pfad (`controlcenter_list_tools`) ausdehnen: gemeinsamer
+  Transportcode, begrenzte Response-/Parallelitätsbudgets und ehrliche unvollständige Ergebnisse
+  sind umgesetzt und getestet.
 - [ ] Risikoklassen-Policy aus den Tool-Annotationen der Zielserver ableiten
   (`destructiveHint`, `readOnlyHint`): heute wird beides gelesen, aber nicht durchgesetzt.
 - [ ] HarnessRanger-Learning übernehmen: pro Host-Adapter getrennte,

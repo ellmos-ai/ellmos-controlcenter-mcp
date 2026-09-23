@@ -170,6 +170,7 @@ export interface Translations {
     mcpCatalogMissing: (catalogPath: string) => string;
     mcpCatalogUnreadable: (catalogPath: string) => string;
     mcpCatalogSchemaMismatch: (catalogPath: string, schema: string) => string;
+    mcpCatalogInvalid: (catalogPath: string, reason: string) => string;
     mcpRootUnreadable: (root: string) => string;
     mcpServerUnknown: (serverId: string, root: string) => string;
     mcpServerCatalogOnly: (root: string) => string;
@@ -178,6 +179,7 @@ export interface Translations {
     mcpWrapsTarget: string;
     mcpTargetKind: string;
     mcpComposition: string;
+    mcpCapabilityTags: string;
   };
   policy: {
     invalidServerConfig: string;
@@ -205,6 +207,8 @@ export interface Translations {
     toolScopeLocal: string;
     scan: string;
     timeoutLabel: string;
+    parallelLabel: string;
+    responseBudgetLabel: string;
     noToolScan: string;
     noAction: string;
     noDescription: string;

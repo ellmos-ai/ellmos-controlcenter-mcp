@@ -163,6 +163,7 @@ export const en: Translations = {
     mcpCatalogMissing: (catalogPath) => `MCP catalog not found (${catalogPath}) - kind and state ownership stay empty.`,
     mcpCatalogUnreadable: (catalogPath) => `MCP catalog unreadable (${catalogPath}) - kind and state ownership stay empty.`,
     mcpCatalogSchemaMismatch: (catalogPath, schema) => `MCP catalog uses a foreign schema (${catalogPath}, found: ${schema}, expected: ellmos.mcps.v1) - kind and state ownership stay empty.`,
+    mcpCatalogInvalid: (catalogPath, reason) => `MCP catalog is invalid (${catalogPath}: ${reason}) - entries remain empty.`,
     mcpRootUnreadable: (root) => `MCP root unreadable: ${root}`,
     mcpServerUnknown: (serverId, root) => `MCP server '${serverId}' is known neither under ${root} nor in the catalog.`,
     mcpServerCatalogOnly: (root) => `Catalog entry only, no directory under ${root}.`,
@@ -170,7 +171,8 @@ export const en: Translations = {
     mcpWraps: "Wraps",
     mcpWrapsTarget: "Wrap target",
     mcpTargetKind: "Target kind",
-    mcpComposition: "Composition"
+    mcpComposition: "Composition",
+    mcpCapabilityTags: "Capability tags"
   },
   policy: {
     invalidServerConfig: "Server configuration is not an object.",
@@ -288,6 +290,8 @@ export const en: Translations = {
     simpleServerName: "Optional server name for a targeted scan.",
     timeoutMs: "Timeout per MCP tool scan in milliseconds. Default: 5000.",
     listToolsTimeoutMs: "Timeout per connect and list_tools request in milliseconds. Default: 5000.",
+    maxParallelProbes: "Maximum number of concurrent tool probes. Default: 4; maximum: 32.",
+    maxResponseBytes: "Aggregate maximum response size for one tool scan in bytes. Default: 1048576.",
     capabilityQuery: "Keywords or capability terms for deterministic lexical candidate ranking.",
     capabilityLimit: "Maximum number of candidates to return. Default: 10; maximum: 100.",
     resolutionPath: "Path to a hash-consistent system-explorer.resolution.v1 JSON file. Its source-verification field is treated only as an untrusted claim until an external receipt exists.",
@@ -330,6 +334,8 @@ export const en: Translations = {
     toolScopeLocal: "Local Repos",
     scan: "Scan",
     timeoutLabel: "Timeout in milliseconds",
+    parallelLabel: "Maximum parallel probes",
+    responseBudgetLabel: "Aggregate response budget in bytes",
     noToolScan: "No tool scan has run yet.",
     noAction: "No action has run yet.",
     noDescription: "No description",

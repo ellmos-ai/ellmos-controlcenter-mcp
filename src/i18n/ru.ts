@@ -163,6 +163,7 @@ export const ru: Translations = {
     mcpCatalogMissing: (catalogPath) => `Каталог MCP не найден (${catalogPath}) — тип и владелец состояния остаются пустыми.`,
     mcpCatalogUnreadable: (catalogPath) => `Каталог MCP нечитаем (${catalogPath}) — тип и владелец состояния остаются пустыми.`,
     mcpCatalogSchemaMismatch: (catalogPath, schema) => `У каталога MCP чужая схема (${catalogPath}, найдено: ${schema}, ожидалось: ellmos.mcps.v1) — тип и владелец состояния остаются пустыми.`,
+    mcpCatalogInvalid: (catalogPath, reason) => `Каталог MCP недействителен (${catalogPath}: ${reason}) — записи останутся пустыми.`,
     mcpRootUnreadable: (root) => `Корень MCP нечитаем: ${root}`,
     mcpServerUnknown: (serverId, root) => `Сервер MCP '${serverId}' не найден ни в ${root}, ни в каталоге.`,
     mcpServerCatalogOnly: (root) => `Есть только в каталоге, папки в ${root} нет.`,
@@ -170,7 +171,8 @@ export const ru: Translations = {
     mcpWraps: "Оборачивает",
     mcpWrapsTarget: "Цель обёртки",
     mcpTargetKind: "Тип цели",
-    mcpComposition: "Состав"
+    mcpComposition: "Состав",
+    mcpCapabilityTags: "Теги возможностей"
   },
   policy: {
     invalidServerConfig: "Конфигурация сервера не является объектом.",
@@ -288,6 +290,8 @@ export const ru: Translations = {
     simpleServerName: "Необязательное имя сервера для точечного сканирования.",
     timeoutMs: "Таймаут на сканирование MCP-инструментов в миллисекундах. По умолчанию: 5000.",
     listToolsTimeoutMs: "Таймаут на connect и list_tools-запрос в миллисекундах. По умолчанию: 5000.",
+    maxParallelProbes: "Максимальное число параллельных проб инструментов. По умолчанию: 4, максимум: 32.",
+    maxResponseBytes: "Общий максимальный размер ответа сканирования в байтах. По умолчанию: 1048576.",
     capabilityQuery: "Ключевые слова или термины возможностей для детерминированного лексического ранжирования.",
     capabilityLimit: "Максимальное число кандидатов. По умолчанию: 10; максимум: 100.",
     resolutionPath: "Путь к согласованному по хешу JSON system-explorer.resolution.v1; без внешней квитанции проверка источника остаётся недоверенным заявлением.",
@@ -330,6 +334,8 @@ export const ru: Translations = {
     toolScopeLocal: "Локальные репозитории",
     scan: "Сканировать",
     timeoutLabel: "Таймаут в миллисекундах",
+    parallelLabel: "Максимум параллельных проб",
+    responseBudgetLabel: "Общий бюджет ответа в байтах",
     noToolScan: "Сканирование инструментов еще не запускалось.",
     noAction: "Действия еще не выполнялись.",
     noDescription: "Нет описания",

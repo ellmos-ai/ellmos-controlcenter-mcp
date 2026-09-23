@@ -27,6 +27,9 @@
 - Load, disable, and override the severity of policy rules from `data/policy-rules.json`
 - Start local stdio MCP servers and read real tool lists via MCP `list_tools`
 - Scan resolved Claude profile servers including arbitrary stdio commands and URL-based Streamable HTTP/SSE configs
+- Profile-defined SSE headers are forwarded to the event-stream GET and MCP message POST requests; redirects are refused, secrets are masked in probe errors, and transports are closed after each scan
+- Tool scans enforce bounded concurrency and an aggregate response budget; skipped or cut-off targets remain explicit `incomplete` results with unknown tool counts
+- `mcps.catalog.v1.json` accepts backward-compatible, versioned `ellmos.capability-tags.v1` metadata and reports malformed tag data as `invalid` without granting execution authority
 - Optionally include tool probe results in the local server catalog
 - Assign probed tools to capability bundles based on their metadata
 - Start a local browser dashboard
@@ -56,7 +59,6 @@
 - Automatic semantic role selection or an embedding ranker; ControlCenter validates caller-selected routes but does not infer them or grant execution authority
 - A separately trusted System Explorer resolution receipt; current resolution files prove only internal hash consistency
 - Host-trusted availability evidence and policy-gated selection/execution remain outside this package
-- Remote auth and header handling for legacy SSE
 - Thematic clusters that can be automatically suggested and manually maintained
 - Virtual MCP servers built from curated clusters; the gateway forwards calls but does not yet
   package a curated group as its own server

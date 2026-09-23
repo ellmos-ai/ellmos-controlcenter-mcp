@@ -89,19 +89,25 @@ export async function getToolBundleOverview(options: {
   profileRoot?: string;
   serverName?: string;
   timeoutMs?: number;
+  maxParallelProbes?: number;
+  maxResponseBytes?: number;
 } = {}) {
   const labels = t();
   const scope = options.scope === "local" ? "local" : "profile";
   const timeoutMs = typeof options.timeoutMs === "number" ? options.timeoutMs : undefined;
+  const maxParallelProbes = typeof options.maxParallelProbes === "number" ? options.maxParallelProbes : undefined;
+  const maxResponseBytes = typeof options.maxResponseBytes === "number" ? options.maxResponseBytes : undefined;
   const toolCatalog = scope === "local"
     ? await scanLocalServerTools(options.mcpRoot ?? DEFAULT_MCP_ROOT, {
       serverName: options.serverName,
-      timeoutMs
+      timeoutMs,
+      maxParallelProbes,
+      maxResponseBytes
     })
     : await scanProfileServerTools(
       options.profileName ?? "base",
       options.profileRoot ?? DEFAULT_PROFILE_ROOT,
-      { serverName: options.serverName, timeoutMs }
+      { serverName: options.serverName, timeoutMs, maxParallelProbes, maxResponseBytes }
     );
   const assignments = buildBundleToolAssignments(toolCatalog, await loadBundleDefinitions());
   const okServerCount = toolCatalog.filter((entry) => entry.status === "ok").length;
@@ -343,6 +349,8 @@ function htmlPage(lang: Lang = getLanguage()): string {
             <option value="local">${labels.toolScopeLocal}</option>
           </select>
           <input id="tool-timeout" type="number" min="500" max="60000" step="500" value="5000" aria-label="${labels.timeoutLabel}">
+          <input id="tool-parallel" type="number" min="1" max="32" step="1" value="4" aria-label="${labels.parallelLabel}">
+          <input id="tool-response-budget" type="number" min="1024" max="16777216" step="1024" value="1048576" aria-label="${labels.responseBudgetLabel}">
           <button id="scan-tools">${labels.scan}</button>
         </div>
         <div id="tool-summary" class="meta">${labels.noToolScan}</div>
@@ -503,12 +511,14 @@ function htmlPage(lang: Lang = getLanguage()): string {
     document.getElementById("scan-tools").addEventListener("click", async () => {
       const scope = document.getElementById("tool-scope").value;
       const timeoutMs = Number.parseInt(document.getElementById("tool-timeout").value || "5000", 10);
+      const maxParallelProbes = Number.parseInt(document.getElementById("tool-parallel").value || "4", 10);
+      const maxResponseBytes = Number.parseInt(document.getElementById("tool-response-budget").value || "1048576", 10);
       document.getElementById("tool-summary").textContent = L.scanRunning;
       document.getElementById("tool-catalog").innerHTML = "";
       document.getElementById("tool-assignments").innerHTML = "";
       const result = await api("/api/tool-bundles", {
         method: "POST",
-        body: JSON.stringify({ scope, profileName: selectedProfile, timeoutMs })
+        body: JSON.stringify({ scope, profileName: selectedProfile, timeoutMs, maxParallelProbes, maxResponseBytes })
       });
       renderToolScan(result);
       document.getElementById("output").textContent = JSON.stringify({
@@ -595,7 +605,9 @@ async function handleApi(request: http.IncomingMessage, response: http.ServerRes
       scope: body.scope === "local" ? "local" : "profile",
       profileName: typeof body.profileName === "string" ? body.profileName : undefined,
       serverName: typeof body.serverName === "string" ? body.serverName : undefined,
-      timeoutMs: typeof body.timeoutMs === "number" ? body.timeoutMs : undefined
+      timeoutMs: typeof body.timeoutMs === "number" ? body.timeoutMs : undefined,
+      maxParallelProbes: typeof body.maxParallelProbes === "number" ? body.maxParallelProbes : undefined,
+      maxResponseBytes: typeof body.maxResponseBytes === "number" ? body.maxResponseBytes : undefined
     }));
     return;
   }

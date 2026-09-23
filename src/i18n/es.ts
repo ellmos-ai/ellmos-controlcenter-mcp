@@ -163,6 +163,7 @@ export const es: Translations = {
     mcpCatalogMissing: (catalogPath) => `Catálogo MCP no encontrado (${catalogPath}): el tipo y la propiedad del estado quedan vacíos.`,
     mcpCatalogUnreadable: (catalogPath) => `Catálogo MCP ilegible (${catalogPath}): el tipo y la propiedad del estado quedan vacíos.`,
     mcpCatalogSchemaMismatch: (catalogPath, schema) => `El catálogo MCP usa un esquema ajeno (${catalogPath}, encontrado: ${schema}, esperado: ellmos.mcps.v1): el tipo y la propiedad del estado quedan vacíos.`,
+    mcpCatalogInvalid: (catalogPath, reason) => `El catálogo MCP no es válido (${catalogPath}: ${reason}): las entradas quedan vacías.`,
     mcpRootUnreadable: (root) => `Raíz MCP ilegible: ${root}`,
     mcpServerUnknown: (serverId, root) => `El servidor MCP '${serverId}' no se conoce ni en ${root} ni en el catálogo.`,
     mcpServerCatalogOnly: (root) => `Solo consta en el catálogo, sin directorio en ${root}.`,
@@ -170,7 +171,8 @@ export const es: Translations = {
     mcpWraps: "Envuelve",
     mcpWrapsTarget: "Objetivo envuelto",
     mcpTargetKind: "Tipo de destino",
-    mcpComposition: "Composición"
+    mcpComposition: "Composición",
+    mcpCapabilityTags: "Etiquetas de capacidad"
   },
   policy: {
     invalidServerConfig: "La configuración del servidor no es un objeto.",
@@ -288,6 +290,8 @@ export const es: Translations = {
     simpleServerName: "Nombre opcional de servidor para un escaneo específico.",
     timeoutMs: "Timeout por escaneo de herramientas MCP en milisegundos. Por defecto: 5000.",
     listToolsTimeoutMs: "Timeout por solicitud de conexión y list_tools en milisegundos. Por defecto: 5000.",
+    maxParallelProbes: "Número máximo de sondeos de herramientas simultáneos. Por defecto: 4; máximo: 32.",
+    maxResponseBytes: "Tamaño máximo agregado de respuesta por escaneo en bytes. Por defecto: 1048576.",
     capabilityQuery: "Palabras clave o capacidades para la clasificación léxica determinista.",
     capabilityLimit: "Número máximo de candidatos. Predeterminado: 10; máximo: 100.",
     resolutionPath: "Ruta a un JSON system-explorer.resolution.v1 coherente con su hash; la verificación de fuente sigue siendo una declaración no confiable sin un recibo externo.",
@@ -330,6 +334,8 @@ export const es: Translations = {
     toolScopeLocal: "Repos locales",
     scan: "Escanear",
     timeoutLabel: "Timeout en milisegundos",
+    parallelLabel: "Máximo de sondeos paralelos",
+    responseBudgetLabel: "Presupuesto agregado de respuesta en bytes",
     noToolScan: "Aún no se ejecutó ningún escaneo de herramientas.",
     noAction: "Aún no se ejecutó ninguna acción.",
     noDescription: "Sin descripción",

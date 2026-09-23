@@ -163,6 +163,7 @@ export const zh: Translations = {
     mcpCatalogMissing: (catalogPath) => `未找到 MCP 清单 (${catalogPath}) — 类型与状态归属留空。`,
     mcpCatalogUnreadable: (catalogPath) => `MCP 清单无法读取 (${catalogPath}) — 类型与状态归属留空。`,
     mcpCatalogSchemaMismatch: (catalogPath, schema) => `MCP 清单使用了其他架构 (${catalogPath}，实际：${schema}，期望：ellmos.mcps.v1) — 类型与状态归属留空。`,
+    mcpCatalogInvalid: (catalogPath, reason) => `MCP 清单无效（${catalogPath}：${reason}）— 条目留空。`,
     mcpRootUnreadable: (root) => `MCP 根目录无法读取：${root}`,
     mcpServerUnknown: (serverId, root) => `MCP 服务器 '${serverId}' 在 ${root} 和清单中均不存在。`,
     mcpServerCatalogOnly: (root) => `仅登记在清单中，${root} 下没有对应文件夹。`,
@@ -170,7 +171,8 @@ export const zh: Translations = {
     mcpWraps: "封装",
     mcpWrapsTarget: "封装目标",
     mcpTargetKind: "目标类型",
-    mcpComposition: "组合"
+    mcpComposition: "组合",
+    mcpCapabilityTags: "能力标签"
   },
   policy: {
     invalidServerConfig: "服务器配置不是对象。",
@@ -288,6 +290,8 @@ export const zh: Translations = {
     simpleServerName: "可选服务器名，用于定向扫描。",
     timeoutMs: "每次 MCP 工具扫描的超时时间，单位毫秒。默认：5000。",
     listToolsTimeoutMs: "每次 connect 和 list_tools 请求的超时时间，单位毫秒。默认：5000。",
+    maxParallelProbes: "同时运行的工具探测最大数量。默认：4；最大：32。",
+    maxResponseBytes: "一次工具扫描的聚合响应大小上限（字节）。默认：1048576。",
     capabilityQuery: "用于确定性词法候选排序的关键字或能力术语。",
     capabilityLimit: "返回候选项的最大数量。默认值：10；最大值：100。",
     resolutionPath: "哈希自洽的 system-explorer.resolution.v1 JSON 文件路径；在有外部回执前，其中的来源验证只是未受信声明。",
@@ -330,6 +334,8 @@ export const zh: Translations = {
     toolScopeLocal: "本地仓库",
     scan: "扫描",
     timeoutLabel: "超时时间，单位毫秒",
+    parallelLabel: "最大并行探测数",
+    responseBudgetLabel: "聚合响应预算（字节）",
     noToolScan: "尚未运行工具扫描。",
     noAction: "尚未执行操作。",
     noDescription: "无描述",

@@ -13,7 +13,7 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-252%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-257%20passed-brightgreen.svg)](https://vitest.dev/)
 [![Verified: 2026-09-14](https://img.shields.io/badge/verified-2026--09--14-blue.svg)](CHANGELOG.md)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
@@ -165,7 +165,7 @@ ControlCenter erzwingt 10 architektonische und betriebliche Invarianten, um Loca
 ## Status
 
 - **Phase:** Alpha
-- **Version:** `0.7.3`
+- **Version:** `0.7.4`
 - **Repository:** [`ellmos-ai/ellmos-controlcenter-mcp`](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)
 - **npm:** [`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 - **CI-Checks:** `npm run test` und `npm run build`
@@ -301,9 +301,9 @@ ControlCenter liest drei handgepflegte Kataloge, statt einzelne Pfade fest zu ve
 | `stacks.catalog.json` | `ellmos.stacks.catalog.v1` | `.AI/.STACKS` (`ELLMOS_STACKS_ROOT`) | `controlcenter_list_stacks`, `controlcenter_describe_stack`, `controlcenter_context_pack` |
 | `mcps.catalog.v1.json` | `ellmos.mcps.v1` | `.AI/.MCP` (`ELLMOS_MCP_CATALOG`) | `controlcenter_list_local_servers`, `controlcenter_describe_mcp`, `controlcenter_status` |
 
-Der MCP-Katalog liefert, was ein Verzeichnis-Scan nicht sehen kann: die Art (`mcp_kind`: `tool`, `adapter`, `stack`, `control-plane`), ob ein Server eigenen Zustand hält, und welche Komponente diesen Zustand je Namensraum besitzt. Der Verzeichnis-Scan bleibt die Quelle dafür, was tatsächlich installiert ist; deshalb werden beide Richtungen gemeldet: Ein gescannter Server ohne Katalogeintrag behält leere Katalogfelder, ein Katalogeintrag ohne Verzeichnis wird gesondert ausgewiesen statt verschluckt. Verknüpft wird zuerst über die Katalog-`id`, danach über den npm-Paketnamen — ein Server kann unter einem anderen Namen veröffentlicht sein als sein Verzeichnis heißt.
+Der MCP-Katalog liefert, was ein Verzeichnis-Scan nicht sehen kann: die Art (`mcp_kind`: `tool`, `adapter`, `stack`, `control-plane`), ob ein Server eigenen Zustand hält, welche Komponente diesen Zustand je Namensraum besitzt, und optional deklarierte Capability-Tags. Ein Tag-Block ist als `capability_tags: {"schema":"ellmos.capability-tags.v1","tags":["catalog","read-only"]}` versioniert; Tags werden kleingeschrieben und sortiert und bleiben reine Metadaten. Doppelte, falsch typisierte oder fehlerhafte Tags machen den Katalog ausdrücklich `invalid`, statt Daten still zu verwerfen. Der Verzeichnis-Scan bleibt die Quelle dafür, was tatsächlich installiert ist; deshalb werden beide Richtungen gemeldet: Ein gescannter Server ohne Katalogeintrag behält leere Katalogfelder, ein Katalogeintrag ohne Verzeichnis wird gesondert ausgewiesen statt verschluckt. Verknüpft wird zuerst über die Katalog-`id`, danach über den npm-Paketnamen — ein Server kann unter einem anderen Namen veröffentlicht sein als sein Verzeichnis heißt.
 
-Ein fehlender, unlesbarer oder schemafremder Katalog lässt keinen Tool-Aufruf scheitern. Die angereicherten Felder bleiben dann leer, und die Ausgabe benennt den Grund; so ist ein fehlender Katalog von einem Server unterscheidbar, der wirklich keinen Zustand hält. Ein unlesbarer MCP-Root wird ebenso als unlesbar gemeldet statt als leeres Ergebnis.
+Ein fehlender, unlesbarer, schemafremder oder strukturell ungültiger Katalog lässt keinen Tool-Aufruf scheitern. Die angereicherten Felder bleiben dann leer, und die Ausgabe benennt den Grund; so ist ein fehlender Katalog von einem Server unterscheidbar, der wirklich keinen Zustand hält. Ein unlesbarer MCP-Root wird ebenso als unlesbar gemeldet statt als leeres Ergebnis.
 
 ## Host-Register: Sperren, Rechte, Entscheidungen, Governance, Ressourcen
 
@@ -605,7 +605,9 @@ Das ist die Grundlage für späteres Tool-Bloat-Management: statt viele Einzelto
 
 ## Tool-Katalog
 
-`controlcenter_list_tools` kann lokale Stdio-MCP-Server oder aufgelöste Claude-Profilserver starten und die standardisierte MCP-`list_tools`-Abfrage ausführen. Profilscans unterstützen beliebige Stdio-Kommandos inklusive Nicht-Node-Startern sowie URL-basierte Remote-Konfigurationen über Streamable HTTP oder Legacy-SSE. Der Scan ist explizit, nutzt ein Timeout pro Server, ruft keines der gemeldeten Tools auf und beendet jeden gestarteten lokalen Server nach dem Lesen der Toolliste.
+`controlcenter_list_tools` kann lokale Stdio-MCP-Server oder aufgelöste Claude-Profilserver starten und die standardisierte MCP-`list_tools`-Abfrage ausführen. Profilscans unterstützen beliebige Stdio-Kommandos inklusive Nicht-Node-Startern sowie URL-basierte Remote-Konfigurationen über Streamable HTTP oder Legacy-SSE. Der versionierte Header-/Auth-Vertrag heißt `ellmos.tool-scan-headers.v1`: Bei URL-Profilen werden konfigurierte statische `headers` an den SSE-Event-Stream-GET und jeden MCP-Nachrichten-POST weitergegeben; der Vertrag der installierten SDK-Version wird genutzt, Redirects werden verweigert und konfigurierte Header-/Umgebungswerte aus Probe-Fehlern maskiert. Jeder Transport wird nach der Probe geschlossen.
+
+Der Scan ist explizit, nutzt ein Timeout pro Server, ruft keines der gemeldeten Tools auf und arbeitet mit endlichen Standards: vier parallele Probes und ein aggregiertes Antwortbudget von 1 MiB. `maxParallelProbes` ist auf 1–32, `maxResponseBytes` auf 1 KiB–16 MiB begrenzt. Bei erschöpftem Budget oder nicht gestarteten Zielen erscheint `status: incomplete` mit unbekannter Toolzahl; ein erfolgreicher leerer Server wird nicht vorgetäuscht. Die Eingaben gelten für `controlcenter_list_tools`, `controlcenter_assign_tool_bundles`, `controlcenter_build_catalog` und den Dashboard-Scan.
 
 `controlcenter_build_catalog` akzeptiert `includeTools: true`, um dieselben Probe-Ergebnisse zusammen mit dem lokalen Serverkatalog zu speichern.
 

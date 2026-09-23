@@ -4,12 +4,13 @@ import { DEFAULT_MCP_ROOT, readLocalServerSummary, type LocalServerSummary } fro
 
 export const MCP_CATALOG_FILENAME = "mcps.catalog.v1.json";
 export const MCP_CATALOG_SCHEMA = "ellmos.mcps.v1";
+export const CAPABILITY_TAG_SCHEMA = "ellmos.capability-tags.v1";
 
 /**
  * Why the catalog is (not) usable. Everything except "ok" degrades the
  * enriched fields to null instead of failing the surrounding tool call.
  */
-export type McpCatalogStatus = "ok" | "missing" | "unreadable" | "schema_mismatch";
+export type McpCatalogStatus = "ok" | "missing" | "unreadable" | "schema_mismatch" | "invalid";
 
 export interface McpCatalogEntry {
   id: string;
@@ -25,6 +26,7 @@ export interface McpCatalogEntry {
   targetKind: string | null;
   composition: string | null;
   source: string | null;
+  capabilityTags: string[];
 }
 
 export interface McpCatalog {
@@ -35,6 +37,8 @@ export interface McpCatalog {
   maintainedBy: string | null;
   kinds: string[];
   entries: McpCatalogEntry[];
+  /** Validation detail for status=invalid; never contains secrets. */
+  error?: string | null;
 }
 
 export interface EnrichedLocalServer extends LocalServerSummary {
@@ -60,17 +64,46 @@ function optionalString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
-function stringArray(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+function strictStringArray(value: unknown, field: string): string[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
+    throw new Error(`${field} must be an array of strings`);
+  }
+  return value.map((item) => item as string);
 }
 
-function stringMap(value: unknown): Record<string, string> {
-  if (!isRecord(value)) return {};
+function strictStringMap(value: unknown, field: string): Record<string, string> {
+  if (value === undefined) return {};
+  if (!isRecord(value)) throw new Error(`${field} must be an object of strings`);
   const result: Record<string, string> = {};
   for (const [key, entry] of Object.entries(value)) {
-    if (typeof entry === "string") result[key] = entry;
+    if (typeof entry !== "string") throw new Error(`${field}.${key} must be a string`);
+    result[key] = entry;
   }
   return result;
+}
+
+function normalizeCapabilityTags(value: unknown, entryId: string): string[] {
+  if (value === undefined) return [];
+  if (!isRecord(value)) throw new Error(`${entryId}.capability_tags must be an object`);
+  if (value.schema !== CAPABILITY_TAG_SCHEMA) {
+    throw new Error(`${entryId}.capability_tags.schema must be ${CAPABILITY_TAG_SCHEMA}`);
+  }
+  const rawTags = value.tags;
+  if (!Array.isArray(rawTags) || rawTags.some((tag) => typeof tag !== "string")) {
+    throw new Error(`${entryId}.capability_tags.tags must be an array of strings`);
+  }
+  const seen = new Set<string>();
+  const tags = rawTags.map((rawTag) => {
+    const tag = (rawTag as string).trim().toLowerCase();
+    if (!/^[a-z0-9][a-z0-9._:-]{0,63}$/.test(tag)) {
+      throw new Error(`${entryId}.capability_tags contains invalid tag`);
+    }
+    if (seen.has(tag)) throw new Error(`${entryId}.capability_tags contains duplicate tag`);
+    seen.add(tag);
+    return tag;
+  });
+  return tags.sort((a, b) => a.localeCompare(b));
 }
 
 export function getMcpCatalogPath(
@@ -82,25 +115,33 @@ export function getMcpCatalogPath(
   return path.join(mcpRoot, MCP_CATALOG_FILENAME);
 }
 
-function emptyCatalog(status: McpCatalogStatus, catalogPath: string, schema: string | null = null): McpCatalog {
-  return { status, catalogPath, schema, updated: null, maintainedBy: null, kinds: [], entries: [] };
+function emptyCatalog(
+  status: McpCatalogStatus,
+  catalogPath: string,
+  schema: string | null = null,
+  error: string | null = null
+): McpCatalog {
+  return { status, catalogPath, schema, updated: null, maintainedBy: null, kinds: [], entries: [], error };
 }
 
-function readCatalogEntry(value: unknown): McpCatalogEntry | null {
-  if (!isRecord(value) || typeof value.id !== "string") return null;
+function readCatalogEntry(value: unknown): McpCatalogEntry {
+  if (!isRecord(value) || typeof value.id !== "string" || value.id.trim().length === 0) {
+    throw new Error("each MCP catalog entry requires a non-empty string id");
+  }
   return {
-    id: value.id,
+    id: value.id.trim(),
     mcpKind: optionalString(value.mcp_kind),
     namespace: optionalString(value.namespace),
     npm: optionalString(value.npm),
     persistentState: typeof value.persistent_state === "boolean" ? value.persistent_state : null,
-    stateOwner: stringMap(value.state_owner),
+    stateOwner: strictStringMap(value.state_owner, `${value.id}.state_owner`),
     note: optionalString(value.note),
     wraps: optionalString(value.wraps),
     wrapsTarget: optionalString(value.wraps_target),
     targetKind: optionalString(value.target_kind),
     composition: optionalString(value.composition),
-    source: optionalString(value.source)
+    source: optionalString(value.source),
+    capabilityTags: normalizeCapabilityTags(value.capability_tags, value.id)
   };
 }
 
@@ -135,17 +176,31 @@ export async function loadMcpCatalog(
     return emptyCatalog("schema_mismatch", catalogPath, schema);
   }
 
-  return {
-    status: "ok",
-    catalogPath,
-    schema,
-    updated: optionalString(parsed.updated),
-    maintainedBy: optionalString(parsed.maintained_by),
-    kinds: stringArray(parsed.kinds),
-    entries: parsed.mcps
-      .map(readCatalogEntry)
-      .filter((entry): entry is McpCatalogEntry => entry !== null)
-  };
+  try {
+    const entries = parsed.mcps.map(readCatalogEntry);
+    const ids = new Set<string>();
+    for (const entry of entries) {
+      if (ids.has(entry.id)) throw new Error(`duplicate MCP catalog id: ${entry.id}`);
+      ids.add(entry.id);
+    }
+    return {
+      status: "ok",
+      catalogPath,
+      schema,
+      updated: optionalString(parsed.updated),
+      maintainedBy: optionalString(parsed.maintained_by),
+      kinds: strictStringArray(parsed.kinds, "kinds"),
+      entries,
+      error: null
+    };
+  } catch (error) {
+    return emptyCatalog(
+      "invalid",
+      catalogPath,
+      schema,
+      error instanceof Error ? error.message : "invalid MCP catalog content"
+    );
+  }
 }
 
 /**
