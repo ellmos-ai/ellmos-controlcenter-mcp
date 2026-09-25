@@ -16,17 +16,35 @@ _reports/
 *-CONFLIT-*
 *-conflict-*
 *.sync-temp-*
+*conflicted copy*
 * (kopie)*
 * (copy)*
-*-WORKSTATION*
+* (Kopie)*
+* (Copy)*
+*-ASUS*
 *-ASUS-GEI*
+*-LAPTOP*
+*-Mac Studio*
+*-MacBook*
+*-IDEAPAD*
+*-WORKSTATION*
+*-WORKSTATION-LG*
+*_WORKSTATION*
+*_WORKSTATION-LG*
+*-WORKSTATION.*
+*-WORKSTATION-LG.*
 
 # multi-agent locks (multi-agent coordination, host-local, never commit)
 LOCK
 LOCK.*
 *.lock
 LOCK*.txt
+LOCK.user.*
+LOCK.until.*
+LOCK.condition.*
 LOCK.permissions.json
+.automation-lock
+uv.lock
 !package-lock.json
 
 # temporary files & backups
@@ -35,10 +53,14 @@ LOCK.permissions.json
 *.swp
 *~
 *.orig
+*.rej
 
 # python cache
 __pycache__/
 *.pyc
+.pytest_temp/
+.pytest_tmp*/
+.hypothesis/
 
 # test & coverage caches
 .pytest_cache/

@@ -31,7 +31,8 @@
     "STATE.md",
     "DECISIONS.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
   "scripts": {
     "build": "node node_modules/typescript/bin/tsc",

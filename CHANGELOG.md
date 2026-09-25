@@ -1,5 +1,33 @@
 # Changelog
 
+## [Unreleased] - 2026-09-26
+
+### Technical Hygiene, CI Lifecycle Workflows, Multi-Host Sync Defense, Canonical NOTICE Attribution & Level 1 SBOM Audit (Pfad A) (2026-09-26)
+- **CI Lifecycle Workflows Deployment (`welcome.yml` & `stale.yml`):**
+  - Added `.github/workflows/welcome.yml` with `actions/first-interaction@v3`, `timeout-minutes: 5`, least-privilege permissions (`issues: write`, `pull-requests: write`), and concurrency group with `cancel-in-progress: true`.
+  - Added `.github/workflows/stale.yml` with `actions/stale@v9`, daily schedule (`cron: '30 1 * * *'`), `timeout-minutes: 10`, least-privilege permissions (`issues: write`, `pull-requests: write`), and concurrency group with `cancel-in-progress: true`.
+- **Multi-Host Cloud-Sync & Canonical Lock Guardrails (`.gitignore`):**
+  - Hardened `.gitignore` with comprehensive multi-host conflict patterns (`*-ASUS*`, `*-LAPTOP*`, `*-Mac Studio*`, `*-MacBook*`, `*-IDEAPAD*`, `*-WORKSTATION-LG*`), canonical multi-agent locks (`LOCK`, `LOCK.*`, `LOCK*.txt`, `LOCK.user.*`, `LOCK.until.*`, `LOCK.condition.*`, `LOCK.permissions.json`, `.automation-lock`, `uv.lock`, with explicit `!package-lock.json` exemption), patch artifacts (`*.orig`, `*.rej`), and test caches (`.pytest_temp/`, `.pytest_tmp*/`, `.hypothesis/`).
+- **Canonical Open-Source NOTICE Attribution File:**
+  - Added canonical root `NOTICE` attribution file declaring copyright (c) 2026 Lukas Geiger, open-bricks and ellmos-ai ecosystems, licensed under MIT.
+  - Included `NOTICE` in `package.json` `files` whitelist and cross-referenced in documentation and licensing metadata.
+- **Level 1 SBOM & Third-Party Licensing Re-Audit (`THIRD_PARTY_LICENSES.md`):**
+  - Re-audited all runtime and development dependencies as of 2026-09-26.
+  - Added formal Level 1 SBOM Invariant Cross-Reference Matrix table mapping invariants `INV-LOCAL-01` through `INV-SLA-10`.
+  - Confirmed 100% permissive licensing (MIT, Apache-2.0), 0% copyleft exposure, and unprivileged user-mode execution (INV-PRIV-05 / RunAsInvoker).
+- **Documentation, Badges & Context Harmonization:**
+  - Added Shields.io badge for `Attribution: NOTICE` across `README.md` and `README_de.md`.
+  - Synchronized test badges to `Vitest-261 passed | 100% green` and updated verification badges to `verified-2026--09--26-blue.svg`.
+  - Updated `llms.txt` with timestamp `2026-09-26`, `Test status: 261/261 Vitest tests passing (100% green)`, and `Attribution: NOTICE`.
+  - Recorded Pfad A Technical Hygiene Audit in `MARKETING-LOG.txt`.
+- **Automated Contract Test Suite Expansion (`test/metadata.test.ts`):**
+  - Extended automated contract tests to verify `welcome.yml` and `stale.yml` presence, permissions, concurrency, and timeouts.
+  - Added assertions for canonical `NOTICE` presence, content, and `package.json` files inclusion.
+  - Verified expanded `.gitignore` multi-host and lock patterns.
+  - Verified Level 1 SBOM 2026-09-26 audit recency and invariant matrix in `THIRD_PARTY_LICENSES.md`.
+  - Verified CHANGELOG `[Unreleased]` entry, updated test badges (259 passed), and `llms.txt` alignment.
+  - Strict version freeze per T-20260920-167562623 maintained: `0.7.4` remains unchanged.
+
 ## 0.7.4 - 2026-09-13
 
 ### Release review corrections (2026-09-14)

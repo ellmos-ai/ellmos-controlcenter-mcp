@@ -12,9 +12,10 @@
 [![CI](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Attribution: NOTICE](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-257%20passed-brightgreen.svg)](https://vitest.dev/)
-[![Verified: 2026-09-14](https://img.shields.io/badge/verified-2026--09--14-blue.svg)](CHANGELOG.md)
+[![Vitest](https://img.shields.io/badge/Vitest-261%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Verified: 2026-09-26](https://img.shields.io/badge/verified-2026--09--26-blue.svg)](CHANGELOG.md)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
 [![Privacy](https://img.shields.io/badge/Privacy-Local--First%20%7C%20Explicit%20HTTPS-success.svg)](SECURITY.md)
@@ -649,7 +650,7 @@ Dieses Projekt folgt einer strikten **100% permissiven Open-Source-Lizenzierung*
 - Vollständig auditiert und kompatibel mit kommerzieller, unternehmensweiter und lokaler Nutzung.
 - Auditierte direkte Abhängigkeiten: `@modelcontextprotocol/sdk` (MIT), `zod` (MIT), `typescript` (Apache-2.0), `vite`/`vitest` (MIT), `@types/node` (MIT) und `@emnapi/core`/`@emnapi/runtime` (MIT).
 
-Vollständige SPDX-Lizenztexte, Urheberrechtshinweise und Compliance-Bestätigungen sind in [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) dokumentiert.
+Vollständige SPDX-Lizenztexte, Urheberrechtshinweise und Compliance-Bestätigungen sind in [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) dokumentiert. Kanonische Urheberrechts- und Ökosystem-Attribution ist in [NOTICE](./NOTICE) hinterlegt.
 
 ## Dokumentation
 
@@ -662,6 +663,7 @@ Vollständige SPDX-Lizenztexte, Urheberrechtshinweise und Compliance-Bestätigun
 | Entscheidungen | [DECISIONS.md](./DECISIONS.md) |
 | Offene Aufgaben | [TODO.md](./TODO.md) |
 | Änderungen | [CHANGELOG.md](./CHANGELOG.md) |
+| Notice & Attribution | [NOTICE](./NOTICE) |
 | Drittanbieter-Lizenzen | [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) |
 | Marketing & Auffindbarkeit | [MARKETING-LOG.txt](./MARKETING-LOG.txt) |
 | LLM-Crawler-Zusammenfassung | [llms.txt](./llms.txt) |

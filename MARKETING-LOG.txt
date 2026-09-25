@@ -6,9 +6,9 @@
 # Remote: https://github.com/ellmos-ai/ellmos-controlcenter-mcp.git
 # Ecosystem: ellmos-ai (AI Infrastructure & MCP Control Plane)
 # Umbrella: open-bricks (AI-Native Desktop & Developer Tools)
-# Current Version: 0.7.4
-# Maintenance Path: Pfad B (Discoverability, Marketing & Visual Architecture)
-# Last Updated: 2026-09-14
+# Current Version: 0.7.4 (frozen per T-20260920-167562623)
+# Maintenance Path: Pfad A (Repository Hygiene, CI Hardening & Level 1 SBOM Audit)
+# Last Updated: 2026-09-26
 # ==============================================================================
 
 [POSITIONING & VALUE PROPOSITION]
@@ -107,3 +107,13 @@ Key Differentiators:
   - Added Verified: 2026-09-13 Shields.io badge and bumped version to 0.7.4 across all manifests (package.json, server.json, glama.json, src/index.ts, llms.txt, READMEs).
   - Expanded automated metadata contract test suite in test/metadata.test.ts (250 tests passing, 100% green).
 2026-09-14: Release review corrected absolute egress/redaction claims, made missing policies fail closed, removed automatic update checks, refreshed production overrides (`npm audit --omit=dev`: 0), and verified 252 tests.
+2026-09-26: Pfad A Technical Hygiene, CI Lifecycle Workflows, Sync Defense & Level 1 SBOM Audit (v0.7.4):
+  - Deployed .github/workflows/welcome.yml (actions/first-interaction@v3, timeout 5m, concurrency cancel-in-progress, least-privilege permissions).
+  - Deployed .github/workflows/stale.yml (actions/stale@v9, daily cron 01:30 UTC, timeout 10m, concurrency cancel-in-progress, least-privilege permissions).
+  - Hardened .gitignore against multi-host conflict copies (*-ASUS*, *-LAPTOP*, *-Mac Studio*, *-MacBook*, *-IDEAPAD*, *-WORKSTATION-LG*), canonical multi-agent locks (LOCK, LOCK.*, LOCK*.txt, LOCK.user.*, LOCK.until.*, LOCK.condition.*, LOCK.permissions.json, .automation-lock, uv.lock, !package-lock.json), patch artifacts (*.orig, *.rej), and test caches (.pytest_temp/, .pytest_tmp*/, .hypothesis/).
+  - Created canonical root NOTICE file declaring Lukas Geiger, open-bricks and ellmos-ai ecosystems, MIT license. Added NOTICE to package.json files array.
+  - Re-audited THIRD_PARTY_LICENSES.md with Level 1 SBOM Invariant Cross-Reference Matrix (INV-LOCAL-01..INV-SLA-10), unprivileged user-mode RunAsInvoker non-elevation certification, and NOTICE cross-reference.
+  - Synchronized test badges to Vitest-261 passed, verification date badge to verified-2026--09--26-blue.svg, added Attribution: NOTICE badge to README.md and README_de.md.
+  - Updated llms.txt Stand 2026-09-26 with 261 passed tests and NOTICE attribution.
+  - Added [Unreleased] entry in CHANGELOG.md; version 0.7.4 frozen per T-20260920-167562623.
+  - Expanded automated contract test suite in test/metadata.test.ts verifying welcome.yml, stale.yml, .gitignore guards, NOTICE file, Level 1 SBOM matrix, and test badge alignment.

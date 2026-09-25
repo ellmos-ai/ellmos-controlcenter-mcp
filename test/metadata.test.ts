@@ -14,7 +14,10 @@ describe("metadata & manifest parity", () => {
   const indexTs = fs.readFileSync(path.join(root, "src", "index.ts"), "utf-8");
   const securityMd = fs.readFileSync(path.join(root, "SECURITY.md"), "utf-8");
   const license = fs.readFileSync(path.join(root, "LICENSE"), "utf-8");
+  const notice = fs.readFileSync(path.join(root, "NOTICE"), "utf-8");
   const ciYml = fs.readFileSync(path.join(root, ".github", "workflows", "ci.yml"), "utf-8");
+  const welcomeYml = fs.readFileSync(path.join(root, ".github", "workflows", "welcome.yml"), "utf-8");
+  const staleYml = fs.readFileSync(path.join(root, ".github", "workflows", "stale.yml"), "utf-8");
   const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf-8");
 
   it("ensures version parity across package.json, package-lock.json, server.json, and glama.json", () => {
@@ -48,11 +51,12 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-09-20");
-    expect(llmsTxt).toContain("Test status: 257/257 Vitest tests passing (100% green)");
+    expect(llmsTxt).toContain("Last-checked: 2026-09-26");
+    expect(llmsTxt).toContain("Test status: 261/261 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
-    expect(llmsTxt).toContain("MIT");
+    expect(llmsTxt).toContain("License: MIT");
+    expect(llmsTxt).toContain("Attribution: NOTICE");
   });
 
   it("ensures license parity across package.json, glama.json, LICENSE, and llms.txt", () => {
@@ -67,8 +71,9 @@ describe("metadata & manifest parity", () => {
       "Ecosystem-ellmos--ai-blue.svg",
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
-      "Vitest-257%20passed-brightgreen.svg",
-      "verified-2026--09--14-blue.svg",
+      "Vitest-261%20passed-brightgreen.svg",
+      "verified-2026--09--26-blue.svg",
+      "Attribution-NOTICE-blue.svg",
       "MCP%20Tools-34-blue.svg",
       "Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg",
       "Privacy-Local--First%20%7C%20Explicit%20HTTPS-success.svg",
@@ -102,6 +107,7 @@ describe("metadata & manifest parity", () => {
       "README_de.md",
       "SECURITY.md",
       "LICENSE",
+      "NOTICE",
       "llms.txt",
       "CHANGELOG.md",
       "server.json",
@@ -157,20 +163,48 @@ describe("metadata & manifest parity", () => {
     expect(ciYml).toContain("npm pack --dry-run");
   });
 
+  it("ensures welcome.yml and stale.yml CI lifecycle workflows are properly configured", () => {
+    expect(welcomeYml).toContain("actions/first-interaction@v3");
+    expect(welcomeYml).toContain("timeout-minutes: 5");
+    expect(welcomeYml).toContain("cancel-in-progress: true");
+    expect(welcomeYml).toContain("issues: write");
+    expect(welcomeYml).toContain("pull-requests: write");
+
+    expect(staleYml).toContain("actions/stale@v9");
+    expect(staleYml).toContain("cron: '30 1 * * *'");
+    expect(staleYml).toContain("timeout-minutes: 10");
+    expect(staleYml).toContain("cancel-in-progress: true");
+    expect(staleYml).toContain("issues: write");
+    expect(staleYml).toContain("pull-requests: write");
+  });
+
   it("ensures .gitignore is hardened against multi-host conflict files, canonical locks, and cache artifacts", () => {
     expect(gitignore).toContain("*.sync-conflict-*");
     expect(gitignore).toContain("*-CONFLIT-*");
     expect(gitignore).toContain("* (kopie)*");
+    expect(gitignore).toContain("*-ASUS*");
+    expect(gitignore).toContain("*-LAPTOP*");
+    expect(gitignore).toContain("*-Mac Studio*");
+    expect(gitignore).toContain("*-MacBook*");
+    expect(gitignore).toContain("*-IDEAPAD*");
     expect(gitignore).toContain("*-WORKSTATION*");
+    expect(gitignore).toContain("*-WORKSTATION-LG*");
     expect(gitignore).toContain("LOCK");
     expect(gitignore).toContain("LOCK.*");
+    expect(gitignore).toContain("LOCK.user.*");
+    expect(gitignore).toContain("LOCK.until.*");
+    expect(gitignore).toContain("LOCK.condition.*");
+    expect(gitignore).toContain(".automation-lock");
+    expect(gitignore).toContain("uv.lock");
     expect(gitignore).toContain("!package-lock.json");
     expect(gitignore).toContain(".pytest_cache/");
+    expect(gitignore).toContain(".pytest_temp/");
     expect(gitignore).toContain(".coverage");
     expect(gitignore).toContain(".coverage.*");
     expect(gitignore).toContain(".nyc_output/");
     expect(gitignore).toContain(".turbo/");
     expect(gitignore).toContain("build/");
+    expect(gitignore).toContain("*.rej");
   });
 
   it("ensures sibling ecosystem partner matrix exists in both READMEs", () => {
@@ -339,6 +373,12 @@ describe("metadata & manifest parity", () => {
     expect(thirdParty).toContain("MIT");
     expect(thirdParty).toContain("Audit Date / Prüfdatum");
     expect(thirdParty).toContain("2026-09-14");
+    expect(thirdParty).toContain("2026-09-26");
+    expect(thirdParty).toContain("Level 1 SBOM Invariant Cross-Reference Matrix");
+    expect(thirdParty).toContain("INV-LOCAL-01");
+    expect(thirdParty).toContain("INV-SLA-10");
+    expect(thirdParty).toContain("RunAsInvoker");
+    expect(thirdParty).toContain("NOTICE");
     expect(thirdParty).toContain("Permissive Open-Source Ratio");
     expect(thirdParty).toContain("100%");
   });
@@ -353,15 +393,26 @@ describe("metadata & manifest parity", () => {
     expect(marketingLog).toContain("INV-LOCAL-01");
     expect(marketingLog).toContain("INV-SLA-10");
     expect(marketingLog).toContain("Pfad B Discoverability, Target Personas & Comparative Matrix Overhaul (v0.7.4)");
+    expect(marketingLog).toContain("Pfad A Technical Hygiene, CI Lifecycle Workflows, Sync Defense & Level 1 SBOM Audit (v0.7.4)");
   });
 
-  it("ensures package.json includes MARKETING-LOG.txt and THIRD_PARTY_LICENSES.md in files manifest", () => {
+  it("ensures package.json includes MARKETING-LOG.txt, THIRD_PARTY_LICENSES.md, and NOTICE in files manifest", () => {
     expect(packageJson.files).toContain("THIRD_PARTY_LICENSES.md");
     expect(packageJson.files).toContain("MARKETING-LOG.txt");
+    expect(packageJson.files).toContain("NOTICE");
   });
 
-  it("ensures CHANGELOG.md documents latest 0.7.4 release with Pfad B discoverability details", () => {
+  it("ensures canonical NOTICE attribution exists and is complete", () => {
+    expect(notice).toContain("ellmos-controlcenter-mcp");
+    expect(notice).toContain("Copyright (c) 2026 Lukas Geiger <lukas@open-bricks.org>");
+    expect(notice).toContain("ellmos-ai and open-bricks open-source ecosystems");
+    expect(notice).toContain("MIT License");
+  });
+
+  it("ensures CHANGELOG.md documents latest 0.7.4 release and Unreleased Pfad A hygiene", () => {
     const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf-8");
+    expect(changelog).toContain("## [Unreleased] - 2026-09-26");
+    expect(changelog).toContain("Technical Hygiene, CI Lifecycle Workflows, Multi-Host Sync Defense, Canonical NOTICE Attribution & Level 1 SBOM Audit");
     expect(changelog).toContain("## 0.7.4 - 2026-09-13");
     expect(changelog).toContain("Discoverability, Target Personas, Comparative Matrix & 18-Anchor Nav Parity");
     expect(changelog).toContain("Target Personas & Discoverability Framework");
