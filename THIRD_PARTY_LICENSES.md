@@ -3,6 +3,7 @@
 > **Project:** `ellmos-ai/ellmos-controlcenter-mcp`<br>
 > **Initial Audit:** 2026-09-14<br>
 > **Re-Audit (Pfad A):** 2026-09-26<br>
+> **Re-Audit (Pfad B):** 2026-09-28<br>
 > **Repository License:** [MIT License](LICENSE)<br>
 > **Canonical Notice:** [NOTICE](NOTICE)<br>
 > **Architecture & Privacy:** Local-First Administration, Explicit Remote HTTPS Gateway Boundaries, Unprivileged User-Mode (`RunAsInvoker`), Fail-Closed Gateway Policies
@@ -136,8 +137,8 @@ SOFTWARE.
 
 ## Compliance & Audit Summary / Lizenz- & Audit-Übersicht
 
-- **Audit Date / Prüfdatum:** 2026-09-14 (Initial Pfad B Audit); 2026-09-26 (Pfad A Technical Hygiene Re-Audit)
-- **Audited By / Prüfer:** Gemini / Antigravity Agent (One Repo Cleaner Pfad A); Codex release review (2026-09-14)
+- **Audit Date / Prüfdatum:** 2026-09-14 (Initial Pfad B Audit); 2026-09-26 (Pfad A Technical Hygiene Re-Audit); 2026-09-28 (Pfad B Discoverability, Visual Architecture & Navigation Parity Re-Audit)
+- **Audited By / Prüfer:** Gemini / Antigravity Agent (Pfad B Marketing, Discoverability & Navigation Parity); Gemini / Antigravity Agent (One Repo Cleaner Pfad A); Codex release review (2026-09-14)
 - **Canonical Attribution Notice:** Root [NOTICE](NOTICE) file declares copyright (c) 2026 Lukas Geiger, open-bricks and ellmos-ai ecosystems
 - **Permissive Open-Source Ratio:** 100% (MIT, Apache-2.0)
 - **Copyleft Exposure (GPL / LGPL / AGPL):** 0%

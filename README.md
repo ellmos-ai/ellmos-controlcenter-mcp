@@ -14,7 +14,7 @@
 [![Attribution: NOTICE](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
 [![Vitest](https://img.shields.io/badge/Vitest-261%20passed-brightgreen.svg)](https://vitest.dev/)
-[![Verified: 2026-09-26](https://img.shields.io/badge/verified-2026--09--26-blue.svg)](CHANGELOG.md)
+[![Verified: 2026-09-28](https://img.shields.io/badge/verified-2026--09--28-blue.svg)](CHANGELOG.md)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
 [![Privacy](https://img.shields.io/badge/Privacy-Local--First%20%7C%20Explicit%20HTTPS-success.svg)](SECURITY.md)
@@ -48,6 +48,8 @@ An advanced **Model Context Protocol (MCP) administration server and policy-gate
 
 ControlCenter provides **discovery, profile visibility, dashboard workflows, capability bundles, profile-aware tool-list probes, tool-bundle assignments, internationalization, policy audits, host register mirrors (locks, permissions, resources, plans), and the policy-gated gateway** (`controlcenter_invoke`). Hardened for multi-OS deployment with a 48-hour security response SLA.
 
+<a id="sec-02"></a>
+<a id="target-personas--discoverability"></a>
 ## Target Personas & Discoverability
 
 | Persona | Core Profile & Tech Stack | Architectural Friction & Pain Point | How ControlCenter Solves It |
@@ -61,6 +63,8 @@ ControlCenter provides **discovery, profile visibility, dashboard workflows, cap
 
 ---
 
+<a id="sec-03"></a>
+<a id="comparative-matrix-vs-alternatives"></a>
 ## Comparative Matrix vs Alternatives
 
 | Architectural Criterion | ellmos ControlCenter MCP | Static MCP Configurations (`claude_desktop_config.json`) | Monolithic MCP Meta-Servers | Heavyweight Agent Frameworks (LangChain / CrewAI) | Cloud LLMOps & Remote Gateways |
@@ -78,6 +82,8 @@ ControlCenter provides **discovery, profile visibility, dashboard workflows, cap
 
 ---
 
+<a id="sec-04"></a>
+<a id="system-architecture"></a>
 ## System Architecture
 
 ```mermaid
@@ -107,6 +113,8 @@ graph TD
     end
 ```
 
+<a id="sec-05"></a>
+<a id="control-plane--gateway-lifecycle"></a>
 ## Control Plane & Gateway Lifecycle
 
 ```mermaid
@@ -145,6 +153,8 @@ sequenceDiagram
     end
 ```
 
+<a id="sec-06"></a>
+<a id="governance--runtime-invariants"></a>
 ## Governance & Runtime Invariants
 
 ControlCenter enforces 10 architectural and runtime invariants to guarantee local-first administration, explicit outbound boundaries, fail-closed policy loading, and multi-agent coordination resilience across environments:
@@ -162,6 +172,8 @@ ControlCenter enforces 10 architectural and runtime invariants to guarantee loca
 | `INV-SYNC-09` | **Cloud-Sync Conflict Hardening** | Protects repository against multi-host conflict copies and stray lock files. | Comprehensive `.gitignore` covering `*.sync-conflict-*`, `*-CONFLIT-*`, and `LOCK.*`. |
 | `INV-SLA-10` | **48-Hour Response & 5-Day Triage SLA** | Vulnerability reports receive prompt maintainer response and triage commitments. | Documented in `SECURITY.md` with direct maintainer and umbrella security contacts. |
 
+<a id="sec-07"></a>
+<a id="status"></a>
 ## Status
 
 - **Phase:** Alpha
@@ -172,6 +184,8 @@ ControlCenter enforces 10 architectural and runtime invariants to guarantee loca
 - **Goal:** Make local MCP stacks visible, inspectable, and reproducibly configurable
 - **Focus:** Catalogs, profile overview, profile recommendation, bundle recommendation, profile-aware tool-list probes, tool-bundle assignments, i18n, early audits, and read-only host governance metadata
 
+<a id="sec-08"></a>
+<a id="tools"></a>
 ## Tools
 
 | Tool | Purpose |
@@ -211,6 +225,8 @@ ControlCenter enforces 10 architectural and runtime invariants to guarantee loca
 | `controlcenter_list_available_tools` | List the tools of MCP servers this host has **not** loaded, without loading them — see [Gateway](#gateway-reaching-servers-the-host-has-not-loaded) |
 | `controlcenter_invoke` | Run one tool on a server this host has not loaded and return its result, policy-gated and audited |
 
+<a id="sec-09"></a>
+<a id="gateway-reaching-servers-the-host-has-not-loaded"></a>
 ## Gateway: reaching servers the host has not loaded
 
 A session that loads eleven MCP servers pays for all of their tools at once. The gateway lets the
@@ -302,6 +318,8 @@ The MCP catalog contributes what a directory scan cannot see: `mcp_kind` (`tool`
 
 A missing, unreadable, foreign-schema, or structurally invalid catalog never fails a tool call. The enriched fields degrade to empty and the output names the reason, so an absent catalog is distinguishable from a server that genuinely holds no state. An unreadable MCP root is likewise reported as unreadable instead of as an empty result.
 
+<a id="sec-12"></a>
+<a id="host-registers-locks-permissions-decisions-governance-resources"></a>
 ## Host registers: locks, permissions, decisions, governance, resources
 
 The seven tools above answer a different question from the rest of this server: not
@@ -424,6 +442,8 @@ endpoint only after the caller explicitly confirms it as a second semantic/sourc
 skill is uniquely present in the deployed live inventory. Nested map records, stable IDs, enums,
 references, and uniqueness are validated fail-closed. The route grants no tool or execution authority.
 
+<a id="sec-13"></a>
+<a id="dashboard"></a>
 ## Dashboard
 
 After building the project, start the local dashboard with:
@@ -464,6 +484,8 @@ Best-fit search phrases:
 - `Claude Codex Gemini MCP profile switcher`
 - `MCP policy audit profile management`
 
+<a id="sec-01"></a>
+<a id="installation"></a>
 ## Installation
 
 ### Option 1: Install from npm
@@ -567,6 +589,8 @@ ControlCenter supports the language codes `de`, `en`, `es`, `zh`, `ja`, and `ru`
 
 Use `controlcenter_get_language` to inspect the current language and `controlcenter_set_language` to switch MCP tool output at runtime. The dashboard also includes a language selector and accepts `/?lang=en` style links. Bundle titles and descriptions loaded from custom JSON config files are shown as authored.
 
+<a id="sec-11"></a>
+<a id="profile-switching"></a>
 ## Profile Switching
 
 `controlcenter_switch_profile` does not change a running session. It creates a resolved MCP configuration and returns a launch command. The default remains compatible with Claude Code:
@@ -581,6 +605,8 @@ A planned optional restart/reconnect workflow will keep this boundary: after a w
 
 Profile resolution supports single inheritance (`"extends": "base"`), multiple inheritance (`"extends": ["base", "shared"]`), and inherited-server removal via `"remove"`, `"disabled"`, or `"disabledServers"`. Missing profiles, invalid JSON, invalid profile names, and inheritance cycles now return explicit profile errors with the affected file path or chain.
 
+<a id="sec-10"></a>
+<a id="capability-bundles"></a>
 ## Capability Bundles
 
 ControlCenter loads capability bundle definitions from `data/capability-bundles.json`. The default file groups local servers into these bundles:
@@ -634,6 +660,8 @@ ellmos-controlcenter-mcp/
 `-- TODO.md
 ```
 
+<a id="sec-14"></a>
+<a id="third-party-licenses--transparency"></a>
 ## Third-Party Licenses & Transparency
 
 This project adheres strictly to **100% permissive open-source licensing** across all direct runtime and development dependencies:
@@ -643,6 +671,8 @@ This project adheres strictly to **100% permissive open-source licensing** acros
 
 Full SPDX license texts, copyright notices, and compliance attestations are documented in [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md). Canonical copyright and ecosystem attribution is declared in [NOTICE](./NOTICE).
 
+<a id="sec-15"></a>
+<a id="documentation"></a>
 ## Documentation
 
 | For... | Read... |
@@ -659,7 +689,29 @@ Full SPDX license texts, copyright notices, and compliance attestations are docu
 | Marketing & discoverability | [MARKETING-LOG.txt](./MARKETING-LOG.txt) |
 | LLM crawler summary | [llms.txt](./llms.txt) |
 
-## ellmos-ai Ecosystem
+<a id="sec-16"></a>
+<a id="16-security-policy"></a>
+<a id="security-policy"></a>
+## Security Policy & Vulnerability Reporting
+
+ControlCenter adheres to a strict multi-agent security model. See [SECURITY.md](SECURITY.md) for full details on:
+- **Zero-Egress & Local-First Guarantees:** Local execution with no telemetry.
+- **Fail-Closed Gateway Policy:** Pattern-based enforcement and bounded secret scrubbing.
+- **48-Hour Response SLA:** Binding response commitment (`INV-SLA-10`) via `security@open-bricks.org` and `security@ellmos.ai`.
+
+<a id="sec-17"></a>
+<a id="17-llmstxt-context"></a>
+<a id="llmstxt-context"></a>
+## llms.txt Context Index
+
+For automated LLM agent integration, RAG crawling, and prompt optimization, ControlCenter provides a structured [`llms.txt`](llms.txt) index file at the repository root. It summarizes tool schemas, governance invariants, CLI usage patterns, and ecosystem relationships in an LLM-friendly format.
+
+<a id="sec-18"></a>
+<a id="18-ecosystem--liability"></a>
+<a id="ellmos-ai-ecosystem"></a>
+<a id="haftung--liability"></a>
+<a id="statutory-notice--liability"></a>
+## ellmos-ai Ecosystem, Statutory Liability (§ 521 BGB) & Security SLA
 
 This MCP server is part of the **[ellmos-ai](https://github.com/ellmos-ai)** ecosystem — AI infrastructure, MCP servers, and intelligent tools.
 
@@ -712,6 +764,22 @@ Our partner organization **[open-bricks](https://github.com/open-bricks)** bundl
 | [DevCenter](https://github.com/dev-bricks/DevCenter) | `open-bricks` / `dev-bricks` | Developer productivity center and workspace manager |
 | [CodeBox](https://github.com/dev-bricks/CodeBox) | `open-bricks` / `dev-bricks` | Sandboxed script execution and multi-language scratchpad |
 | [system-gap-master](https://github.com/dev-bricks/system-gap-master) | `open-bricks` / `dev-bricks` | System gap discovery, test gap analysis & contract validation |
+
+### Statutory Notice & Liability Disclaimer (§ 521 BGB)
+
+Dieses Projekt ist eine **unentgeltliche Open-Source-Schenkung** im Sinne der §§ 516 ff. BGB. Die Haftung des Urhebers ist gemäß **§ 521 BGB** auf **Vorsatz und grobe Fahrlässigkeit** beschränkt. Ergänzend gilt der Haftungsausschluss der [MIT-Lizenz](LICENSE).
+
+Nutzung auf eigenes Risiko. Keine Wartungszusage, keine Verfügbarkeitsgarantie, keine Gewähr für Fehlerfreiheit oder Eignung für einen bestimmten Zweck.
+
+This project is an unpaid open-source donation under the MIT License. Liability is limited to intent and gross negligence (§ 521 German Civil Code / BGB Gefälligkeitsrecht). Use at your own risk. No warranty, no maintenance guarantee, no fitness-for-purpose assumed.
+
+### Security Response SLA & Vulnerability Reporting
+
+As codified in [SECURITY.md](SECURITY.md), we maintain a strict binding security policy:
+- **Initial Response SLA:** Guaranteed within **48 hours** (`INV-SLA-10`).
+- **Triage Commitment:** Vulnerability assessment completed within **5 business days**.
+- **Remediation SLA:** Coordinated security patches delivered within **30 calendar days**.
+- **Direct Contact Endpoints:** `security@open-bricks.org`, `security@ellmos.ai`, `support@lukasgeiger.com`, `lukas@open-bricks.org`.
 
 ## License
 

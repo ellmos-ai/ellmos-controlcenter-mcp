@@ -1,6 +1,24 @@
 # Changelog
 
-## [Unreleased] - 2026-09-26
+## [Unreleased] - 2026-09-28
+
+### Discoverability, Visual Architecture, 18-Point Bilingual Navigation Parity, § 521 BGB Statutory Disclaimer & Level 1 SBOM Audit (Pfad B) (2026-09-28)
+- **18-Point Bilingual Quick Navigation Parity & Dual Reciprocal Anchors:**
+  - Added reciprocal dual HTML anchors (`<a id="sec-01"></a>` through `<a id="sec-18"></a>`) across all 18 sections in both `README.md` and `README_de.md` for deterministic deep-linking and cross-language parity.
+  - Aligned section headings and Quick Navigation indices for Installation, Target Personas, Comparative Matrix, System Architecture, Control Plane & Gateway Lifecycle, Governance Invariants, Status, Tools, Gateway, Capability Bundles, Profile Switching, Host Registers, Dashboard, Third-Party Licenses, Documentation, Security Policy, llms.txt Context, and Ecosystem & Liability.
+- **20/20 Saturated Keywords & GitHub Topics Parity:**
+  - Synchronized `package.json` keywords with all 20 GitHub repository topics in alphabetical order: `ai-agents`, `automation`, `claude-code`, `claude-profiles`, `dashboard`, `developer-tools`, `llm`, `llm-agents`, `local-first`, `local-mcp`, `mcp`, `mcp-control-plane`, `mcp-dashboard`, `mcp-registry`, `mcp-server`, `model-context-protocol`, `policy-audit`, `profile-management`, `registry-metadata`, `typescript`.
+- **Statutory Liability Disclaimer & Binding Security Response SLA:**
+  - Anchored formal statutory open-source notice under German Civil Code (§ 521 BGB Gefälligkeitsrecht) in Section 18 of both `README.md` and `README_de.md`.
+  - Reinforced binding 48-hour response confirmation and 5-day triage commitment (`INV-SLA-10`) with direct contacts to maintainer and open-bricks umbrella security teams.
+- **Level 1 SBOM Invariant Cross-Reference Matrix Stand 2026-09-28:**
+  - Re-audited `THIRD_PARTY_LICENSES.md` as of 2026-09-28; confirmed 100% permissive open-source ratio (MIT, Apache-2.0), 0% copyleft/GPL/AGPL risk, and unprivileged user-mode execution (`RunAsInvoker`).
+- **Context & Verification Badges Harmonization:**
+  - Synchronized Shields.io verification date badge to `verified-2026--09--28-blue.svg` across `README.md` and `README_de.md`.
+  - Updated `llms.txt` context index Stand 2026-09-28 with § 521 BGB statutory notice and Level 1 SBOM notes.
+  - Recorded Pfad B audit milestone in local `MARKETING-LOG.txt`.
+- **Strict Version Freeze Discipline:**
+  - Preserved version `0.7.4` unchanged across all package manifests and code per `T-20260920-167562623`.
 
 ### Technical Hygiene, CI Lifecycle Workflows, Multi-Host Sync Defense, Canonical NOTICE Attribution & Level 1 SBOM Audit (Pfad A) (2026-09-26)
 - **CI Lifecycle Workflows Deployment (`welcome.yml` & `stale.yml`):**

@@ -7,8 +7,8 @@
 # Ecosystem: ellmos-ai (AI Infrastructure & MCP Control Plane)
 # Umbrella: open-bricks (AI-Native Desktop & Developer Tools)
 # Current Version: 0.7.4 (frozen per T-20260920-167562623)
-# Maintenance Path: Pfad A (Repository Hygiene, CI Hardening & Level 1 SBOM Audit)
-# Last Updated: 2026-09-26
+# Maintenance Path: Pfad B (Marketing, Discoverability, Visual Architecture & Bilateral Navigation Parity)
+# Last Updated: 2026-09-28
 # ==============================================================================
 
 [POSITIONING & VALUE PROPOSITION]
@@ -117,3 +117,11 @@ Key Differentiators:
   - Updated llms.txt Stand 2026-09-26 with 261 passed tests and NOTICE attribution.
   - Added [Unreleased] entry in CHANGELOG.md; version 0.7.4 frozen per T-20260920-167562623.
   - Expanded automated contract test suite in test/metadata.test.ts verifying welcome.yml, stale.yml, .gitignore guards, NOTICE file, Level 1 SBOM matrix, and test badge alignment.
+2026-09-28: Pfad B Discoverability, Visual Architecture & Bilateral Navigation Parity (v0.7.4):
+  - 18-point bilingual quick navigation parity EN/DE with reciprocal dual HTML anchors (<a id="sec-01"></a> through <a id="sec-18"></a>) across all sections.
+  - Saturated 20/20 keywords in package.json matching GitHub topics in alphabetical order (ai-agents, automation, claude-code, claude-profiles, dashboard, developer-tools, llm, llm-agents, local-first, local-mcp, mcp, mcp-control-plane, mcp-dashboard, mcp-registry, mcp-server, model-context-protocol, policy-audit, profile-management, registry-metadata, typescript).
+  - Explicit German statutory liability disclaimer (§ 521 BGB Gefälligkeitsrecht) and binding 48h Security Response SLA anchored in Section 18 of README.md and README_de.md.
+  - Level 1 SBOM re-audited (Stand 2026-09-28) in THIRD_PARTY_LICENSES.md mapping INV-LOCAL-01..INV-SLA-10, unprivileged RunAsInvoker non-elevation certification, and canonical NOTICE attribution cross-reference.
+  - Synchronized Shields.io verification date badge to verified-2026--09--28-blue.svg in README.md and README_de.md.
+  - Updated llms.txt context index (Stand 2026-09-28) with § 521 BGB statutory disclaimer and Level 1 SBOM notes.
+  - Expanded automated contract test suite in test/metadata.test.ts covering 18 reciprocal anchors sec-01..sec-18, § 521 BGB disclaimer, 20-topic saturation, and Level 1 SBOM audit recency. All tests passing 100% green; version 0.7.4 strictly preserved per T-20260920-167562623.

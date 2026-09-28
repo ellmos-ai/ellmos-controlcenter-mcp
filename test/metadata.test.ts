@@ -51,7 +51,7 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-09-26");
+    expect(llmsTxt).toContain("Last-checked: 2026-09-28");
     expect(llmsTxt).toContain("Test status: 261/261 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
@@ -72,7 +72,7 @@ describe("metadata & manifest parity", () => {
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
       "Vitest-261%20passed-brightgreen.svg",
-      "verified-2026--09--26-blue.svg",
+      "verified-2026--09--28-blue.svg",
       "Attribution-NOTICE-blue.svg",
       "MCP%20Tools-34-blue.svg",
       "Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg",
@@ -374,6 +374,7 @@ describe("metadata & manifest parity", () => {
     expect(thirdParty).toContain("Audit Date / Prüfdatum");
     expect(thirdParty).toContain("2026-09-14");
     expect(thirdParty).toContain("2026-09-26");
+    expect(thirdParty).toContain("2026-09-28");
     expect(thirdParty).toContain("Level 1 SBOM Invariant Cross-Reference Matrix");
     expect(thirdParty).toContain("INV-LOCAL-01");
     expect(thirdParty).toContain("INV-SLA-10");
@@ -394,6 +395,7 @@ describe("metadata & manifest parity", () => {
     expect(marketingLog).toContain("INV-SLA-10");
     expect(marketingLog).toContain("Pfad B Discoverability, Target Personas & Comparative Matrix Overhaul (v0.7.4)");
     expect(marketingLog).toContain("Pfad A Technical Hygiene, CI Lifecycle Workflows, Sync Defense & Level 1 SBOM Audit (v0.7.4)");
+    expect(marketingLog).toContain("Pfad B Discoverability, Visual Architecture & Bilateral Navigation Parity (v0.7.4)");
   });
 
   it("ensures package.json includes MARKETING-LOG.txt, THIRD_PARTY_LICENSES.md, and NOTICE in files manifest", () => {
@@ -409,14 +411,59 @@ describe("metadata & manifest parity", () => {
     expect(notice).toContain("MIT License");
   });
 
-  it("ensures CHANGELOG.md documents latest 0.7.4 release and Unreleased Pfad A hygiene", () => {
+  it("ensures CHANGELOG.md documents latest 0.7.4 release and Unreleased Pfad A/B entries", () => {
     const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf-8");
-    expect(changelog).toContain("## [Unreleased] - 2026-09-26");
+    expect(changelog).toContain("## [Unreleased] - 2026-09-28");
+    expect(changelog).toContain("Discoverability, Visual Architecture, 18-Point Bilingual Navigation Parity, § 521 BGB Statutory Disclaimer & Level 1 SBOM Audit");
     expect(changelog).toContain("Technical Hygiene, CI Lifecycle Workflows, Multi-Host Sync Defense, Canonical NOTICE Attribution & Level 1 SBOM Audit");
     expect(changelog).toContain("## 0.7.4 - 2026-09-13");
     expect(changelog).toContain("Discoverability, Target Personas, Comparative Matrix & 18-Anchor Nav Parity");
     expect(changelog).toContain("Target Personas & Discoverability Framework");
     expect(changelog).toContain("10-Dimension Comparative Matrix vs Alternatives");
   });
-});
 
+  it("ensures reciprocal dual HTML anchors sec-01 through sec-18 exist in both README.md and README_de.md", () => {
+    for (let i = 1; i <= 18; i++) {
+      const anchor = `<a id="sec-${i.toString().padStart(2, "0")}"></a>`;
+      expect(readmeEn).toContain(anchor);
+      expect(readmeDe).toContain(anchor);
+    }
+  });
+
+  it("ensures German statutory disclaimer (§ 521 BGB) and 48h SLA exist in Section 18 of both READMEs", () => {
+    for (const doc of [readmeEn, readmeDe]) {
+      expect(doc).toContain("521 BGB");
+      expect(doc).toContain("Gefälligkeitsrecht");
+      expect(doc).toContain("INV-SLA-10");
+    }
+    expect(readmeEn).toContain("48 hours");
+    expect(readmeDe).toContain("48 Stunden");
+  });
+
+  it("ensures package.json contains 20 saturated keywords in alphabetical order matching GitHub topics", () => {
+    const expected = [
+      "ai-agents",
+      "automation",
+      "claude-code",
+      "claude-profiles",
+      "dashboard",
+      "developer-tools",
+      "llm",
+      "llm-agents",
+      "local-first",
+      "local-mcp",
+      "mcp",
+      "mcp-control-plane",
+      "mcp-dashboard",
+      "mcp-registry",
+      "mcp-server",
+      "model-context-protocol",
+      "policy-audit",
+      "profile-management",
+      "registry-metadata",
+      "typescript",
+    ];
+    expect(packageJson.keywords).toEqual(expected);
+    expect(packageJson.keywords.length).toBe(20);
+  });
+});
