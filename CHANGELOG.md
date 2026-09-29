@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased] - 2026-09-29
+
+### Discoverability, Visual Architecture, ASCII Topology, Level 1 SBOM Plain-Text Companion & Navigation Parity (Pfad B) (2026-09-29)
+- **ASCII Four-View Architectural Topology Projection:**
+  - Added comprehensive ASCII Four-View Topology Projection in Section 04 of `README.md` (`[VIEW 1: CLIENT RUNTIMES, LOCAL DASHBOARD & MCP HOST INTERFACES]`, `[VIEW 2: CONTROLCENTER SOVEREIGN CORE ENGINE & RESOLUTION SUBSYSTEMS]`, `[VIEW 3: POLICY-GATED GATEWAY, EPHEMERAL DISPATCH & HARDENED SECRET SCRUBBER]`, and `[VIEW 4: GOVERNANCE MIRROR, MULTI-AGENT LOCK BOUNDARIES & SYSTEM PERIMETER]`) and `README_de.md` (`[SICHT 1]` to `[SICHT 4]`).
+  - Anchors invariants `INV-LOCAL-01`, `INV-GATE-02`, `INV-SUB-03`, `INV-SCRUB-04`, `INV-PRIV-05`, `INV-LOCK-06`, `INV-PERM-07`, `INV-GOV-08`, and `INV-SLA-10` into the visual topology.
+- **Level 1 SBOM Plain-Text Companion (`THIRD_PARTY_LICENSES.txt`):**
+  - Generated canonical plain-text companion file `THIRD_PARTY_LICENSES.txt` inventorying runtime dependencies (`@modelcontextprotocol/sdk`, `zod`), managed overrides (`hono`, `express-rate-limit`, `nanoid`, `fast-uri`, `@hono/node-server`, `ip-address`, `qs`, `vitest`, `postcss`), and dev tooling (`typescript`, `vitest`, `vite`, `@types/node`, `@emnapi/core`, `@emnapi/runtime`).
+  - Certified 100% permissive licensing (MIT, Apache-2.0, BSD-3-Clause), 0% copyleft/AGPL exposure, and unprivileged user-mode execution (`RunAsInvoker` / `INV-PRIV-05`).
+  - Included `THIRD_PARTY_LICENSES.txt` in `package.json` `files` manifest and cross-referenced in root `NOTICE`.
+  - Re-audited `THIRD_PARTY_LICENSES.md` as of Stand 2026-09-29 with formal plain-text companion linkage.
+- **Documentation, Badges & Context Harmonization:**
+  - Added Shields.io badge for `Level 1 SBOM: Plain Text Audited` / `Plain Text Auditiert` across `README.md` and `README_de.md`.
+  - Updated verification date badge to `verified-2026--09--29-blue.svg` across `README.md` and `README_de.md`.
+  - Updated `llms.txt` context index (Stand 2026-09-29) referencing `THIRD_PARTY_LICENSES.txt`.
+  - Documented Pfad B audit milestone in local `MARKETING-LOG.txt`.
+- **Strict Version Freeze Discipline:**
+  - Preserved version `0.7.4` unchanged across all package manifests and code per `T-20260920-167562623`.
+
 ## [Unreleased] - 2026-09-28
 
 ### Discoverability, Visual Architecture, 18-Point Bilingual Navigation Parity, § 521 BGB Statutory Disclaimer & Level 1 SBOM Audit (Pfad B) (2026-09-28)

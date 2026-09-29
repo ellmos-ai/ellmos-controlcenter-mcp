@@ -14,8 +14,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Attribution: NOTICE](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-261%20passed-brightgreen.svg)](https://vitest.dev/)
-[![Verified: 2026-09-28](https://img.shields.io/badge/verified-2026--09--28-blue.svg)](CHANGELOG.md)
+[![Vitest](https://img.shields.io/badge/Vitest-267%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Verified: 2026-09-29](https://img.shields.io/badge/verified-2026--09--29-blue.svg)](CHANGELOG.md)
+[![Level 1 SBOM](https://img.shields.io/badge/Level%201%20SBOM-Plain%20Text%20Auditiert-blue.svg)](THIRD_PARTY_LICENSES.txt)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
 [![Privacy](https://img.shields.io/badge/Privacy-Local--First%20%7C%20Explicit%20HTTPS-success.svg)](SECURITY.md)
@@ -113,6 +114,88 @@ graph TD
         B <-->|"HTTP / WebSocket (127.0.0.1:3737)"| J["Lokales Dashboard (dashboard.ts)"]
     end
 ```
+
+### Visuelle Architektur-Topologie (ASCII-Vier-Ansichten-Projektion)
+
+```text
+====================================================================================================
+            ELLMOS CONTROLCENTER MCP — VIER-ANSICHTEN-ARCHITEKTUR-TOPOLOGIE
+====================================================================================================
+
+[SICHT 1: CLIENT-LAUFZEITEN, LOKALES DASHBOARD & MCP-HOST-SCHNITTSTELLEN]
++--------------------------------------------------------------------------------------------------+
+| MCP-Hosts & Agenten: Claude Code | Codex CLI | Antigravity (Gemini) | Eigene Stdio-Transports     |
+|   |                              |                         |                       |             |
+|   +------------------------------+-------------------------+-----------------------+             |
+|                                  | JSON-RPC 2.0 stdio (34 Tools)                                 |
+|                                  v                                                               |
+|   +------------------------------------------------------------------------------------------+   |
+|   | ellmos-controlcenter-mcp (Node.js >= 20.0.0 / TypeScript / ESM / RunAsInvoker)           |   |
+|   +------------------------------------------------------------------------------------------+   |
+|                                  ^                                                               |
+|                                  | HTTP / WebSocket (127.0.0.1:3737 - Nur Loopback)              |
+|   +------------------------------+-----------------------------------------------------------+   |
+|   | Lokales Web-Dashboard: Serverkatalog | Profilwechsler | Echtzeit-Werkzeuginspektion       |   |
++--------------------------------------------------------------------------------------------------+
+
+[SICHT 2: CONTROLCENTER SOVERÄNE KERN-ENGINE & AUFLÖSUNGS-SUBSYSTEME]
++--------------------------------------------------------------------------------------------------+
+| +-------------------------+ +-------------------------+ +--------------------------------------+ |
+| | Katalog- & Tool-Scanner | | Profilauflösungs-Engine | | Dynamische Fähigkeitsbündel          | |
+| | - catalog.ts / mcps     | | - profiles.ts           | | - bundles.ts                         | |
+| | - toolCatalog.ts        | | - Vererbungsketten      | | - data/capability-bundles.json       | |
+| | - Nebenläufigkeit: 1-32 | | - Konfigurationserzeug. | | - 11 funktionale Kernbündel          | |
+| +-------------------------+ +-------------------------+ +--------------------------------------+ |
+|              |                           |                                 |                     |
+|              v                           v                                 v                     |
+| +----------------------------------------------------------------------------------------------+ |
+| | Kontextpacker & Dynamischer Orchestrator (contextPack.ts / semanticRouting.ts)               | |
+| | - Reine Manifest-Übergaben | Semantisches Expertenrouting | Mehrsprachiges i18n (src/i18n)   | |
+| +----------------------------------------------------------------------------------------------+ |
++--------------------------------------------------------------------------------------------------+
+
+[SICHT 3: POLICY-GESTEUERTES GATEWAY, EPHEMERE DISPATCH-LOGIK & GEHÄRTETER SECRET-SCRUBBER]
++--------------------------------------------------------------------------------------------------+
+| controlcenter_invoke / controlcenter_list_available_tools (On-Demand Backend-Ausführung)        |
+|                                  |                                                               |
+|                                  v                                                               |
+| +----------------------------------------------------------------------------------------------+ |
+| | Gateway-Policy-Wächter (data/gateway-policy.json) [INV-GATE-02]                              | |
+| | - Fail-Closed Auswertung | Zulässige Muster | Server-/Werkzeug-Whitelisting                  | |
+| +----------------------------------------------------------------------------------------------+ |
+|        | (Zugelassen)                                               | (Verweigert / Ungültig)    |
+|        v                                                            v                            |
+| +---------------------------------------+                 +------------------------------------+ |
+| | Ephemerer Connect-Per-Call Lebensz.   |                 | Strukturierter Verweigerungs-Disp. | |
+| | - Stdio-Subprozess (Endet nach Aufruf)|                 | - Argumentwerte im Audit auslassen | |
+| | - Remote HTTPS (Explizit, Kein Redir) |                 | - Fail-Closed Fehlervertrag        | |
+| +---------------------------------------+                 +------------------------------------+ |
+|        |                                                            |                            |
+|        v                                                            v                            |
+| +----------------------------------------------------------------------------------------------+ |
+| | Härtungs-, Budget- & Bereinigungs-Pipeline [INV-SCRUB-04]                                    | |
+| | - 256 KiB Anfrage- / 1 MiB Antwortbudgets | Rekursives Bereinigen von Credentials            | |
+| | - Markierung nicht vertrauenswürdiger Daten | Append-Only Audit-Protokoll (gateway-audit.jsonl) |
+| +----------------------------------------------------------------------------------------------+ |
++--------------------------------------------------------------------------------------------------+
+
+[SICHT 4: GOVERNANCE-SPIEGEL, MULTI-AGENTEN-LOCK-GRENZEN & SYSTEM-PERIMETER]
++--------------------------------------------------------------------------------------------------+
+| Host-Register & Lokale Sicherheits-Governance (Reine Lese-Spiegelung / Zero-Mutation-Garantie)    |
+|                                                                                                  |
+|   [INV-LOCK-06] Kanonische Multi-Agenten-Locks     [INV-PERM-07] Hierarchische Berechtigungen   |
+|   - controlcenter_list_locks                       - controlcenter_evaluate_permission          |
+|   - controlcenter_check_lock (LOCK*.txt / until)   - Rekursive Auswertung LOCK.permissions.json |
+|                                                                                                  |
+|   [INV-GOV-08] Host-Governance-Föderation          [INV-LOCAL-01] Local-First Datenspeicherung   |
+|   - Entscheidungen: controlcenter_list_decisions   - Inventarspiegel: inventory.db (Nur Lesen)  |
+|   - Policies & Pläne: controlcenter_list_governance- Ressourcen: controlcenter_list_resources   |
+|                                                                                                  |
+|   [INV-PRIV-05] Keine Elevation: Unprivilegierte Benutzerrechte | [INV-SLA-10] 48h Security-SLA   |
++--------------------------------------------------------------------------------------------------+
+====================================================================================================
+```
+
 
 <a id="sec-05"></a>
 <a id="control-plane--gateway-lebenszyklus"></a>
@@ -678,7 +761,7 @@ Dieses Projekt folgt einer strikten **100% permissiven Open-Source-Lizenzierung*
 - Vollständig auditiert und kompatibel mit kommerzieller, unternehmensweiter und lokaler Nutzung.
 - Auditierte direkte Abhängigkeiten: `@modelcontextprotocol/sdk` (MIT), `zod` (MIT), `typescript` (Apache-2.0), `vite`/`vitest` (MIT), `@types/node` (MIT) und `@emnapi/core`/`@emnapi/runtime` (MIT).
 
-Vollständige SPDX-Lizenztexte, Urheberrechtshinweise und Compliance-Bestätigungen sind in [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) dokumentiert. Kanonische Urheberrechts- und Ökosystem-Attribution ist in [NOTICE](./NOTICE) hinterlegt.
+Vollständige SPDX-Lizenztexte, Urheberrechtshinweise und Compliance-Bestätigungen sind in [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) sowie im Plain-Text-Begleiter [THIRD_PARTY_LICENSES.txt](./THIRD_PARTY_LICENSES.txt) dokumentiert. Kanonische Urheberrechts- und Ökosystem-Attribution ist in [NOTICE](./NOTICE) hinterlegt.
 
 <a id="sec-15"></a>
 <a id="dokumentation"></a>

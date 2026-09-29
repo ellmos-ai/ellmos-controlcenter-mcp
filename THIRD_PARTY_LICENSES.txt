@@ -1,0 +1,73 @@
+# Third-Party Licenses & Level 1 SBOM
+
+Last checked: 2026-09-29 against npm metadata.
+Audited: Stand: 2026-09-29 against Level 1 SBOM and runtime invariants.
+
+Scope: direct runtime dependencies declared in `package.json`, transitive
+overrides, and development/testing tooling. This inventory provides a direct
+dependency review and Level 1 SBOM affirmation, complementing the markdown
+review in `THIRD_PARTY_LICENSES.md`.
+
+## Project License & Attribution
+
+ellmos-controlcenter-mcp is licensed under the MIT License.
+Canonical copyright attribution is maintained in `NOTICE`:
+Copyright (c) 2026 Lukas Geiger, ellmos-ai family under open-bricks umbrella.
+
+## Architecture & Security Invariants
+
+- Local-First Administration, No Telemetry or Background Egress (loopback dashboard, explicit remote HTTPS gateway calls)
+- Unprivileged User-Mode Execution: RunAsInvoker Non-Elevation (INV-PRIV-05)
+- Fail-Closed Gateway Policy Guard (INV-GATE-02) & Connect-per-call Ephemeral Boundaries (INV-SUB-03)
+- Bounded Secret Scrubbing & Finite Budgets (INV-SCRUB-04)
+- Canonical Multi-Agent Lock Awareness (INV-LOCK-06) & Nearest Permission Introspection (INV-PERM-07)
+- Zero-Copyleft & 100% Permissive Open-Source Licensing
+- Level 1 SBOM mapping invariants INV-LOCAL-01 to INV-SLA-10 (verified)
+
+## Core Runtime Dependencies
+
+| Package | Ecosystem | Version / Range | License | Role & Purpose |
+|---|---|---:|---|---|
+| @modelcontextprotocol/sdk | Node / npm | ^1.0.0 | MIT | Model Context Protocol TypeScript SDK (stdio transport, JSON-RPC handling, server and client interfaces) |
+| zod | Node / npm | ^3.23.8 | MIT | TypeScript-first schema declaration and runtime validation with static type inference |
+
+## Transitive & Managed Override Dependencies
+
+| Package | Ecosystem | Version / Range | License | Role & Purpose |
+|---|---|---:|---|---|
+| hono | Node / npm | ^4.13.5 | MIT | Web standard HTTP router primitives used transitively |
+| express-rate-limit | Node / npm | ^8.6.2 | MIT | Rate limiting middleware component |
+| nanoid | Node / npm | ^3.3.17 | MIT | Secure, URL-friendly unique string ID generator |
+| fast-uri | Node / npm | ^3.1.6 | BSD-3-Clause | RFC 3986 URI parsing and formatting |
+| @hono/node-server | Node / npm | ^2.0.5 | MIT | Node.js adapter for Hono HTTP interfaces |
+| ip-address | Node / npm | ^10.4.0 | MIT | IPv4 and IPv6 validation and parsing library |
+| qs | Node / npm | ^6.16.0 | BSD-3-Clause | Query string parsing and stringification |
+| vitest | Node / npm | ^4.1.11 | MIT | Fast unit and contract testing framework |
+| postcss | Node / npm | ^8.5.18 | MIT | CSS parsing and transformation pipeline |
+
+## Development & Test Tooling
+
+| Package | Ecosystem | Version / Range | License | Role & Purpose |
+|---|---|---:|---|---|
+| typescript | Node / npm | ^5.3.3 | Apache-2.0 | TypeScript compiler (tsc) for strict static typing and compilation |
+| vitest | Node / npm | ^4.1.11 | MIT | Fast unit and contract testing framework |
+| vite | Node / npm | ^6.4.3 | MIT | Build tool and development server used by Vitest |
+| @types/node | Node / npm | ^20.11.0 | MIT | Type definitions for Node.js runtime APIs |
+| @emnapi/core | Node / npm | ^1.10.0 | MIT | Emscripten N-API implementation helper |
+| @emnapi/runtime | Node / npm | ^1.10.0 | MIT | Emscripten N-API runtime support |
+
+## Level 1 SBOM Invariant Verification (Stand: 2026-09-29)
+
+All 10 architectural and runtime governance invariants are confirmed:
+- INV-LOCAL-01: Local-First & Explicit Egress (Dashboard binds strictly to loopback 127.0.0.1; no background telemetry or phone-home requests; explicit gateway calls require configured HTTPS backends)
+- INV-GATE-02: Fail-Closed Gateway Policy Guard (Gateway tool invocation gated strictly by data/gateway-policy.json; missing or invalid policy files refuse every call)
+- INV-SUB-03: Ephemeral Child Process Boundaries (Connect-per-call stdio lifecycle; child processes terminate immediately after tool result delivery; zero zombie processes)
+- INV-SCRUB-04: Bounded Result Redaction & Finite Budgets (Recursive secret scrubbing across payloads; key wiping confined to structured metadata; 256 KiB request & 1 MiB response budgets)
+- INV-PRIV-05: Non-Elevation / RunAsInvoker (Operates strictly within unprivileged standard OS user space without administrative or root elevation)
+- INV-LOCK-06: Canonical Multi-Agent Lock Awareness (Respects canonical multi-agent project locks LOCK*.txt, LOCK.user.*, LOCK.until.* fail-closed)
+- INV-PERM-07: Nearest Permission Register Introspection (Recursively discovers and evaluates LOCK.permissions.json up directory trees)
+- INV-GOV-08: Read-Only Host Governance Federation (Read-only federation of pending decisions, policy registry, strategic plans, and resource inventory)
+- INV-SYNC-09: Cloud-Sync Conflict Hardening (.gitignore hardened against multi-host conflict copies, temporary files, and lock files)
+- INV-SLA-10: 48h Security SLA & Coordinated Disclosure (Binding 48-hour response confirmation and 5-day triage commitment via canonical security channels)
+
+Refer to `THIRD_PARTY_LICENSES.md` for full cross-reference matrix and component analyses.

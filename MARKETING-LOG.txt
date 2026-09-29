@@ -8,7 +8,7 @@
 # Umbrella: open-bricks (AI-Native Desktop & Developer Tools)
 # Current Version: 0.7.4 (frozen per T-20260920-167562623)
 # Maintenance Path: Pfad B (Marketing, Discoverability, Visual Architecture & Bilateral Navigation Parity)
-# Last Updated: 2026-09-28
+# Last Updated: 2026-09-29
 # ==============================================================================
 
 [POSITIONING & VALUE PROPOSITION]
@@ -125,3 +125,9 @@ Key Differentiators:
   - Synchronized Shields.io verification date badge to verified-2026--09--28-blue.svg in README.md and README_de.md.
   - Updated llms.txt context index (Stand 2026-09-28) with § 521 BGB statutory disclaimer and Level 1 SBOM notes.
   - Expanded automated contract test suite in test/metadata.test.ts covering 18 reciprocal anchors sec-01..sec-18, § 521 BGB disclaimer, 20-topic saturation, and Level 1 SBOM audit recency. All tests passing 100% green; version 0.7.4 strictly preserved per T-20260920-167562623.
+2026-09-29: Pfad B Discoverability, Visual Architecture & Level 1 SBOM Text Companion (v0.7.4):
+  - Added comprehensive ASCII Four-View Architectural Topology Projection to Section 04 of README.md ([VIEW 1: CLIENT RUNTIMES, LOCAL DASHBOARD & MCP HOST INTERFACES], [VIEW 2: CONTROLCENTER SOVEREIGN CORE ENGINE & RESOLUTION SUBSYSTEMS], [VIEW 3: POLICY-GATED GATEWAY, EPHEMERAL DISPATCH & HARDENED SECRET SCRUBBER], [VIEW 4: GOVERNANCE MIRROR, MULTI-AGENT LOCK BOUNDARIES & SYSTEM PERIMETER]) and README_de.md ([SICHT 1] to [SICHT 4]).
+  - Created canonical Level 1 SBOM Plain-Text Companion THIRD_PARTY_LICENSES.txt inventorying runtime dependencies, managed overrides, and dev tooling, confirming all 10 invariants INV-LOCAL-01 through INV-SLA-10 and unprivileged RunAsInvoker non-elevation certification (INV-PRIV-05).
+  - Included THIRD_PARTY_LICENSES.txt in package.json files manifest, root NOTICE attribution cross-reference, and re-audited THIRD_PARTY_LICENSES.md Stand 2026-09-29.
+  - Synchronized Shields.io verification date badge to verified-2026--09--29-blue.svg, added Level 1 SBOM text badge in README.md and README_de.md, and updated llms.txt context index.
+  - Expanded automated contract test suite in test/metadata.test.ts verifying ASCII Four-View projection, plain-text companion invariants, updated verification badge, files whitelist, and 100% green test suite. Version 0.7.4 strictly preserved per T-20260920-167562623.

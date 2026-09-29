@@ -5,3 +5,5 @@ This product includes software developed by Lukas Geiger as part of the
 ellmos-ai and open-bricks open-source ecosystems.
 
 Licensed under the MIT License. See LICENSE for details.
+
+See THIRD_PARTY_LICENSES.md and THIRD_PARTY_LICENSES.txt for third-party component licenses and Level 1 SBOM.

@@ -4,6 +4,8 @@
 > **Initial Audit:** 2026-09-14<br>
 > **Re-Audit (Pfad A):** 2026-09-26<br>
 > **Re-Audit (Pfad B):** 2026-09-28<br>
+> **Re-Audit (Pfad B):** 2026-09-29<br>
+> **Level 1 SBOM Plain-Text Companion:** [THIRD_PARTY_LICENSES.txt](THIRD_PARTY_LICENSES.txt)<br>
 > **Repository License:** [MIT License](LICENSE)<br>
 > **Canonical Notice:** [NOTICE](NOTICE)<br>
 > **Architecture & Privacy:** Local-First Administration, Explicit Remote HTTPS Gateway Boundaries, Unprivileged User-Mode (`RunAsInvoker`), Fail-Closed Gateway Policies

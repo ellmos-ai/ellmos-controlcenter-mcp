@@ -51,12 +51,13 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-09-28");
-    expect(llmsTxt).toContain("Test status: 261/261 Vitest tests passing (100% green)");
+    expect(llmsTxt).toContain("Last-checked: 2026-09-29");
+    expect(llmsTxt).toContain("Test status: 267/267 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("License: MIT");
     expect(llmsTxt).toContain("Attribution: NOTICE");
+    expect(llmsTxt).toContain("THIRD_PARTY_LICENSES.txt");
   });
 
   it("ensures license parity across package.json, glama.json, LICENSE, and llms.txt", () => {
@@ -71,8 +72,9 @@ describe("metadata & manifest parity", () => {
       "Ecosystem-ellmos--ai-blue.svg",
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
-      "Vitest-261%20passed-brightgreen.svg",
-      "verified-2026--09--28-blue.svg",
+      "Vitest-267%20passed-brightgreen.svg",
+      "verified-2026--09--29-blue.svg",
+      "Level%201%20SBOM",
       "Attribution-NOTICE-blue.svg",
       "MCP%20Tools-34-blue.svg",
       "Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg",
@@ -113,6 +115,7 @@ describe("metadata & manifest parity", () => {
       "server.json",
       "glama.json",
       "THIRD_PARTY_LICENSES.md",
+      "THIRD_PARTY_LICENSES.txt",
       "MARKETING-LOG.txt",
     ];
     for (const file of required) {
@@ -375,6 +378,8 @@ describe("metadata & manifest parity", () => {
     expect(thirdParty).toContain("2026-09-14");
     expect(thirdParty).toContain("2026-09-26");
     expect(thirdParty).toContain("2026-09-28");
+    expect(thirdParty).toContain("2026-09-29");
+    expect(thirdParty).toContain("THIRD_PARTY_LICENSES.txt");
     expect(thirdParty).toContain("Level 1 SBOM Invariant Cross-Reference Matrix");
     expect(thirdParty).toContain("INV-LOCAL-01");
     expect(thirdParty).toContain("INV-SLA-10");
@@ -396,10 +401,12 @@ describe("metadata & manifest parity", () => {
     expect(marketingLog).toContain("Pfad B Discoverability, Target Personas & Comparative Matrix Overhaul (v0.7.4)");
     expect(marketingLog).toContain("Pfad A Technical Hygiene, CI Lifecycle Workflows, Sync Defense & Level 1 SBOM Audit (v0.7.4)");
     expect(marketingLog).toContain("Pfad B Discoverability, Visual Architecture & Bilateral Navigation Parity (v0.7.4)");
+    expect(marketingLog).toContain("Pfad B Discoverability, Visual Architecture & Level 1 SBOM Text Companion (v0.7.4)");
   });
 
   it("ensures package.json includes MARKETING-LOG.txt, THIRD_PARTY_LICENSES.md, and NOTICE in files manifest", () => {
     expect(packageJson.files).toContain("THIRD_PARTY_LICENSES.md");
+    expect(packageJson.files).toContain("THIRD_PARTY_LICENSES.txt");
     expect(packageJson.files).toContain("MARKETING-LOG.txt");
     expect(packageJson.files).toContain("NOTICE");
   });
@@ -409,10 +416,12 @@ describe("metadata & manifest parity", () => {
     expect(notice).toContain("Copyright (c) 2026 Lukas Geiger <lukas@open-bricks.org>");
     expect(notice).toContain("ellmos-ai and open-bricks open-source ecosystems");
     expect(notice).toContain("MIT License");
+    expect(notice).toContain("THIRD_PARTY_LICENSES.txt");
   });
 
   it("ensures CHANGELOG.md documents latest 0.7.4 release and Unreleased Pfad A/B entries", () => {
     const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf-8");
+    expect(changelog).toContain("## [Unreleased] - 2026-09-29");
     expect(changelog).toContain("## [Unreleased] - 2026-09-28");
     expect(changelog).toContain("Discoverability, Visual Architecture, 18-Point Bilingual Navigation Parity, § 521 BGB Statutory Disclaimer & Level 1 SBOM Audit");
     expect(changelog).toContain("Technical Hygiene, CI Lifecycle Workflows, Multi-Host Sync Defense, Canonical NOTICE Attribution & Level 1 SBOM Audit");
@@ -465,5 +474,64 @@ describe("metadata & manifest parity", () => {
     ];
     expect(packageJson.keywords).toEqual(expected);
     expect(packageJson.keywords.length).toBe(20);
+  });
+
+  it("ensures THIRD_PARTY_LICENSES.txt Level 1 SBOM plain-text companion verifies all invariants and runtime dependencies", () => {
+    const thirdPartyTxt = fs.readFileSync(path.join(root, "THIRD_PARTY_LICENSES.txt"), "utf-8");
+    expect(thirdPartyTxt).toContain("Third-Party Licenses & Level 1 SBOM");
+    expect(thirdPartyTxt).toContain("2026-09-29");
+    expect(thirdPartyTxt).toContain("@modelcontextprotocol/sdk");
+    expect(thirdPartyTxt).toContain("zod");
+    expect(thirdPartyTxt).toContain("hono");
+    expect(thirdPartyTxt).toContain("vitest");
+    expect(thirdPartyTxt).toContain("RunAsInvoker");
+    const invList = [
+      "INV-LOCAL-01",
+      "INV-GATE-02",
+      "INV-SUB-03",
+      "INV-SCRUB-04",
+      "INV-PRIV-05",
+      "INV-LOCK-06",
+      "INV-PERM-07",
+      "INV-GOV-08",
+      "INV-SYNC-09",
+      "INV-SLA-10",
+    ];
+    for (const inv of invList) {
+      expect(thirdPartyTxt).toContain(inv);
+    }
+  });
+
+  it("ensures ASCII Four-View Architectural Topology Projection exists in both README.md and README_de.md", () => {
+    const viewsEn = [
+      "[VIEW 1: CLIENT RUNTIMES, LOCAL DASHBOARD & MCP HOST INTERFACES]",
+      "[VIEW 2: CONTROLCENTER SOVEREIGN CORE ENGINE & RESOLUTION SUBSYSTEMS]",
+      "[VIEW 3: POLICY-GATED GATEWAY, EPHEMERAL DISPATCH & HARDENED SECRET SCRUBBER]",
+      "[VIEW 4: GOVERNANCE MIRROR, MULTI-AGENT LOCK BOUNDARIES & SYSTEM PERIMETER]",
+    ];
+    for (const view of viewsEn) {
+      expect(readmeEn).toContain(view);
+    }
+
+    const viewsDe = [
+      "[SICHT 1: CLIENT-LAUFZEITEN, LOKALES DASHBOARD & MCP-HOST-SCHNITTSTELLEN]",
+      "[SICHT 2: CONTROLCENTER SOVERÄNE KERN-ENGINE & AUFLÖSUNGS-SUBSYSTEME]",
+      "[SICHT 3: POLICY-GESTEUERTES GATEWAY, EPHEMERE DISPATCH-LOGIK & GEHÄRTETER SECRET-SCRUBBER]",
+      "[SICHT 4: GOVERNANCE-SPIEGEL, MULTI-AGENTEN-LOCK-GRENZEN & SYSTEM-PERIMETER]",
+    ];
+    for (const view of viewsDe) {
+      expect(readmeDe).toContain(view);
+    }
+  });
+
+  it("ensures Level 1 SBOM text badge and verification date 2026-09-29 exist in READMEs and manifests", () => {
+    expect(readmeEn).toContain("verified-2026--09--29-blue.svg");
+    expect(readmeDe).toContain("verified-2026--09--29-blue.svg");
+    expect(readmeEn).toContain("Level%201%20SBOM");
+    expect(readmeDe).toContain("Level%201%20SBOM");
+    expect(readmeEn).toContain("THIRD_PARTY_LICENSES.txt");
+    expect(readmeDe).toContain("THIRD_PARTY_LICENSES.txt");
+    expect(llmsTxt).toContain("Last-checked: 2026-09-29");
+    expect(llmsTxt).toContain("THIRD_PARTY_LICENSES.txt");
   });
 });
