@@ -12,6 +12,7 @@
 [![npm version](https://img.shields.io/npm/v/ellmos-controlcenter-mcp.svg)](https://www.npmjs.com/package/ellmos-controlcenter-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Attribution: NOTICE](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
+[![Contributing: Guide](https://img.shields.io/badge/Contributing-Guide-blue.svg)](CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
 [![Vitest](https://img.shields.io/badge/Vitest-267%20passed-brightgreen.svg)](https://vitest.dev/)
 [![Verified: 2026-09-29](https://img.shields.io/badge/verified-2026--09--29-blue.svg)](CHANGELOG.md)
@@ -767,6 +768,7 @@ Full SPDX license texts, copyright notices, and compliance attestations are docu
 | Decisions | [DECISIONS.md](./DECISIONS.md) |
 | Open tasks | [TODO.md](./TODO.md) |
 | Changes | [CHANGELOG.md](./CHANGELOG.md) |
+| Contributing | [CONTRIBUTING.md](./CONTRIBUTING.md) |
 | Notice & attribution | [NOTICE](./NOTICE) |
 | Third-party licenses | [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) |
 | Marketing & discoverability | [MARKETING-LOG.txt](./MARKETING-LOG.txt) |

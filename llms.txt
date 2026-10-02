@@ -137,6 +137,7 @@ ellmos-controlcenter-mcp
 - `README.md`: full English documentation with Target Personas and Comparative Matrix.
 - `README_de.md`: German documentation with Zielgruppen and Vergleichsmatrix.
 - `SECURITY.md`: bilingual security policy, no-telemetry/background-egress default, and explicit remote HTTPS gateway boundary.
+- `CONTRIBUTING.md`: bilingual contributing guidelines, Plan D development workflow, and 10 governance invariants.
 - `THIRD_PARTY_LICENSES.md`: third-party open-source dependency licenses, audit summary, and notices.
 - `THIRD_PARTY_LICENSES.txt`: canonical plain-text Level 1 SBOM companion and runtime invariants.
 - `MARKETING-LOG.txt`: local marketing, discoverability, search phrases, and governance log.

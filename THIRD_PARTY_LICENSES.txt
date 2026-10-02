@@ -1,7 +1,7 @@
 # Third-Party Licenses & Level 1 SBOM
 
-Last checked: 2026-09-29 against npm metadata.
-Audited: Stand: 2026-09-29 against Level 1 SBOM and runtime invariants.
+Last checked: 2026-10-03 against npm metadata (Baseline: 2026-09-29).
+Audited: Stand: 2026-10-03 (Initial: 2026-09-29) against Level 1 SBOM and runtime invariants.
 
 Scope: direct runtime dependencies declared in `package.json`, transitive
 overrides, and development/testing tooling. This inventory provides a direct
@@ -23,6 +23,7 @@ Copyright (c) 2026 Lukas Geiger, ellmos-ai family under open-bricks umbrella.
 - Canonical Multi-Agent Lock Awareness (INV-LOCK-06) & Nearest Permission Introspection (INV-PERM-07)
 - Zero-Copyleft & 100% Permissive Open-Source Licensing
 - Level 1 SBOM mapping invariants INV-LOCAL-01 to INV-SLA-10 (verified)
+- Bilingual Contributing & Governance Guidelines: CONTRIBUTING.md (enforcing INV-LOCAL-01..INV-SLA-10 and § 521 BGB)
 
 ## Core Runtime Dependencies
 
@@ -56,7 +57,7 @@ Copyright (c) 2026 Lukas Geiger, ellmos-ai family under open-bricks umbrella.
 | @emnapi/core | Node / npm | ^1.10.0 | MIT | Emscripten N-API implementation helper |
 | @emnapi/runtime | Node / npm | ^1.10.0 | MIT | Emscripten N-API runtime support |
 
-## Level 1 SBOM Invariant Verification (Stand: 2026-09-29)
+## Level 1 SBOM Invariant Verification (Stand: 2026-10-03)
 
 All 10 architectural and runtime governance invariants are confirmed:
 - INV-LOCAL-01: Local-First & Explicit Egress (Dashboard binds strictly to loopback 127.0.0.1; no background telemetry or phone-home requests; explicit gateway calls require configured HTTPS backends)

@@ -7,8 +7,8 @@
 # Ecosystem: ellmos-ai (AI Infrastructure & MCP Control Plane)
 # Umbrella: open-bricks (AI-Native Desktop & Developer Tools)
 # Current Version: 0.7.4 (frozen per T-20260920-167562623)
-# Maintenance Path: Pfad B (Marketing, Discoverability, Visual Architecture & Bilateral Navigation Parity)
-# Last Updated: 2026-09-29
+# Maintenance Path: Pfad A (Repository Hygiene, CI Lifecycle Workflows, Sync Defense & Bilingual Contributing Guidelines)
+# Last Updated: 2026-10-03
 # ==============================================================================
 
 [POSITIONING & VALUE PROPOSITION]
@@ -131,3 +131,11 @@ Key Differentiators:
   - Included THIRD_PARTY_LICENSES.txt in package.json files manifest, root NOTICE attribution cross-reference, and re-audited THIRD_PARTY_LICENSES.md Stand 2026-09-29.
   - Synchronized Shields.io verification date badge to verified-2026--09--29-blue.svg, added Level 1 SBOM text badge in README.md and README_de.md, and updated llms.txt context index.
   - Expanded automated contract test suite in test/metadata.test.ts verifying ASCII Four-View projection, plain-text companion invariants, updated verification badge, files whitelist, and 100% green test suite. Version 0.7.4 strictly preserved per T-20260920-167562623.
+2026-10-03: Pfad A Technical Hygiene, CI Lifecycle Workflows, Multi-Host Lock Defense, Level 1 SBOM Re-Audit & Bilingual Contributing Guidelines (v0.7.4):
+  - Provisioned .github/workflows/auto-assign.yml (least-privilege pull-requests: write, issues: write, timeout 5m, cancel-in-progress) and .github/workflows/label-sync.yml (least-privilege issues: write, timeout 5m).
+  - Deployed canonical .github/labels.yml with 11 standard labels per GOVERNANCE.md §4.2.
+  - Created comprehensive bilingual CONTRIBUTING.md guidelines in repository root specifying INV-LOCAL-01..INV-SLA-10, Plan D workflow (C:\_Local_DEV\repos\ellmos-controlcenter-mcp), unprivileged RunAsInvoker execution (INV-PRIV-05), version freeze discipline, § 521 BGB statutory notice, and 48h security SLA.
+  - Hardened .gitignore against multi-host tokens (*-IDEAPAD-GEI*), Taskplans (TASKPLAN_*.md, *-TASKPLAN*), scoped agent locks (LOCK.dev.*, LOCK.antigravity.*, LOCK.bugsearch.*), and Windows OS artifacts (Desktop.ini, ehthumbs.db).
+  - Re-audited THIRD_PARTY_LICENSES.md and THIRD_PARTY_LICENSES.txt as of Stand 2026-10-03 with CONTRIBUTING.md cross-references.
+  - Added Contributing badges across README.md and README_de.md, updated Documentation tables, and synchronized llms.txt context index.
+  - Expanded automated contract test suite in test/metadata.test.ts verifying CI workflows, CONTRIBUTING.md parity, .gitignore defense, and files manifest whitelist. Version 0.7.4 strictly preserved per T-20260920-167562623.

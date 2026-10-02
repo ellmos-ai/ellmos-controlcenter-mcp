@@ -1,5 +1,31 @@
 # Changelog
 
+## [Unreleased] - 2026-10-03
+
+### Repository Hygiene, CI Lifecycle Workflows, Multi-Host Sync Defense, Bilingual Contributing Guidelines & Level 1 SBOM Re-Audit (Pfad A) (2026-10-03)
+- **CI Lifecycle Workflow Provisioning & Least-Privilege Hardening:**
+  - Deployed `.github/workflows/auto-assign.yml` (least privilege `pull-requests: write`, `issues: write`, `actions/github-script@v7`, `timeout-minutes: 5`, `cancel-in-progress: true`).
+  - Deployed `.github/workflows/label-sync.yml` (least privilege `issues: write`, `EndBug/label-sync@v2`, `timeout-minutes: 5`, `cancel-in-progress: true`).
+  - Deployed canonical `.github/labels.yml` defining all 11 standard labels per GOVERNANCE.md §4.2 (`bug`, `enhancement`, `good first issue`, `help wanted`, `documentation`, `duplicate`, `wontfix`, `priority: high`, `priority: low`, `needs-triage`, `stale`).
+  - Verified `.github/workflows/stale.yml` and `.github/workflows/welcome.yml` timeout and concurrency hardening.
+- **Bilingual Contributing Guidelines (`CONTRIBUTING.md`):**
+  - Created comprehensive bilingual `CONTRIBUTING.md` in repository root with complete English and German sections.
+  - Specified all 10 Governance and Runtime Invariants (`INV-LOCAL-01` to `INV-SLA-10`) tailored to ControlCenter MCP (loopback dashboard, fail-closed gateway policies, ephemeral stdio child processes, bounded secret scrubbing, unprivileged `RunAsInvoker` mode, multi-agent lock awareness, hierarchical permission introspection, read-only host governance mirroring, cloud-sync conflict hardening, and 48h security SLA).
+  - Codified Plan D Local Development Workflow (`C:\_Local_DEV\repos\ellmos-controlcenter-mcp` as authoritative Source of Truth), strict version freeze discipline, quality gates (`npm run build`, `npm test`, `git diff --check`, `git diff -G"version"`), statutory liability notice (§ 521 BGB Gefälligkeitsrecht), and private security contact channels.
+  - Registered `CONTRIBUTING.md` in `package.json` `files` manifest.
+- **Multi-Host Lock & Sync Defense in `.gitignore`:**
+  - Hardened `.gitignore` against additional multi-host patterns (`*-IDEAPAD-GEI*`, `*-IDEAPAD-GEI.*`), Taskplan artifacts (`TASKPLAN_*.md`, `*-TASKPLAN*`), agent-specific scoped locks (`LOCK.dev.*`, `LOCK.antigravity.*`, `LOCK.bugsearch.*`), and Windows OS artifacts (`Desktop.ini`, `ehthumbs.db`).
+- **Level 1 SBOM Re-Audit & Plain-Text Companion Alignment:**
+  - Re-audited `THIRD_PARTY_LICENSES.md` as of Stand 2026-10-03 linking `CONTRIBUTING.md` and confirming 100% permissive open-source ratio (0% copyleft/AGPL exposure).
+  - Updated `THIRD_PARTY_LICENSES.txt` as of Stand 2026-10-03 with cross-references to `CONTRIBUTING.md` and the 10 invariants.
+- **Documentation & Context Parity:**
+  - Added Contributing badges (`Contributing-Guide-blue.svg` and `Mitwirken-Leitfaden-blue.svg`) to `README.md` and `README_de.md`.
+  - Added `CONTRIBUTING.md` row to Section 15 Documentation tables across both READMEs.
+  - Updated `llms.txt` context index Stand 2026-10-03 referencing `CONTRIBUTING.md`.
+  - Recorded Pfad A audit and revision entry in local `MARKETING-LOG.txt`.
+- **Strict Version Freeze Discipline:**
+  - Preserved version `0.7.4` unchanged across all package manifests and code per `T-20260920-167562623`.
+
 ## [Unreleased] - 2026-09-29
 
 ### Discoverability, Visual Architecture, ASCII Topology, Level 1 SBOM Plain-Text Companion & Navigation Parity (Pfad B) (2026-09-29)

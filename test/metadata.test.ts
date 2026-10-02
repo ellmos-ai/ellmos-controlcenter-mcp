@@ -18,6 +18,10 @@ describe("metadata & manifest parity", () => {
   const ciYml = fs.readFileSync(path.join(root, ".github", "workflows", "ci.yml"), "utf-8");
   const welcomeYml = fs.readFileSync(path.join(root, ".github", "workflows", "welcome.yml"), "utf-8");
   const staleYml = fs.readFileSync(path.join(root, ".github", "workflows", "stale.yml"), "utf-8");
+  const autoAssignYml = fs.readFileSync(path.join(root, ".github", "workflows", "auto-assign.yml"), "utf-8");
+  const labelSyncYml = fs.readFileSync(path.join(root, ".github", "workflows", "label-sync.yml"), "utf-8");
+  const labelsYml = fs.readFileSync(path.join(root, ".github", "labels.yml"), "utf-8");
+  const contributingMd = fs.readFileSync(path.join(root, "CONTRIBUTING.md"), "utf-8");
   const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf-8");
 
   it("ensures version parity across package.json, package-lock.json, server.json, and glama.json", () => {
@@ -114,6 +118,7 @@ describe("metadata & manifest parity", () => {
       "CHANGELOG.md",
       "server.json",
       "glama.json",
+      "CONTRIBUTING.md",
       "THIRD_PARTY_LICENSES.md",
       "THIRD_PARTY_LICENSES.txt",
       "MARKETING-LOG.txt",
@@ -405,6 +410,7 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures package.json includes MARKETING-LOG.txt, THIRD_PARTY_LICENSES.md, and NOTICE in files manifest", () => {
+    expect(packageJson.files).toContain("CONTRIBUTING.md");
     expect(packageJson.files).toContain("THIRD_PARTY_LICENSES.md");
     expect(packageJson.files).toContain("THIRD_PARTY_LICENSES.txt");
     expect(packageJson.files).toContain("MARKETING-LOG.txt");
@@ -533,5 +539,77 @@ describe("metadata & manifest parity", () => {
     expect(readmeDe).toContain("THIRD_PARTY_LICENSES.txt");
     expect(llmsTxt).toContain("Last-checked: 2026-09-29");
     expect(llmsTxt).toContain("THIRD_PARTY_LICENSES.txt");
+  });
+
+  it("ensures bilingual CONTRIBUTING.md exists with 10 invariants, Plan D workflow, and statutory notice", () => {
+    expect(contributingMd).toContain("# Contributing to ellmos-controlcenter-mcp / Mitwirken an ellmos-controlcenter-mcp");
+    expect(contributingMd).toContain("[English](#english)");
+    expect(contributingMd).toContain("[Deutsch](#deutsch)");
+    expect(contributingMd).toContain("INV-LOCAL-01");
+    expect(contributingMd).toContain("INV-GATE-02");
+    expect(contributingMd).toContain("INV-SUB-03");
+    expect(contributingMd).toContain("INV-SCRUB-04");
+    expect(contributingMd).toContain("INV-PRIV-05");
+    expect(contributingMd).toContain("INV-LOCK-06");
+    expect(contributingMd).toContain("INV-PERM-07");
+    expect(contributingMd).toContain("INV-GOV-08");
+    expect(contributingMd).toContain("INV-SYNC-09");
+    expect(contributingMd).toContain("INV-SLA-10");
+    expect(contributingMd).toContain("RunAsInvoker");
+    expect(contributingMd).toContain("Plan D Local Development Workflow");
+    expect(contributingMd).toContain("Plan D Lokaler Entwicklungsworkflow");
+    expect(contributingMd).toContain("C:\\_Local_DEV\\repos\\ellmos-controlcenter-mcp");
+    expect(contributingMd).toContain("521 BGB");
+    expect(contributingMd).toContain("Gefälligkeitsrecht");
+    expect(contributingMd).toContain("security@open-bricks.org");
+    expect(contributingMd).toContain("security@ellmos.ai");
+  });
+
+  it("ensures CI workflows auto-assign.yml and label-sync.yml are provisioned with least privilege and concurrency", () => {
+    expect(autoAssignYml).toContain("actions/github-script@v7");
+    expect(autoAssignYml).toContain("timeout-minutes: 5");
+    expect(autoAssignYml).toContain("cancel-in-progress: true");
+    expect(autoAssignYml).toContain("pull-requests: write");
+    expect(autoAssignYml).toContain("issues: write");
+
+    expect(labelSyncYml).toContain("EndBug/label-sync@v2");
+    expect(labelSyncYml).toContain("timeout-minutes: 5");
+    expect(labelSyncYml).toContain("cancel-in-progress: true");
+    expect(labelSyncYml).toContain("issues: write");
+    expect(labelSyncYml).toContain(".github/labels.yml");
+
+    expect(labelsYml).toContain("name: bug");
+    expect(labelsYml).toContain("name: enhancement");
+    expect(labelsYml).toContain("name: 'priority: high'");
+    expect(labelsYml).toContain("name: 'priority: low'");
+    expect(labelsYml).toContain("name: needs-triage");
+    expect(labelsYml).toContain("name: stale");
+  });
+
+  it("ensures .gitignore defends against additional multi-host tokens, taskplans, and scoped locks", () => {
+    expect(gitignore).toContain("*-IDEAPAD-GEI*");
+    expect(gitignore).toContain("TASKPLAN_*.md");
+    expect(gitignore).toContain("*-TASKPLAN*");
+    expect(gitignore).toContain("LOCK.dev.*");
+    expect(gitignore).toContain("LOCK.antigravity.*");
+    expect(gitignore).toContain("LOCK.bugsearch.*");
+    expect(gitignore).toContain("Desktop.ini");
+    expect(gitignore).toContain("ehthumbs.db");
+  });
+
+  it("ensures CHANGELOG.md and MARKETING-LOG.txt document Pfad A 2026-10-03 hygiene milestone", () => {
+    const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf-8");
+    const marketingLog = fs.readFileSync(path.join(root, "MARKETING-LOG.txt"), "utf-8");
+    expect(changelog).toContain("## [Unreleased] - 2026-10-03");
+    expect(changelog).toContain("Repository Hygiene, CI Lifecycle Workflows, Multi-Host Sync Defense");
+    expect(marketingLog).toContain("2026-10-03: Pfad A");
+    expect(marketingLog).toContain("CONTRIBUTING.md");
+  });
+
+  it("ensures Contributing badges exist in README.md and README_de.md", () => {
+    expect(readmeEn).toContain("Contributing-Guide-blue.svg");
+    expect(readmeDe).toContain("Mitwirken-Leitfaden-blue.svg");
+    expect(readmeEn).toContain("[CONTRIBUTING.md](./CONTRIBUTING.md)");
+    expect(readmeDe).toContain("[CONTRIBUTING.md](./CONTRIBUTING.md)");
   });
 });

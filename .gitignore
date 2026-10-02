@@ -27,12 +27,16 @@ _reports/
 *-Mac Studio*
 *-MacBook*
 *-IDEAPAD*
+*-IDEAPAD-GEI*
+*-IDEAPAD-GEI.*
 *-WORKSTATION*
 *-WORKSTATION-LG*
 *_WORKSTATION*
 *_WORKSTATION-LG*
 *-WORKSTATION.*
 *-WORKSTATION-LG.*
+TASKPLAN_*.md
+*-TASKPLAN*
 
 # multi-agent locks (multi-agent coordination, host-local, never commit)
 LOCK
@@ -42,6 +46,9 @@ LOCK*.txt
 LOCK.user.*
 LOCK.until.*
 LOCK.condition.*
+LOCK.dev.*
+LOCK.antigravity.*
+LOCK.bugsearch.*
 LOCK.permissions.json
 .automation-lock
 uv.lock
@@ -78,4 +85,6 @@ wheelhouse/
 
 # OS artifacts
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 .DS_Store
