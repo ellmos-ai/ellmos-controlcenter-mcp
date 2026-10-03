@@ -6,6 +6,7 @@
 > **Re-Audit (Pfad B):** 2026-09-28<br>
 > **Re-Audit (Pfad B):** 2026-09-29<br>
 > **Re-Audit (Pfad A):** 2026-10-03<br>
+> **Re-Audit (Security & Dependency Audit):** 2026-10-03<br>
 > **Level 1 SBOM Plain-Text Companion:** [THIRD_PARTY_LICENSES.txt](THIRD_PARTY_LICENSES.txt)<br>
 > **Contributing Guidelines:** [CONTRIBUTING.md](CONTRIBUTING.md)<br>
 > **Repository License:** [MIT License](LICENSE)<br>
@@ -37,7 +38,7 @@ All direct runtime, optional, and development dependencies utilized across `ellm
 | `INV-PERM-07` | Nearest Permission Register Introspection | Recursively discovers and evaluates `LOCK.permissions.json` up directory trees | Standard path resolution | **PASS (Fail-Closed)** |
 | `INV-GOV-08` | Read-Only Host Governance Federation | Read-only federation of pending decisions, policy registry, strategic plans, and resource inventory | Read-only SQLite / JSON queries | **PASS (Read-Only)** |
 | `INV-SYNC-09` | Cloud-Sync Conflict Hardening | `.gitignore` hardened against multi-host conflict copies, temporary files, and lock files | Standard gitignore patterns | **PASS (Sync-Protected)** |
-| `INV-SLA-10` | 48h Security SLA & Coordinated Disclosure | Binding 48-hour response confirmation and 5-day triage commitment via canonical security channels (`security@open-bricks.org`, `security@ellmos.ai`) | Contractual SLA commitment | **PASS (Contractual)** |
+| `INV-SLA-10` | 48h / 5d / 30d Security SLA & Coordinated Disclosure | Binding 48-hour response confirmation, 5-day triage assessment, and 30-day remediation SLA via canonical security channels (`security@open-bricks.org`, `security@ellmos.ai`) | Contractual SLA commitment | **PASS (Contractual)** |
 
 ---
 

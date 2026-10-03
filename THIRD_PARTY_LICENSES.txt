@@ -36,12 +36,12 @@ Copyright (c) 2026 Lukas Geiger, ellmos-ai family under open-bricks umbrella.
 
 | Package | Ecosystem | Version / Range | License | Role & Purpose |
 |---|---|---:|---|---|
-| hono | Node / npm | ^4.13.5 | MIT | Web standard HTTP router primitives used transitively |
+| hono | Node / npm | ^4.13.8 | MIT | Web standard HTTP router primitives used transitively |
 | express-rate-limit | Node / npm | ^8.6.2 | MIT | Rate limiting middleware component |
 | nanoid | Node / npm | ^3.3.17 | MIT | Secure, URL-friendly unique string ID generator |
-| fast-uri | Node / npm | ^3.1.6 | BSD-3-Clause | RFC 3986 URI parsing and formatting |
-| @hono/node-server | Node / npm | ^2.0.5 | MIT | Node.js adapter for Hono HTTP interfaces |
-| ip-address | Node / npm | ^10.4.0 | MIT | IPv4 and IPv6 validation and parsing library |
+| fast-uri | Node / npm | ^3.1.8 | BSD-3-Clause | RFC 3986 URI parsing and formatting |
+| @hono/node-server | Node / npm | ^2.0.12 | MIT | Node.js adapter for Hono HTTP interfaces |
+| ip-address | Node / npm | ^10.7.2 | MIT | IPv4 and IPv6 validation and parsing library |
 | qs | Node / npm | ^6.16.0 | BSD-3-Clause | Query string parsing and stringification |
 | vitest | Node / npm | ^4.1.11 | MIT | Fast unit and contract testing framework |
 | postcss | Node / npm | ^8.5.18 | MIT | CSS parsing and transformation pipeline |
@@ -69,6 +69,6 @@ All 10 architectural and runtime governance invariants are confirmed:
 - INV-PERM-07: Nearest Permission Register Introspection (Recursively discovers and evaluates LOCK.permissions.json up directory trees)
 - INV-GOV-08: Read-Only Host Governance Federation (Read-only federation of pending decisions, policy registry, strategic plans, and resource inventory)
 - INV-SYNC-09: Cloud-Sync Conflict Hardening (.gitignore hardened against multi-host conflict copies, temporary files, and lock files)
-- INV-SLA-10: 48h Security SLA & Coordinated Disclosure (Binding 48-hour response confirmation and 5-day triage commitment via canonical security channels)
+- INV-SLA-10: 48h / 5d / 30d Security SLA & Coordinated Disclosure (Binding 48h confirmation, 5-day triage, and 30-day remediation SLA via canonical security channels)
 
 Refer to `THIRD_PARTY_LICENSES.md` for full cross-reference matrix and component analyses.

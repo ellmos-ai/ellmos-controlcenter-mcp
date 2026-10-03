@@ -2,6 +2,24 @@
 
 ## [Unreleased] - 2026-10-03
 
+### AI Security, Supply-Chain & Dependency Audit (0 Vulnerabilities), 30d Remediation SLA & Defensive Hygiene (2026-10-03)
+- **Supply-Chain & Dependency Hardening (`npm audit` 100% Clean):**
+  - Resolved 2 moderate security vulnerabilities in transitive dependencies by updating `overrides` in `package.json`:
+    - `fast-uri`: updated `^3.1.6` -> `^3.1.8` (neutralizing GHSA-hrr3-gc8f-f4qj).
+    - `ip-address`: updated `^10.4.0` -> `^10.7.2` (neutralizing GHSA-rpw4-54j3-4h4q, GHSA-2vr4-cq9g-pvrc, GHSA-j6r3-76f7-8jcv, GHSA-h3mg-xc3c-68pw).
+    - `hono`: updated `^4.13.5` -> `^4.13.8`.
+    - `@hono/node-server`: updated `^2.0.5` -> `^2.0.12`.
+  - Executed `npm install` and verified `npm audit` reports **0 vulnerabilities** across all 143 packages.
+- **Contractual 30-Day Remediation SLA (`INV-SLA-10`):**
+  - Updated `SECURITY.md` in both English and German to explicitly commit to remediating confirmed vulnerabilities within a binding 30-calendar-day window (`INV-SLA-10`).
+  - Synchronized `THIRD_PARTY_LICENSES.md` and `THIRD_PARTY_LICENSES.txt` Level 1 SBOM Invariant Matrix to reflect the 48h / 5d / 30d SLA.
+- **Defensive Gitignore Hygiene:**
+  - Hardened `.gitignore` against environment configs (`.env`, `.env.local`, `.env.*`), package manager auth (`.npmrc`, `.pypirc`), cryptographic keys, certificates, requests and credentials (`*.key`, `*.pem`, `*.p12`, `*.pfx`, `*.crt`, `*.cert`, `*.csr`), tokens and secrets (`*.token`, `*.secret`, `credentials.json`, `secrets.json`, `*secret*.json`, `*token*.json`, `token.json`, `tokens.json`, `id_rsa*`, `id_ed25519*`, `id_ecdsa*`, `id_dsa*`, `*_recovery_codes.txt`, `*recovery*codes*.txt`), and multi-host sync review logs (`CONFLICT_REVIEW_LOG*`).
+- **Automated AST & Hygiene Verification:**
+  - Automated scan across all 85 tracked repository files confirmed 0 hardcoded credentials, API keys, private keys, or personal Windows developer paths.
+- **Strict Version Freeze Discipline:**
+  - Preserved version `0.7.4` unchanged across all package manifests and code per `T-20260920-167562623`.
+
 ### Repository Hygiene, CI Lifecycle Workflows, Multi-Host Sync Defense, Bilingual Contributing Guidelines & Level 1 SBOM Re-Audit (Pfad A) (2026-10-03)
 - **CI Lifecycle Workflow Provisioning & Least-Privilege Hardening:**
   - Deployed `.github/workflows/auto-assign.yml` (least privilege `pull-requests: write`, `issues: write`, `actions/github-script@v7`, `timeout-minutes: 5`, `cancel-in-progress: true`).

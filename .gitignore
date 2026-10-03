@@ -10,7 +10,40 @@ _reports/
 # mcp-publisher login artifacts (credentials, never commit)
 .mcpregistry_*
 
+# environment & auth configs
+.env
+.env.local
+.env.*
+!.env.example
+!.env.sample
+.npmrc
+.pypirc
+
+# credentials, secrets, tokens & keys
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cert
+*.csr
+*.token
+*.secret
+credentials.json
+secrets.json
+*secret*.json
+*token*.json
+token.json
+tokens.json
+id_rsa*
+id_ed25519*
+id_ecdsa*
+id_dsa*
+*_recovery_codes.txt
+*recovery*codes*.txt
+
 # multi-host sync conflict copies
+CONFLICT_REVIEW_LOG*
 *.sync-conflict-*
 *.conflict
 *-CONFLIT-*

@@ -612,4 +612,96 @@ describe("metadata & manifest parity", () => {
     expect(readmeEn).toContain("[CONTRIBUTING.md](./CONTRIBUTING.md)");
     expect(readmeDe).toContain("[CONTRIBUTING.md](./CONTRIBUTING.md)");
   });
+
+  it("ensures dependency overrides protect against supply-chain CVEs in package.json", () => {
+    expect(packageJson.overrides["fast-uri"]).toBe("^3.1.8");
+    expect(packageJson.overrides["ip-address"]).toBe("^10.7.2");
+    expect(packageJson.overrides["hono"]).toBe("^4.13.8");
+    expect(packageJson.overrides["@hono/node-server"]).toBe("^2.0.12");
+    expect(packageJson.overrides["qs"]).toBe("^6.16.0");
+  });
+
+  it("ensures .gitignore defends against credentials, secrets, tokens, keys, certs, and conflict review logs", () => {
+    const requiredPatterns = [
+      ".env",
+      ".env.local",
+      ".env.*",
+      ".npmrc",
+      ".pypirc",
+      "*.key",
+      "*.pem",
+      "*.p12",
+      "*.pfx",
+      "*.crt",
+      "*.cert",
+      "*.csr",
+      "*.token",
+      "*.secret",
+      "credentials.json",
+      "secrets.json",
+      "*secret*.json",
+      "*token*.json",
+      "token.json",
+      "tokens.json",
+      "id_rsa*",
+      "id_ed25519*",
+      "id_ecdsa*",
+      "id_dsa*",
+      "*_recovery_codes.txt",
+      "*recovery*codes*.txt",
+      "CONFLICT_REVIEW_LOG*",
+    ];
+    for (const pat of requiredPatterns) {
+      expect(gitignore).toContain(pat);
+    }
+  });
+
+  it("ensures binding 30-day remediation SLA commitment (INV-SLA-10) in SECURITY.md and Level 1 SBOM", () => {
+    expect(securityMd).toContain("remediating confirmed vulnerabilities within 30 calendar days (`INV-SLA-10`)");
+    expect(securityMd).toContain("bestätigte Sicherheitslücken innerhalb von 30 Kalendertagen zu beheben (`INV-SLA-10`)");
+
+    const thirdPartyMd = fs.readFileSync(path.join(root, "THIRD_PARTY_LICENSES.md"), "utf-8");
+    expect(thirdPartyMd).toContain("Re-Audit (Security & Dependency Audit):");
+    expect(thirdPartyMd).toContain("30-day remediation SLA");
+
+    const thirdPartyTxt = fs.readFileSync(path.join(root, "THIRD_PARTY_LICENSES.txt"), "utf-8");
+    expect(thirdPartyTxt).toContain("30-day remediation SLA");
+  });
+
+  it("ensures zero hardcoded secrets and personal developer paths across tracked source files", () => {
+    const srcDir = path.join(root, "src");
+    const scanDir = (dir: string): string[] => {
+      let results: string[] = [];
+      const list = fs.readdirSync(dir);
+      for (const file of list) {
+        const full = path.join(dir, file);
+        const stat = fs.statSync(full);
+        if (stat.isDirectory()) {
+          results = results.concat(scanDir(full));
+        } else if (file.endsWith(".ts") || file.endsWith(".js") || file.endsWith(".json")) {
+          results.push(full);
+        }
+      }
+      return results;
+    };
+
+    const files = scanDir(srcDir);
+    expect(files.length).toBeGreaterThan(0);
+
+    const secretRegex = /(?:sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{30,}|AKIA[0-9A-Z]{16}|-----BEGIN (?:RSA |EC )?PRIVATE KEY-----)/;
+    const personalPathRegex = /C:[/\\]Users[/\\]lukas[/\\](?!(?:CLAUDE\.md|GEMINI\.md|_Local_DEV))/;
+
+    for (const f of files) {
+      const content = fs.readFileSync(f, "utf-8");
+      expect(content).not.toMatch(secretRegex);
+      expect(content).not.toMatch(personalPathRegex);
+    }
+  });
+
+  it("ensures CHANGELOG.md and MARKETING-LOG.txt document AI Security and Dependency Audit milestone 2026-10-03", () => {
+    const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf-8");
+    const marketingLog = fs.readFileSync(path.join(root, "MARKETING-LOG.txt"), "utf-8");
+    expect(changelog).toContain("AI Security, Supply-Chain & Dependency Audit (0 Vulnerabilities)");
+    expect(marketingLog).toContain("AI Security, Supply-Chain & Dependency Audit (0 Vulnerabilities)");
+  });
 });

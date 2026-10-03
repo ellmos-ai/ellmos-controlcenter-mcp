@@ -48,7 +48,7 @@ If you discover a security vulnerability, please report it privately via GitHub 
 - **Maintainer:** [support@lukasgeiger.com](mailto:support@lukasgeiger.com)
 - **Maintainer:** [lukas@open-bricks.org](mailto:lukas@open-bricks.org)
 
-We acknowledge receipt of vulnerability reports within 48 hours, provide a preliminary triage assessment within 5 business days, and coordinate remediation steps prior to public disclosure.
+We acknowledge receipt of vulnerability reports within 48 hours, provide a preliminary triage assessment within 5 business days, and commit to remediating confirmed vulnerabilities within 30 calendar days (`INV-SLA-10`).
 
 ### Supported Versions
 
@@ -57,7 +57,7 @@ We acknowledge receipt of vulnerability reports within 48 hours, provide a preli
 | 0.7.x | :white_check_mark: Supported | Active release branch |
 | < 0.7.0 | :x: Unsupported | Deprecated alpha releases |
 
-3. **Issue Tracker (Non-Sensitive Only):** [GitHub Issues](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/issues)
+- **Public Issue Tracker (Non-Sensitive Only):** [GitHub Issues](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/issues)
 
 ---
 
@@ -100,7 +100,7 @@ Sicherheitsrelevante Schwachstellen melden Sie bitte vertraulich über die GitHu
 - **Maintainer:** [support@lukasgeiger.com](mailto:support@lukasgeiger.com)
 - **Maintainer:** [lukas@open-bricks.org](mailto:lukas@open-bricks.org)
 
-Wir bestätigen den Eingang von Meldungen innerhalb von 48 Stunden, liefern innerhalb von 5 Werktagen eine vorläufige Triage-Einschätzung und stimmen Behebungsmaßnahmen vor einer Veröffentlichung ab.
+Wir bestätigen den Eingang von Meldungen innerhalb von 48 Stunden, liefern innerhalb von 5 Werktagen eine vorläufige Triage-Einschätzung und verpflichten uns, bestätigte Sicherheitslücken innerhalb von 30 Kalendertagen zu beheben (`INV-SLA-10`).
 
 ### Unterstützte Versionen
 
@@ -109,5 +109,5 @@ Wir bestätigen den Eingang von Meldungen innerhalb von 48 Stunden, liefern inne
 | 0.7.x | :white_check_mark: Ja | Aktiver Release-Zweig |
 | < 0.7.0 | :x: Nein | Veraltete Alpha-Versionen |
 
-3. **Öffentlicher Issue Tracker (nur unkritische Fragen):** [GitHub Issues](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/issues)
+- **Öffentlicher Issue Tracker (nur unkritische Fragen):** [GitHub Issues](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/issues)
 
