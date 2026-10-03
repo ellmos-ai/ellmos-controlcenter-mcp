@@ -95,6 +95,10 @@ ellmos-controlcenter-dashboard
 
 Default dashboard URL: http://127.0.0.1:3737
 
+## Optional Process Maintenance
+
+- [Zombie Killer Tray](https://github.com/dev-bricks/zombie-killer-tray): Optional Windows tool for checking orphaned MCP processes. ControlCenter is a configured candidate when launched through the supported `node_modules/ellmos-controlcenter-mcp/dist/index.js` entrypoint; additional process and apply checks still apply.
+
 ## Audience
 
 - Developers managing local MCP stacks who want visibility without manual JSON editing

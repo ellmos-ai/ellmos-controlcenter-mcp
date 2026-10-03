@@ -849,6 +849,7 @@ Our partner organization **[open-bricks](https://github.com/open-bricks)** bundl
 | [DevCenter](https://github.com/dev-bricks/DevCenter) | `open-bricks` / `dev-bricks` | Developer productivity center and workspace manager |
 | [CodeBox](https://github.com/dev-bricks/CodeBox) | `open-bricks` / `dev-bricks` | Sandboxed script execution and multi-language scratchpad |
 | [system-gap-master](https://github.com/dev-bricks/system-gap-master) | `open-bricks` / `dev-bricks` | System gap discovery, test gap analysis & contract validation |
+| [Zombie Killer Tray](https://github.com/dev-bricks/zombie-killer-tray) | `dev-bricks` | Optional Windows tool for checking orphaned MCP processes. ControlCenter is a configured candidate when launched through the supported `node_modules/ellmos-controlcenter-mcp/dist/index.js` entrypoint; all additional process and apply checks still apply |
 
 ### Statutory Notice & Liability Disclaimer (§ 521 BGB)
 
