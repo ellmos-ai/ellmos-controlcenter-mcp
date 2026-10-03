@@ -858,6 +858,7 @@ Unsere Partnerorganisation **[open-bricks](https://github.com/open-bricks)** bü
 | [DevCenter](https://github.com/dev-bricks/DevCenter) | `open-bricks` / `dev-bricks` | Entwickler-Produktivitätszentrum und Workspace-Manager |
 | [CodeBox](https://github.com/dev-bricks/CodeBox) | `open-bricks` / `dev-bricks` | Sandbox-Skriptausführung und mehrsprachiges Scratchpad |
 | [system-gap-master](https://github.com/dev-bricks/system-gap-master) | `open-bricks` / `dev-bricks` | Systemlücken-Erkennung, Testlücken-Analyse & Kontrakt-Validierung |
+| [Zombie Killer Tray](https://github.com/dev-bricks/zombie-killer-tray) | `dev-bricks` | Optionales Windows-Werkzeug zur Prüfung verwaister MCP-Prozesse. ControlCenter ist beim Start über den unterstützten Einstiegspunkt `node_modules/ellmos-controlcenter-mcp/dist/index.js` ein konfigurierter Kandidat; alle weiteren Prozess- und Apply-Schutzprüfungen gelten weiterhin |
 
 ### Gesetzlicher Hinweis & Haftungsausschluss (§ 521 BGB)
 
