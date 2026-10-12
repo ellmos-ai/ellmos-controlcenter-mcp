@@ -158,3 +158,8 @@ ellmos-controlcenter-mcp
 - `test/controlroom.test.ts`, `test/catalog.test.ts`, `test/toolCatalog.test.ts`, `test/mcpCatalog.test.ts`, `test/semanticRouting.test.ts`, and `test/metadata.test.ts`: unit and integration coverage for the host-register bridge, canonical policy-registry validation, exact scalar governance allowlists, catalog, profiles, bundles, bounded tool scans, SSE header forwarding, versioned capability tags, strict map validation, deployed-only endpoint verification, deterministic collision handling, semantic-route validation, and metadata contract suites (257 tests passing in the full suite).
 
 ## Last-checked: 2026-09-29
+
+## Related projects
+
+- [COMA](https://github.com/ellmos-ai/coma): Local file-based agent-job coordination and agent-process startup/status (a separate project).
+- [agent-ops-stack](https://github.com/ellmos-ai/agent-ops-stack): Manifest-based Git fetch blueprint; its manifest lists ControlCenter as module `controlcenter-mcp` with the declared `control-plane` label. Follow ControlCenter's setup instructions.

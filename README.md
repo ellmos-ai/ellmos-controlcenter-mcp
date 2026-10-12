@@ -827,6 +827,8 @@ This MCP server is part of the **[ellmos-ai](https://github.com/ellmos-ai)** eco
 | [MarbleRun](https://github.com/ellmos-ai/MarbleRun) | Autonomous agent chain framework for Claude Code |
 | [gardener](https://github.com/ellmos-ai/gardener) | Minimalist database-driven LLM OS prototype (4 functions, 1 table) |
 | [ellmos-tests](https://github.com/ellmos-ai/ellmos-tests) | Testing framework for LLM operating systems (7 dimensions) |
+| [COMA](https://github.com/ellmos-ai/coma) | Local file-based agent-job coordination and agent-process startup/status (a separate project). |
+| [agent-ops-stack](https://github.com/ellmos-ai/agent-ops-stack) | Manifest-based Git fetch blueprint; its manifest lists ControlCenter as module `controlcenter-mcp` with the declared `control-plane` label. Follow ControlCenter's setup instructions. |
 
 ### Open-Science & Research
 
