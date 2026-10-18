@@ -1,7 +1,7 @@
 # Third-Party Licenses & Level 1 SBOM
 
-Last checked: 2026-10-03 against npm metadata (Baseline: 2026-09-29).
-Audited: Stand: 2026-10-03 (Initial: 2026-09-29) against Level 1 SBOM and runtime invariants.
+Last checked: 2026-10-18 against npm metadata (Baseline: 2026-09-29).
+Audited: Stand: 2026-10-18 (Initial: 2026-09-29) against Level 1 SBOM and runtime invariants.
 
 Scope: direct runtime dependencies declared in `package.json`, transitive
 overrides, and development/testing tooling. This inventory provides a direct
@@ -29,7 +29,7 @@ Copyright (c) 2026 Lukas Geiger, ellmos-ai family under open-bricks umbrella.
 
 | Package | Ecosystem | Version / Range | License | Role & Purpose |
 |---|---|---:|---|---|
-| @modelcontextprotocol/sdk | Node / npm | ^1.0.0 | MIT | Model Context Protocol TypeScript SDK (stdio transport, JSON-RPC handling, server and client interfaces) |
+| @modelcontextprotocol/sdk | Node / npm | ^1.31.0 | MIT | Model Context Protocol TypeScript SDK (stdio transport, JSON-RPC handling, server and client interfaces) |
 | zod | Node / npm | ^3.23.8 | MIT | TypeScript-first schema declaration and runtime validation with static type inference |
 
 ## Transitive & Managed Override Dependencies
