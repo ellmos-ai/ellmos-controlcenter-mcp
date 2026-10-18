@@ -24,12 +24,12 @@ All contributions must strictly uphold our core architectural invariants:
 9. **Cloud-Sync Conflict Hardening (`INV-SYNC-09`)**: Hardened `.gitignore` defense preventing cloud-sync collisions (`*-WORKSTATION*`, `*-IDEAPAD*`, `*conflicted copy*`) and multi-agent coordination locks (`LOCK*`, `LOCK.user.*`, `LOCK.until.*`, `LOCK.condition.*`).
 10. **Bilingual Security SLA (`INV-SLA-10`)**: Binding 48-hour response confirmation, 5-business-day triage assessment, and coordinated vulnerability remediation via `security@open-bricks.org` and `security@ellmos.ai`.
 
-### 2. Plan D Local Development Workflow
+### 2. Local Development Workflow
 
-In accordance with our repository architecture (Plan D), the canonical local git repository serves as the authoritative **Source of Truth** (`C:\_Local_DEV\repos\ellmos-controlcenter-mcp`). Development, testing, and commits must take place exclusively in the local clone.
+The GitHub repository linked above is the authoritative source. Work in your own clone or fork, build and run the test suite locally, and open a pull request from a topic branch.
 
 ```bash
-# Clone the canonical repository
+# Clone the repository
 git clone https://github.com/ellmos-ai/ellmos-controlcenter-mcp.git
 cd ellmos-controlcenter-mcp
 
@@ -43,7 +43,7 @@ npm run build
 npm test
 ```
 
-### 3. Version Freeze Discipline (`T-20260920-167562623`)
+### 3. Version Freeze Discipline
 
 `ellmos-controlcenter-mcp` operates under strict version-freeze discipline. Version `0.7.4` in `package.json`, `package-lock.json`, `server.json`, `glama.json`, and documentation badges must not be incremented without explicit release authorization. All technical hygiene, documentation updates, and workflow additions are documented under `## [Unreleased]` in `CHANGELOG.md`.
 
@@ -87,12 +87,12 @@ Alle Beiträge müssen unsere verbindlichen Kern-Invarianten strikt einhalten:
 9. **Cloud-Sync Konflikt- & Lock-Schutz (`INV-SYNC-09`)**: Gehärtete `.gitignore` gegen Cloud-Sync-Konfliktdateien (`*-WORKSTATION*`, `*-IDEAPAD*`, `*conflicted copy*`) und Multi-Agenten-Locks (`LOCK*`, `LOCK.user.*`, `LOCK.until.*`, `LOCK.condition.*`).
 10. **Zweisprachige Sicherheits-SLA (`INV-SLA-10`)**: Verbindliche 48-Stunden-Erstantwortgarantie, 5-Werktage-Triage-Zusage und koordinierte Behebung von Sicherheitsmeldungen über `security@open-bricks.org` und `security@ellmos.ai`.
 
-### 2. Plan D Lokaler Entwicklungsworkflow
+### 2. Lokaler Entwicklungsworkflow
 
-Gemäß unserer Architektur (Plan D) bildet das lokale Git-Repository die alleinige maßgebliche **Source of Truth** (`C:\_Local_DEV\repos\ellmos-controlcenter-mcp`). Entwicklung, Tests und Commits finden ausschließlich im kanonischen lokalen Klon statt.
+Maßgeblich ist das oben verlinkte GitHub-Repository. Arbeite in deinem eigenen Klon oder Fork, baue und teste lokal und stelle den Pull Request aus einem Themenbranch.
 
 ```bash
-# Kanonischen Klon verwenden
+# Repository klonen
 git clone https://github.com/ellmos-ai/ellmos-controlcenter-mcp.git
 cd ellmos-controlcenter-mcp
 
@@ -106,7 +106,7 @@ npm run build
 npm test
 ```
 
-### 3. Version Freeze Discipline (`T-20260920-167562623`)
+### 3. Version Freeze Discipline
 
 `ellmos-controlcenter-mcp` unterliegt einer strikten Versions-Freeze-Disziplin. Die Version `0.7.4` in `package.json`, `package-lock.json`, `server.json`, `glama.json` und Dokumentations-Badges darf ohne ausdrückliche Freigabe nicht erhöht werden. Alle technischen Hygiene-Änderungen und Dokumentationserweiterungen werden unter `## [Unreleased]` in `CHANGELOG.md` erfasst.
 
