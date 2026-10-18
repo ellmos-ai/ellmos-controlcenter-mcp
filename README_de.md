@@ -15,8 +15,8 @@
 [![Attribution: NOTICE](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
 [![Mitwirken: Leitfaden](https://img.shields.io/badge/Mitwirken-Leitfaden-blue.svg)](CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-267%20passed-brightgreen.svg)](https://vitest.dev/)
-[![Verified: 2026-09-29](https://img.shields.io/badge/verified-2026--09--29-blue.svg)](CHANGELOG.md)
+[![Vitest](https://img.shields.io/badge/Vitest-279%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Verified: 2026-10-18](https://img.shields.io/badge/verified-2026--10--18-blue.svg)](CHANGELOG.md)
 [![Level 1 SBOM](https://img.shields.io/badge/Level%201%20SBOM-Plain%20Text%20Auditiert-blue.svg)](THIRD_PARTY_LICENSES.txt)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
@@ -104,7 +104,7 @@ graph TD
     end
     
     subgraph Storage ["Lokales System & Umgebung"]
-        C -->|Scanned| S1["Lokale Repos (C:\_Local_DEV\repos)"]
+        C -->|Scanned| S1["Lokale Repo-Klone (konfigurierter Root)"]
         D -->|Liest / Löst auf| S2["Claude-Profile (~/.claude/profiles)"]
         E -->|Lädt & Mapped| S3["Capability-Bundles (data/capability-bundles.json)"]
         F -->|stdio Probes| S4["Lokale & Profil-MCP-Server"]
@@ -813,22 +813,21 @@ Dieser MCP-Server ist Teil des **[ellmos-ai](https://github.com/ellmos-ai)**-Ök
 
 | Server | Tools | Fokus | npm |
 |--------|-------|-------|-----|
-| [FileCommander](https://github.com/ellmos-ai/ellmos-filecommander-mcp) | 47 | Dateisystem, Prozessverwaltung, interaktive Sitzungen, Cloud-Lock-sichere Operationen | [`ellmos-filecommander-mcp`](https://www.npmjs.com/package/ellmos-filecommander-mcp) |
-| [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 22 | Code-Analyse, JSON-Reparatur, Imports, Diffs, Regex | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
+| [FileCommander](https://github.com/ellmos-ai/ellmos-filecommander-mcp) | 50 | Dateisystem, Prozessverwaltung, interaktive Sitzungen, Cloud-Lock-sichere Operationen | [`ellmos-filecommander-mcp`](https://www.npmjs.com/package/ellmos-filecommander-mcp) |
+| [CodeCommander](https://github.com/ellmos-ai/ellmos-codecommander-mcp) | 23 | Code-Analyse, JSON-Reparatur, Imports, Diffs, Regex | [`ellmos-codecommander-mcp`](https://www.npmjs.com/package/ellmos-codecommander-mcp) |
 | [Clatcher](https://github.com/ellmos-ai/ellmos-clatcher-mcp) | 12 | Dateireparatur, Formatkonvertierung, Batch-Operationen | [`ellmos-clatcher-mcp`](https://www.npmjs.com/package/ellmos-clatcher-mcp) |
 | [n8n Manager](https://github.com/ellmos-ai/n8n-manager-mcp) | 19 | n8n-Workflow-Verwaltung über KI-Assistenten | [`n8n-manager-mcp`](https://www.npmjs.com/package/n8n-manager-mcp) |
 | **[ControlCenter](https://github.com/ellmos-ai/ellmos-controlcenter-mcp)** | **34** | **MCP-Stack-, Tool- und Skill-Discovery; Profilauflösung und Audit; rein lesende Host-Register für Sperren, Rechte, Entscheidungen, Policies, Pläne und Ressourcen** | **[`ellmos-controlcenter-mcp`](https://www.npmjs.com/package/ellmos-controlcenter-mcp)** |
-| [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 45 | Local-first LLM-Gedächtnis, Wissen, Zustand, Routing, Schwarm-Orchestrierung | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
+| [Homebase](https://github.com/ellmos-ai/ellmos-homebase-mcp) | 51 | Local-first LLM-Gedächtnis, Wissen, Zustand, Routing, Schwarm-Orchestrierung | [`ellmos-homebase-mcp`](https://www.npmjs.com/package/ellmos-homebase-mcp) (alpha) |
 | [ServerCommander](https://github.com/ellmos-ai/ellmos-servercommander-mcp) | 8 | Server-Operationen: Health-Checks, Log-Analyse, Deploy-Dry-Runs, Mail-Diagnose | [`ellmos-servercommander-mcp`](https://www.npmjs.com/package/ellmos-servercommander-mcp) (alpha) |
-| [Blender Use](https://github.com/ellmos-ai/ellmos-blender-use-mcp) | 3 | Headless Blender-Asset-QA und FBX-Reimport-Verifikation | [`ellmos-blender-use-mcp`](https://www.npmjs.com/package/ellmos-blender-use-mcp) (alpha) |
-| [Open Compute](https://github.com/ellmos-ai/open-compute-mcp) | 10 | Modell-agnostischer Computer-Use: Capture, safety-gated Aktionen, Windows-UIA | [`open-compute-mcp`](https://www.npmjs.com/package/open-compute-mcp) (alpha) |
+| [Blender Use](https://github.com/ellmos-ai/ellmos-blender-use-mcp) | 4 | Headless Blender-Asset-QA und FBX-Reimport-Verifikation | [`ellmos-blender-use-mcp`](https://www.npmjs.com/package/ellmos-blender-use-mcp) (alpha) |
+| [Open Compute](https://github.com/ellmos-ai/open-compute-mcp) | 19 | Modell-agnostischer Computer-Use: Capture, safety-gated Aktionen, Windows-UIA | [`open-compute-mcp`](https://www.npmjs.com/package/open-compute-mcp) (alpha) |
 
 ### KI-Infrastruktur
 
 | Projekt | Beschreibung |
 |---------|-------------|
 | [BACH](https://github.com/ellmos-ai/bach) | Local-first textbasiertes OS für LLM-Agenten — 113+ Handler, 550+ Tools, SQLite-Memory |
-| [workflowhooker-provenance](https://github.com/ellmos-ai/workflowhooker-provenance) | Local-first Lifecycle-Hooks, Scope-Leitplanken & Laufzeit-Provenienz |
 | [open-compute](https://github.com/ellmos-ai/open-compute) | Modell-agnostischer Computer-Use-Kern hinter Open Compute MCP |
 | [clutch](https://github.com/ellmos-ai/clutch) | Provider-neutrale LLM-Orchestrierung mit Auto-Routing und Budget-Tracking |
 | [rinnsal](https://github.com/ellmos-ai/rinnsal) | Leichte Agent-Memory-, Connector- und Automatisierungsinfrastruktur |
@@ -843,7 +842,7 @@ Dieser MCP-Server ist Teil des **[ellmos-ai](https://github.com/ellmos-ai)**-Ök
 
 | Projekt | Ökosystem | Fokus |
 |---|---|---|
-| [build-your-users-mind](https://github.com/research-line/build-your-users-mind) | `research-line` | Open-Science Rekonstruktion mentaler Nutzermodelle & Kognitionsframework |
+| [build-your-users-mind](https://github.com/ellmos-ai/build-your-users-mind) | `ellmos-ai` | Open-Science Rekonstruktion mentaler Nutzermodelle & Kognitionsframework |
 
 ### Desktop-Software & Begleitwerkzeuge
 
@@ -851,12 +850,9 @@ Unsere Partnerorganisation **[open-bricks](https://github.com/open-bricks)** bü
 
 | Projekt | Ökosystem | Fokus |
 |---|---|---|
-| [ProFiler](https://github.com/open-bricks/ProFiler) | `open-bricks` / `file-bricks` | Erweiterte Dateiverwaltung, Prüfsummen, Duplikatserkennung und Batch-Operationen |
-| [lock-master](https://github.com/file-bricks/lock-master) | `open-bricks` / `file-bricks` | Local-first Multi-Agenten-Projektsperren und Rechte-Governance |
-| [DokuZen](https://github.com/open-bricks/DokuZen) | `open-bricks` / `doc-bricks` | Dokumentenverwaltung, Textextraktion, OCR und PDF-Verarbeitung |
+| [ProFiler](https://github.com/file-bricks/ProFiler) | `open-bricks` / `file-bricks` | Erweiterte Dateiverwaltung, Prüfsummen, Duplikatserkennung und Batch-Operationen |
 | [UniversalDocsGrabber](https://github.com/doc-bricks/UniversalDocsGrabber) | `open-bricks` / `doc-bricks` | Universelle Dokumenten-Erfassung, Batch-Ingestion, OCR & Textnormalisierung |
 | [safe-start-for-codex](https://github.com/dev-bricks/safe-start-for-codex) | `open-bricks` / `dev-bricks` | Lokaler Laufzeit-Wächter und Umgebungsvalidator für KI-Coding-Agenten |
-| [automation-master](https://github.com/dev-bricks/automation-master) | `open-bricks` / `dev-bricks` | Multi-Agenten-Koordination und Hintergrund-Automationsengine |
 | [DevCenter](https://github.com/dev-bricks/DevCenter) | `open-bricks` / `dev-bricks` | Entwickler-Produktivitätszentrum und Workspace-Manager |
 | [CodeBox](https://github.com/dev-bricks/CodeBox) | `open-bricks` / `dev-bricks` | Sandbox-Skriptausführung und mehrsprachiges Scratchpad |
 | [system-gap-master](https://github.com/dev-bricks/system-gap-master) | `open-bricks` / `dev-bricks` | Systemlücken-Erkennung, Testlücken-Analyse & Kontrakt-Validierung |
