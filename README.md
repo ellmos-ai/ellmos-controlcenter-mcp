@@ -771,7 +771,6 @@ Full SPDX license texts, copyright notices, and compliance attestations are docu
 | Contributing | [CONTRIBUTING.md](./CONTRIBUTING.md) |
 | Notice & attribution | [NOTICE](./NOTICE) |
 | Third-party licenses | [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) |
-| Marketing & discoverability | [MARKETING-LOG.txt](./MARKETING-LOG.txt) |
 | LLM crawler summary | [llms.txt](./llms.txt) |
 
 <a id="sec-16"></a>

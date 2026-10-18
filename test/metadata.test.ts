@@ -452,6 +452,20 @@ describe("metadata & manifest parity", () => {
     expect(packageJson.files).not.toContain("MARKETING-LOG.txt");
   });
 
+  it("keeps relative documentation links in READMEs and llms.txt resolvable", () => {
+    const documents: Array<[string, string]> = [
+      ["README.md", readmeEn],
+      ["README_de.md", readmeDe],
+      ["llms.txt", llmsTxt],
+    ];
+    for (const [name, text] of documents) {
+      const targets = [...text.matchAll(/\]\(\.\/([^)#\s]+)[^)]*\)/g)].map((match) => match[1]);
+      for (const target of targets) {
+        expect(fs.existsSync(path.join(root, target)), `${name} links to missing ${target}`).toBe(true);
+      }
+    }
+  });
+
   it("ensures canonical NOTICE attribution exists and is complete", () => {
     expect(notice).toContain("ellmos-controlcenter-mcp");
     expect(notice).toContain("Copyright (c) 2026 Lukas Geiger <lukas@open-bricks.org>");

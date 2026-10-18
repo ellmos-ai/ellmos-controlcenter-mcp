@@ -780,7 +780,6 @@ Vollständige SPDX-Lizenztexte, Urheberrechtshinweise und Compliance-Bestätigun
 | Mitwirken | [CONTRIBUTING.md](./CONTRIBUTING.md) |
 | Notice & Attribution | [NOTICE](./NOTICE) |
 | Drittanbieter-Lizenzen | [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) |
-| Marketing & Auffindbarkeit | [MARKETING-LOG.txt](./MARKETING-LOG.txt) |
 | LLM-Crawler-Zusammenfassung | [llms.txt](./llms.txt) |
 
 <a id="sec-16"></a>
