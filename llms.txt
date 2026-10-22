@@ -144,7 +144,6 @@ ellmos-controlcenter-mcp
 - `CONTRIBUTING.md`: bilingual contributing guidelines, Plan D development workflow, and 10 governance invariants.
 - `THIRD_PARTY_LICENSES.md`: third-party open-source dependency licenses, audit summary, and notices.
 - `THIRD_PARTY_LICENSES.txt`: canonical plain-text Level 1 SBOM companion and runtime invariants.
-- `MARKETING-LOG.txt`: local marketing, discoverability, search phrases, and governance log.
 - `CHANGELOG.md`: version history and release logs.
 - `server.json`: MCP registry metadata.
 - `data/capability-bundles.json`: default capability bundle definitions.

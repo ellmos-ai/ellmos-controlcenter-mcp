@@ -775,12 +775,10 @@ Vollständige SPDX-Lizenztexte, Urheberrechtshinweise und Compliance-Bestätigun
 | Architektur | [ARCHITECTURE.md](./ARCHITECTURE.md) |
 | Roadmap | [ROADMAP.md](./ROADMAP.md) |
 | Entscheidungen | [DECISIONS.md](./DECISIONS.md) |
-| Offene Aufgaben | [TODO.md](./TODO.md) |
 | Änderungen | [CHANGELOG.md](./CHANGELOG.md) |
 | Mitwirken | [CONTRIBUTING.md](./CONTRIBUTING.md) |
 | Notice & Attribution | [NOTICE](./NOTICE) |
 | Drittanbieter-Lizenzen | [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) |
-| Marketing & Auffindbarkeit | [MARKETING-LOG.txt](./MARKETING-LOG.txt) |
 | LLM-Crawler-Zusammenfassung | [llms.txt](./llms.txt) |
 
 <a id="sec-16"></a>

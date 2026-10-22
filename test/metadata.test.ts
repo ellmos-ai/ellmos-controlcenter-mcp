@@ -450,6 +450,29 @@ describe("metadata & manifest parity", () => {
     expect(packageJson.files).toContain("THIRD_PARTY_LICENSES.txt");
     expect(packageJson.files).toContain("NOTICE");
     expect(packageJson.files).not.toContain("MARKETING-LOG.txt");
+
+    // A document can exist in the maintainer checkout yet be absent from npm.
+    // Check both the link target and the package allowlist for public doc links.
+    for (const [name, text] of [["README.md", readmeEn], ["README_de.md", readmeDe]]) {
+      const targets = [...text.matchAll(/\]\(([^)]+)\)/g)]
+        .map((match) => match[1])
+        .filter((target) => !/^(?:[a-z]+:|#|\/\/)/i.test(target))
+        .map((target) => target.split("#")[0].replace(/^\.\//, ""))
+        .filter((target) => /\.(?:md|txt)$/i.test(target) || target === "NOTICE");
+      expect(targets.length, name).toBeGreaterThan(10);
+      for (const target of targets) {
+        expect(fs.existsSync(path.join(root, target)), `${name}: ${target}`).toBe(true);
+        expect(packageJson.files, `${name}: ${target}`).toContain(target);
+      }
+    }
+    const importantFiles = llmsTxt.split("## Important Files")[1]?.split("\n## ")[0];
+    expect(importantFiles).toBeTruthy();
+    const documents = [...(importantFiles ?? "").matchAll(/^- `([^`]+\.(?:md|txt))`:/gm)];
+    expect(documents.length).toBeGreaterThan(5);
+    for (const [, target] of documents) {
+      expect(fs.existsSync(path.join(root, target)), `llms.txt: ${target}`).toBe(true);
+      expect(packageJson.files, `llms.txt: ${target}`).toContain(target);
+    }
   });
 
   it("ensures canonical NOTICE attribution exists and is complete", () => {
