@@ -16,8 +16,8 @@ entire point of this file: a second implementation of the lock rules would drift
 
 What this bridge adds is only *composition* the canonical CLI does not offer:
 
-  * `check-lock` walks a path upwards through its ancestors, because a lock in a parent
-    directory locks everything beneath it. `lock_scan.py` has no path-scoped query.
+  * `check-lock` composes the canonical path-aware lock APIs with ancestor and twin
+    resolution, so scoped locks and worktree/mirror relationships match lock_scan.py.
   * `evaluate-permission` finds the nearest ancestor carrying a permission register.
   * `list-locks` scans the configured roots under a wall-clock budget and reports
     honestly when the budget ran out (a full scan takes minutes over cloud storage).
@@ -50,10 +50,12 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
+import os
 import sqlite3
+import subprocess
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -115,6 +117,72 @@ def _ancestors(target: Path) -> list[Path]:
     return chain
 
 
+def _main_clone_target(lock_utils, target: Path) -> Path | None:
+    """Map a worktree path to the same relative path in its main clone."""
+    main_dir_fn = getattr(lock_utils, "worktree_main_dir", None)
+    if not callable(main_dir_fn):
+        return None
+    anchor = target if target.is_dir() else target.parent
+    main_dir = main_dir_fn(anchor)
+    if main_dir is None:
+        return None
+
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(anchor), "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, timeout=10,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise OSError(f"cannot resolve worktree root for {target}: {exc}") from exc
+    if result.returncode != 0 or not result.stdout.strip():
+        raise OSError(f"cannot resolve worktree root for {target}")
+
+    worktree_root = Path(result.stdout.strip()).resolve()
+    try:
+        relative = target.resolve().relative_to(worktree_root)
+    except (OSError, ValueError) as exc:
+        raise OSError(f"target is outside its resolved worktree: {target}") from exc
+    return Path(main_dir) / relative
+
+
+def _locks_affecting_target(lock_utils, target: Path, now: datetime):
+    """Use the shared path-aware APIs; file queries use the same API per ancestor."""
+    if target.is_dir():
+        active_for_path = getattr(lock_utils, "active_locks_for_path", None)
+        if not callable(active_for_path):
+            raise OSError("canonical lock_utils lacks active_locks_for_path")
+        return active_for_path(target, now)
+
+    affecting = getattr(lock_utils, "active_locks_affecting_target", None)
+    if not callable(affecting):
+        raise OSError("canonical lock_utils lacks active_locks_affecting_target")
+    found = []
+    for directory in _ancestors(target):
+        found.extend(affecting(directory, target, now))
+    return found
+
+
+def _distance_from_target(target: Path, source_dir: Path) -> int:
+    try:
+        source = source_dir.resolve()
+        for distance, directory in enumerate(_ancestors(target)):
+            if directory.resolve() == source:
+                return distance
+    except (OSError, RuntimeError):
+        pass
+    # A main-clone or twin lock is inherited across trees, so keep that visible.
+    return 1
+
+
+def _terminal_twin_dirs(twins) -> list[Path]:
+    """Keep each mapped subpath, not only the final twin in a multi-twin result."""
+    return [
+        Path(twin) for twin in twins
+        if not any(Path(twin) in Path(other).parents for other in twins if other != twin)
+    ]
+
+
 def _describe_lock(lock_utils, lock_path: Path, scope: str, is_legacy: bool,
                    directory: Path, distance: int) -> dict:
     """Render one lock using only canonical accessors."""
@@ -158,7 +226,8 @@ def _twin_config(scripts_dir: Path):
 
 def cmd_check_lock(args) -> dict:
     """Is this path locked, counting locks inherited from any parent directory?"""
-    lock_utils, _ = _load_canonical(Path(args.scripts_dir))
+    scripts_dir = Path(args.scripts_dir)
+    lock_utils, _ = _load_canonical(scripts_dir)
     target = Path(args.path)
 
     if not target.exists():
@@ -174,40 +243,99 @@ def cmd_check_lock(args) -> dict:
             "locks": [],
         }
 
-    found: list[dict] = []
+    try:
+        target = target.resolve()
+    except (OSError, RuntimeError):
+        return {
+            "schema": SCHEMA,
+            "command": "check-lock",
+            "path": str(target),
+            "verdict": "unknown",
+            "safe_to_proceed": False,
+            "reason": "path does not exist or is not readable",
+            "locks": [],
+        }
+
+    found: dict[str, dict] = {}
     errors: list[str] = []
-    twin_cfg = _twin_config(Path(args.scripts_dir))
-    for distance, directory in enumerate(_ancestors(target)):
-        # Der Zwilling im jeweils anderen Baum zaehlt mit (Zwei-Baeume-Regel,
-        # T-20260913-785936980): ein Klon und sein OneDrive-Spiegel binden
-        # einander. Frisch geklonte Repos koennen den unversionierten
-        # LOCK.user.* gar nicht enthalten -- ohne diesen Schritt liest man
-        # dort aus einer leeren Stelle ein "clear".
-        directories = [directory]
-        if twin_cfg is not None and hasattr(lock_utils, "twin_dirs_for_path"):
-            twins, twin_status = lock_utils.twin_dirs_for_path(directory, twin_cfg)
-            if twin_status in ("index-missing", "pointer-unreadable"):
-                # Fail-closed wie ueberall in diesem Modul: eine Stelle, die
-                # nicht gelesen werden konnte, ist kein Beweis fuer Abwesenheit.
-                errors.append(
-                    f"{directory}: twin resolution {twin_status} -- a lock on the "
-                    f"other tree would be invisible"
-                )
-                continue
-            directories.extend(twins)
-        for source_dir in directories:
-            try:
-                active = lock_utils.active_locks(source_dir)
-            except OSError as exc:
-                errors.append(f"{source_dir}: {exc}")
-                continue
-            for name, scope, is_legacy in active:
-                entry = _describe_lock(
-                    lock_utils, source_dir / name, scope, is_legacy, source_dir, distance
-                )
-                if source_dir != directory:
-                    entry["from_twin"] = True
-                found.append(entry)
+
+    now = datetime.now(timezone.utc)
+    twin_cfg = _twin_config(scripts_dir)
+    try:
+        main_target = _main_clone_target(lock_utils, target)
+    except (OSError, ValueError, RuntimeError, AttributeError, subprocess.SubprocessError) as exc:
+        main_target = None
+        errors.append(f"{target}: worktree mapping failed: {exc}")
+
+    query_targets = [target]
+    if main_target is not None:
+        query_targets.append(main_target)
+
+    # active_locks_for_path handles directory ancestors and a linked worktree's
+    # main clone. For a file target, check its ancestors with the shared
+    # target-aware helper so a protected sibling does not lock the parent query.
+    primary_targets = [target]
+    if not target.is_dir() and main_target is not None:
+        primary_targets.append(main_target)
+
+    def collect(query_target: Path, *, from_twin: bool = False) -> None:
+        try:
+            active = _locks_affecting_target(lock_utils, query_target, now)
+        except (OSError, ValueError, RuntimeError, AttributeError, subprocess.SubprocessError) as exc:
+            errors.append(f"{query_target}: {exc}")
+            return
+        for name, scope, is_legacy, source_dir in active:
+            source_dir = Path(source_dir)
+            distance = _distance_from_target(query_target, source_dir)
+            entry = _describe_lock(
+                lock_utils, source_dir / name, scope, is_legacy, source_dir, distance
+            )
+            if from_twin:
+                entry["from_twin"] = True
+            key = os.path.normcase(str(source_dir / name)).casefold()
+            previous = found.get(key)
+            if previous is None or distance < int(previous["distance"]):
+                found[key] = entry
+
+    for query_target in primary_targets:
+        collect(query_target)
+
+    if twin_cfg is not None:
+        twin_dirs_fn = getattr(lock_utils, "twin_dirs_for_path", None)
+        if not callable(twin_dirs_fn):
+            errors.append("canonical lock_utils lacks twin_dirs_for_path")
+        else:
+            checked_twin_targets: set[str] = set()
+            for query_target in query_targets:
+                for directory in _ancestors(query_target):
+                    try:
+                        twins, twin_status = twin_dirs_fn(directory, twin_cfg)
+                    except (OSError, ValueError, RuntimeError) as exc:
+                        errors.append(f"{directory}: twin resolution failed: {exc}")
+                        continue
+                    if twin_status in ("index-missing", "pointer-unreadable"):
+                        errors.append(
+                            f"{directory}: twin resolution {twin_status} -- a lock on the "
+                            f"other tree would be invisible"
+                        )
+                        continue
+                    if not twins:
+                        continue
+                    try:
+                        relative = query_target.resolve().relative_to(directory.resolve())
+                    except (OSError, ValueError, RuntimeError) as exc:
+                        errors.append(f"{directory}: cannot map target into twin: {exc}")
+                        continue
+                    # twin_dirs_for_path returns roots followed by mapped
+                    # subpaths. Keep every terminal mapping because multiple
+                    # registered mirrors may all carry an active lock.
+                    for twin_dir in _terminal_twin_dirs(twins):
+                        mapped_target = twin_dir / relative
+                        key = os.path.normcase(str(mapped_target)).casefold()
+                        if key in checked_twin_targets:
+                            continue
+                        checked_twin_targets.add(key)
+                        collect(mapped_target, from_twin=True)
 
     if errors:
         # Part of the ancestor chain could not be read, so absence of a lock is not
@@ -218,9 +346,9 @@ def cmd_check_lock(args) -> dict:
             "path": str(target),
             "verdict": "unknown",
             "safe_to_proceed": False,
-            "reason": "part of the ancestor chain could not be read",
+            "reason": "part of the lock path or twin chain could not be read",
             "errors": errors,
-            "locks": found,
+            "locks": list(found.values()),
         }
 
     verdict = "locked" if found else "clear"
@@ -231,7 +359,7 @@ def cmd_check_lock(args) -> dict:
         "verdict": verdict,
         "safe_to_proceed": verdict == "clear",
         "lock_count": len(found),
-        "locks": found,
+        "locks": list(found.values()),
     }
 
 
