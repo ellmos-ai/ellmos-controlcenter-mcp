@@ -133,7 +133,7 @@ def _main_clone_target(lock_utils, target: Path) -> Path | None:
     try:
         result = subprocess.run(
             ["git", "-C", str(anchor), "rev-parse", "--show-toplevel"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True, text=True, encoding="utf-8", timeout=10,
             creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
         )
     except (OSError, subprocess.SubprocessError) as exc:

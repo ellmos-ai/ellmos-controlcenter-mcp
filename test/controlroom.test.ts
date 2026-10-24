@@ -935,6 +935,44 @@ it.skipIf(!CANDIDATE_LOCK_MASTER_ROOT)(
   }, 360_000
 );
 
+it("maps real Unicode worktrees with Python UTF-8 mode disabled", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-worktree-encoding-"));
+  const mainClone = path.join(root, "main-clone");
+  await fs.mkdir(path.join(mainClone, "protected"), { recursive: true });
+  await fs.writeFile(path.join(mainClone, "protected", "tracked.txt"), "fixture", "utf-8");
+  execFileSync("git", ["init", "--quiet", mainClone]);
+  execFileSync("git", ["-C", mainClone, "-c", "user.name=fixture", "-c",
+    "user.email=fixture@example.invalid", "add", "--all"]);
+  execFileSync("git", ["-C", mainClone, "-c", "user.name=fixture", "-c",
+    "user.email=fixture@example.invalid", "commit", "--quiet", "-m", "fixture"]);
+  const python = resolveControlroomConfig(EMPTY_ENV).python;
+  const script = [
+    "import importlib.util, json, sys",
+    "from pathlib import Path",
+    "from types import SimpleNamespace",
+    "spec = importlib.util.spec_from_file_location('bridge_encoding_fixture', sys.argv[1])",
+    "bridge = importlib.util.module_from_spec(spec)",
+    "spec.loader.exec_module(bridge)",
+    "helper = SimpleNamespace(worktree_main_dir=lambda _: Path(sys.argv[2]))",
+    "print(json.dumps(str(bridge._main_clone_target(helper, Path(sys.argv[3])))))"
+  ].join("\n");
+  for (const name of ["linked-ascii", "linked-ü"]) {
+    const worktree = path.join(root, name);
+    execFileSync("git", ["-C", mainClone, "worktree", "add", "--detach", "--quiet", worktree]);
+    for (const mode of ["0", "1"]) {
+      const result = spawnSync(python, ["-X", `utf8=${mode}`, "-c", script,
+        path.resolve("scripts/controlroom_bridge.py"), mainClone, path.join(worktree, "protected")], {
+        encoding: "utf-8", windowsHide: true,
+        env: { ...process.env, PYTHONIOENCODING: "utf-8" }
+      });
+      expect(result.error, `${name}, utf8=${mode}`).toBeUndefined();
+      expect(result.status, result.stderr).toBe(0);
+      expect(JSON.parse(result.stdout)).toBe(path.join(mainClone, "protected"));
+    }
+  }
+});
+
+
 describe.skipIf(!HAS_CANONICAL)("controlroom against the canonical lock modules", () => {
   const config = () => ({ ...resolveControlroomConfig(EMPTY_ENV), scriptsDir: CANONICAL_SCRIPTS });
 
