@@ -126,6 +126,9 @@ def _main_clone_target(lock_utils, target: Path) -> Path | None:
     main_dir = main_dir_fn(anchor)
     if main_dir is None:
         return None
+    main_dir = Path(main_dir)
+    if not main_dir.is_dir():
+        raise OSError(f"resolved main clone does not exist: {main_dir}")
 
     try:
         result = subprocess.run(
@@ -143,7 +146,7 @@ def _main_clone_target(lock_utils, target: Path) -> Path | None:
         relative = target.resolve().relative_to(worktree_root)
     except (OSError, ValueError) as exc:
         raise OSError(f"target is outside its resolved worktree: {target}") from exc
-    return Path(main_dir) / relative
+    return main_dir / relative
 
 
 def _locks_affecting_target(lock_utils, target: Path, now: datetime):
@@ -312,15 +315,18 @@ def cmd_check_lock(args) -> dict:
                         twins, twin_status = twin_dirs_fn(directory, twin_cfg)
                     except (OSError, ValueError, RuntimeError) as exc:
                         errors.append(f"{directory}: twin resolution failed: {exc}")
+                        break
+                    if twin_status == "not-applicable":
+                        # A mirror subpath may need an ancestor's pointer.
                         continue
-                    if twin_status in ("index-missing", "pointer-unreadable"):
+                    if twin_status != "ok":
                         errors.append(
                             f"{directory}: twin resolution {twin_status} -- a lock on the "
                             f"other tree would be invisible"
                         )
-                        continue
+                        break
                     if not twins:
-                        continue
+                        break
                     try:
                         relative = query_target.resolve().relative_to(directory.resolve())
                     except (OSError, ValueError, RuntimeError) as exc:
@@ -336,6 +342,10 @@ def cmd_check_lock(args) -> dict:
                             continue
                         checked_twin_targets.add(key)
                         collect(mapped_target, from_twin=True)
+                    # The shared resolver already walks clone ancestors and
+                    # returns every registered twin. Querying farther up can
+                    # mistake the clone-roots container for an unmapped repo.
+                    break
 
     if errors:
         # Part of the ancestor chain could not be read, so absence of a lock is not
