@@ -762,8 +762,17 @@ describe("metadata & manifest parity", () => {
     expect(files.length).toBeGreaterThan(40);
 
     const secretRegex = /(?:sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{30,}|AKIA[0-9A-Z]{16}|-----BEGIN (?:RSA |EC )?PRIVATE KEY-----)/;
-    // Any concrete Windows home directory, except clearly synthetic fixture names.
-    const homePathRegex = /C:[/\\]+Users[/\\]+(?!Test|<|%|\$|\{)[A-Za-z0-9._-]+[/\\]/;
+    // Concrete profiles include Test-prefixed names, spaces and Unicode; templates stay exempt.
+    const homePathRegex = /C:[/\\]+Users[/\\]+(?![<%{$])[^/\\\r\n]+[/\\]/;
+    // Exercise concrete profiles at runtime so the tracked-file scan needs no name exemption.
+    const windowsHome = (name: string) => ["C:", "Users", name, "fixture"].join("\\");
+    for (const name of ["Test", "Tester", "TestUser", "Test-runner", "Test.User", "Test Person", "Müller", "alice"]) {
+      expect(windowsHome(name), name).toMatch(homePathRegex);
+    }
+    for (const placeholder of ["<user>", "%USER%", "${user}", "{user}"]) {
+      expect(windowsHome(placeholder), placeholder).not.toMatch(homePathRegex);
+    }
+
     // The maintainer's local development root is never a published path.
     const localDevRegex = /C:[/\\]+_Local_DEV[/\\]/;
 

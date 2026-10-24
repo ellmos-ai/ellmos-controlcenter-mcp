@@ -36,7 +36,8 @@ async function fixtureRoot(): Promise<string> {
 
 describe("stack discovery", () => {
   it("resolves the default stacks root from OneDrive", () => {
-    expect(getDefaultStacksRoot({ OneDrive: "C:\\Users\\Test\\OneDrive" }, "C:\\Users\\Test"))
+    const fakeHome = ["C:", "Users", "Test"].join("\\");
+    expect(getDefaultStacksRoot({ OneDrive: path.win32.join(fakeHome, "OneDrive") }, fakeHome))
       .toContain(path.join(".TOPICS", ".AI", ".STACKS"));
   });
 
