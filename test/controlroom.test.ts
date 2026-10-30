@@ -3,7 +3,8 @@ import * as os from "os";
 import * as path from "path";
 import { existsSync } from "fs";
 import { describe, expect, it } from "vitest";
-import { execFileSync } from "child_process";
+import { execFileSync, spawnSync } from "child_process";
+import { createHash } from "crypto";
 import {
   checkLock,
   describeResource,
@@ -40,6 +41,9 @@ const CANONICAL_SCRIPTS = process.env.ELLMOS_LOCK_SCRIPTS
   ?? path.join(os.homedir(), "OneDrive", "_scripts");
 const HAS_CANONICAL = existsSync(path.join(CANONICAL_SCRIPTS, "lock_utils.py"))
   && existsSync(path.join(CANONICAL_SCRIPTS, "permissions.py"));
+const CANDIDATE_LOCK_MASTER_ROOT = process.env.T530_CANDIDATE_LOCK_MASTER_ROOT;
+const CANDIDATE_LOCK_MASTER_HEAD = "b2152873cbfbd140ac5613869c5417f80a0d668d";
+const CANDIDATE_LOCK_UTILS_SHA256 = "b10e818f276656780ac66d0d42bf8bb0d6a2b03fdf874c93c13ad6b6705fce66";
 
 const EMPTY_ENV: NodeJS.ProcessEnv = {};
 const CONFIGURED_ENV: NodeJS.ProcessEnv = {
@@ -224,6 +228,125 @@ async function lockFixture(): Promise<string> {
     "utf-8"
   );
   return root;
+}
+
+async function canonicalScriptsFixture(
+  root: string,
+  twinResolution?: Record<string, unknown>
+): Promise<string> {
+  const scripts = path.join(root, "scripts");
+  await fs.mkdir(scripts, { recursive: true });
+  for (const name of ["lock_utils.py", "lock_scan.py", "permissions.py"]) {
+    await fs.copyFile(path.join(CANONICAL_SCRIPTS, name), path.join(scripts, name));
+  }
+  await fs.writeFile(
+    path.join(scripts, "lock_roots.json"),
+    JSON.stringify({ roots: [], twin_resolution: twinResolution }),
+    "utf-8"
+  );
+  return scripts;
+}
+
+async function twinStatusFixture(root: string): Promise<string> {
+  const scripts = path.join(root, "scripts");
+  await fs.mkdir(scripts);
+  await fs.writeFile(path.join(scripts, "lock_utils.py"), [
+    "import json",
+    "from pathlib import Path",
+    "def worktree_main_dir(_path):",
+    "    file = Path(__file__).with_name('main-clone.json')",
+    "    return Path(json.loads(file.read_text(encoding='utf-8'))) if file.is_file() else None",
+    "def active_locks_for_path(_path, _now): return []",
+    "def twin_dirs_for_path(_path, _config):",
+    "    return [], json.loads(Path(__file__).with_name('twin-status.json').read_text(encoding='utf-8'))",
+    ""
+  ].join("\n"), "utf-8");
+  await fs.writeFile(path.join(scripts, "permissions.py"), "", "utf-8");
+  await fs.writeFile(path.join(scripts, "lock_roots.json"),
+    JSON.stringify({ twin_resolution: { clone_roots: [root], index_path: "unused" } }), "utf-8");
+  return scripts;
+}
+
+async function candidateCoreFixture(root: string, candidateRoot: string,
+  twinResolution: Record<string, unknown>): Promise<string> {
+  const candidateHead = execFileSync("git", ["-C", candidateRoot, "rev-parse", "HEAD"],
+    { encoding: "utf-8" }).trim();
+  expect(candidateHead).toBe(CANDIDATE_LOCK_MASTER_HEAD);
+  const scripts = path.join(root, "scripts");
+  await fs.mkdir(scripts);
+  const sources = {
+    "lock_utils.py": path.join(candidateRoot, "pure-locking", "lock_utils.py"),
+    "lock_scan.py": path.join(candidateRoot, "pure-locking", "lock_scan.py"),
+    "permissions.py": path.join(candidateRoot, "permission-control", "permissions.py")
+  };
+  const utils = await fs.readFile(sources["lock_utils.py"]);
+  expect(createHash("sha256").update(utils).digest("hex")).toBe(CANDIDATE_LOCK_UTILS_SHA256);
+  for (const [name, source] of Object.entries(sources)) {
+    await fs.copyFile(source, path.join(scripts, name));
+  }
+  await fs.writeFile(path.join(scripts, "lock_roots.json"), JSON.stringify({
+    roots: [{ path: path.join(root, "mirror-ü") }],
+    twin_resolution: twinResolution
+  }), "utf-8");
+  return scripts;
+}
+
+function scopedLockText(protectedPaths: string, pathsVersion = "1"): string {
+  return [
+    "owner: fixture-agent",
+    "created: " + new Date().toISOString(),
+    "expires_after: 24h",
+    "purpose: scoped lock comparison fixture",
+    "paths_version: " + pathsVersion,
+    "protected_paths: " + protectedPaths,
+    ""
+  ].join("\n");
+}
+
+function canonicalLockScan(target: string, scriptsDir: string): Record<string, unknown> {
+  const config = resolveControlroomConfig(EMPTY_ENV);
+  const result = spawnSync(
+    config.python,
+    [
+      path.join(scriptsDir, "lock_scan.py"),
+      "--check-dir",
+      target,
+      "--json",
+      "--roots-file",
+      path.join(scriptsDir, "lock_roots.json")
+    ],
+    {
+      encoding: "utf-8",
+      env: { ...process.env, PYTHONIOENCODING: "utf-8" },
+      windowsHide: true
+    }
+  );
+  if (result.error) throw result.error;
+  if (result.status !== 0 && result.status !== 1) {
+    throw new Error("canonical lock_scan failed: " + result.stderr + result.stdout);
+  }
+  return JSON.parse(result.stdout) as Record<string, unknown>;
+}
+
+async function expectLockParity(
+  target: string,
+  scriptsDir: string,
+  expected?: string
+): Promise<Record<string, unknown>> {
+  const canonical = canonicalLockScan(target, scriptsDir);
+  const rows = Array.isArray(canonical.locks)
+    ? canonical.locks as Record<string, unknown>[]
+    : [];
+  const twinStatus = String(canonical.twin_status ?? "");
+  const canonicalVerdict = !["ok", "not-applicable"].includes(twinStatus)
+    ? "unknown"
+    : rows.length > 0 ? "locked" : "clear";
+  const bridge = await checkLock(target, {
+    config: { ...resolveControlroomConfig(EMPTY_ENV), scriptsDir }
+  });
+  expect(bridge.verdict).toBe(canonicalVerdict);
+  if (expected) expect(bridge.verdict).toBe(expected);
+  return bridge;
 }
 
 async function permissionFixture(): Promise<string> {
@@ -697,6 +820,159 @@ describe("controlroom governance federation", () => {
 // Integration against the real canonical lock logic
 // ---------------------------------------------------------------------------
 
+it("treats only canonical safe twin statuses as clearance", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-twin-status-"));
+  const target = path.join(root, "target");
+  await fs.mkdir(target);
+  const scripts = await twinStatusFixture(root);
+  for (const [status, expected] of [
+    ["ok", "clear"], ["not-applicable", "clear"],
+    ["index-missing", "unknown"], ["index-unresolved", "unknown"],
+    ["index-unmapped", "unknown"], ["pointer-unreadable", "unknown"],
+    ["pointer-unresolved", "unknown"], ["future-status", "unknown"],
+    ["", "unknown"], [null, "unknown"], [17, "unknown"],
+    [{ unexpected: true }, "unknown"]
+  ] as Array<[unknown, string]>) {
+    await fs.writeFile(path.join(scripts, "twin-status.json"), JSON.stringify(status), "utf-8");
+    const result = await checkLock(target, {
+      config: { ...resolveControlroomConfig(EMPTY_ENV), scriptsDir: scripts }
+    });
+    expect(result.verdict, JSON.stringify(status)).toBe(expected);
+    expect(result.safe_to_proceed, JSON.stringify(status)).toBe(expected === "clear");
+  }
+  await fs.writeFile(path.join(scripts, "main-clone.json"),
+    JSON.stringify(path.join(root, "repo-Ã¼")), "utf-8");
+  await fs.writeFile(path.join(scripts, "twin-status.json"), '"ok"', "utf-8");
+  const unresolvedMain = await checkLock(target, {
+    config: { ...resolveControlroomConfig(EMPTY_ENV), scriptsDir: scripts }
+  });
+  expect(unresolvedMain.verdict).toBe("unknown");
+  expect(unresolvedMain.safe_to_proceed).toBe(false);
+  expect(unresolvedMain.errors).toContainEqual(expect.stringContaining("main clone does not exist"));
+});
+
+it.skipIf(!CANDIDATE_LOCK_MASTER_ROOT)(
+  "matches the pinned candidate core for Unicode worktrees and unresolved twins",
+  async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-candidate-core-"));
+    const clone = path.join(root, "repos", "repo-ü");
+    const worktree = path.join(root, "worktrees", "review");
+    const mirror = path.join(root, "mirror-ü");
+    for (const area of [clone, mirror]) {
+      await fs.mkdir(path.join(area, "protected"), { recursive: true });
+      await fs.mkdir(path.join(area, "sibling"), { recursive: true });
+    }
+    await fs.writeFile(path.join(clone, "protected", "tracked.txt"), "fixture", "utf-8");
+    await fs.writeFile(path.join(clone, "sibling", "tracked.txt"), "fixture", "utf-8");
+    execFileSync("git", ["init", "--quiet", clone]);
+    execFileSync("git", ["-C", clone, "config", "user.name", "fixture"]);
+    execFileSync("git", ["-C", clone, "config", "user.email", "fixture@example.invalid"]);
+    execFileSync("git", ["-C", clone, "add", "--all"]);
+    execFileSync("git", ["-C", clone, "commit", "--quiet", "-m", "fixture"]);
+    await fs.mkdir(path.dirname(worktree), { recursive: true });
+    execFileSync("git", ["-C", clone, "worktree", "add", "--detach", "--quiet", worktree]);
+    const pointer = path.join(mirror, "REPO.pointer.json");
+    const validPointer = { repo_id: "ellmos-ai/repo-ü", local_locator: {
+      repo_name: "repo-ü", windows_default: clone
+    } };
+    await fs.writeFile(pointer, JSON.stringify(validPointer), "utf-8");
+    await fs.writeFile(path.join(mirror, "LOCK.scope.txt"),
+      scopedLockText("protected"), "utf-8");
+    const scripts = await candidateCoreFixture(root, CANDIDATE_LOCK_MASTER_ROOT!, {
+      clone_roots: [path.join(root, "repos")],
+      index_path: path.join(root, "TWIN-INDEX.{host}.json")
+    });
+    const python = resolveControlroomConfig(EMPTY_ENV).python;
+    execFileSync(python, ["-X", "utf8", path.join(scripts, "lock_scan.py"),
+      "--write-cache", "--roots-file", path.join(scripts, "lock_roots.json")],
+    { encoding: "utf-8", env: { ...process.env, PYTHONIOENCODING: "utf-8" } });
+    const indexFiles = (await fs.readdir(root)).filter((name) =>
+      name.startsWith("TWIN-INDEX.") && name.endsWith(".json"));
+    expect(indexFiles).toHaveLength(1);
+    const indexPath = path.join(root, indexFiles[0]);
+
+    await expectLockParity(path.join(worktree, "protected"), scripts, "locked");
+    await expectLockParity(path.join(worktree, "sibling"), scripts, "clear");
+    await expectLockParity(path.join(clone, "protected"), scripts, "locked");
+    await expectLockParity(path.join(mirror, "sibling"), scripts, "clear");
+
+    // The first matching twin must not suppress another registered mirror.
+    const secondMirror = path.join(root, "mirror2-ü");
+    await fs.mkdir(path.join(secondMirror, "sibling"), { recursive: true });
+    await fs.writeFile(path.join(secondMirror, "REPO.pointer.json"),
+      JSON.stringify(validPointer), "utf-8");
+    const secondLock = path.join(secondMirror, "LOCK.scope.txt");
+    await fs.writeFile(secondLock, scopedLockText("sibling"), "utf-8");
+    const rootsFile = path.join(scripts, "lock_roots.json");
+    const rootsConfig = JSON.parse(await fs.readFile(rootsFile, "utf-8")) as Record<string, unknown>;
+    rootsConfig.roots = [{ path: mirror }, { path: secondMirror }];
+    await fs.writeFile(rootsFile, JSON.stringify(rootsConfig), "utf-8");
+    execFileSync(python, ["-X", "utf8", path.join(scripts, "lock_scan.py"),
+      "--write-cache", "--roots-file", rootsFile],
+    { encoding: "utf-8", env: { ...process.env, PYTHONIOENCODING: "utf-8" } });
+    const multiple = await expectLockParity(path.join(worktree, "sibling"), scripts, "locked");
+    expect((multiple.locks as Array<Record<string, unknown>>).some((lock) =>
+      lock.path === secondLock && lock.from_twin === true)).toBe(true);
+    await fs.unlink(secondLock);
+
+    const originalIndex = await fs.readFile(indexPath, "utf-8");
+    await fs.unlink(indexPath);
+    await expectLockParity(path.join(worktree, "sibling"), scripts, "unknown");
+    const foreignIndex = JSON.parse(originalIndex) as Record<string, unknown>;
+    foreignIndex.producer_host = "FOREIGN-HOST";
+    await fs.writeFile(indexPath, JSON.stringify(foreignIndex), "utf-8");
+    await expectLockParity(path.join(clone, "sibling"), scripts, "unknown");
+    await fs.writeFile(indexPath, originalIndex, "utf-8");
+
+    for (const malformed of [
+      { local_locator: ["invalid"] },
+      { local_locator: { windows_default: 17 } }
+    ]) {
+      await fs.writeFile(pointer, JSON.stringify(malformed), "utf-8");
+      await expectLockParity(path.join(clone, "sibling"), scripts, "unknown");
+      await expectLockParity(path.join(mirror, "sibling"), scripts, "unknown");
+    }
+  }, 360_000
+);
+
+it("maps real Unicode worktrees with Python UTF-8 mode disabled", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-worktree-encoding-"));
+  const mainClone = path.join(root, "main-clone");
+  await fs.mkdir(path.join(mainClone, "protected"), { recursive: true });
+  await fs.writeFile(path.join(mainClone, "protected", "tracked.txt"), "fixture", "utf-8");
+  execFileSync("git", ["init", "--quiet", mainClone]);
+  execFileSync("git", ["-C", mainClone, "-c", "user.name=fixture", "-c",
+    "user.email=fixture@example.invalid", "add", "--all"]);
+  execFileSync("git", ["-C", mainClone, "-c", "user.name=fixture", "-c",
+    "user.email=fixture@example.invalid", "commit", "--quiet", "-m", "fixture"]);
+  const python = resolveControlroomConfig(EMPTY_ENV).python;
+  const script = [
+    "import importlib.util, json, sys",
+    "from pathlib import Path",
+    "from types import SimpleNamespace",
+    "spec = importlib.util.spec_from_file_location('bridge_encoding_fixture', sys.argv[1])",
+    "bridge = importlib.util.module_from_spec(spec)",
+    "spec.loader.exec_module(bridge)",
+    "helper = SimpleNamespace(worktree_main_dir=lambda _: Path(sys.argv[2]))",
+    "print(json.dumps(str(bridge._main_clone_target(helper, Path(sys.argv[3])))))"
+  ].join("\n");
+  for (const name of ["linked-ascii", "linked-ü"]) {
+    const worktree = path.join(root, name);
+    execFileSync("git", ["-C", mainClone, "worktree", "add", "--detach", "--quiet", worktree]);
+    for (const mode of ["0", "1"]) {
+      const result = spawnSync(python, ["-X", `utf8=${mode}`, "-c", script,
+        path.resolve("scripts/controlroom_bridge.py"), mainClone, path.join(worktree, "protected")], {
+        encoding: "utf-8", windowsHide: true,
+        env: { ...process.env, PYTHONIOENCODING: "utf-8" }
+      });
+      expect(result.error, `${name}, utf8=${mode}`).toBeUndefined();
+      expect(result.status, result.stderr).toBe(0);
+      expect(JSON.parse(result.stdout)).toBe(path.join(mainClone, "protected"));
+    }
+  }
+});
+
+
 describe.skipIf(!HAS_CANONICAL)("controlroom against the canonical lock modules", () => {
   const config = () => ({ ...resolveControlroomConfig(EMPTY_ENV), scriptsDir: CANONICAL_SCRIPTS });
 
@@ -748,6 +1024,105 @@ describe.skipIf(!HAS_CANONICAL)("controlroom against the canonical lock modules"
     expect(result.verdict).toBe("unknown");
     expect(result.safe_to_proceed).toBe(false);
   });
+
+  it("matches lock_scan for root, protected, and free sibling queries", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-scope-parity-"));
+    const project = path.join(root, "project");
+    const protectedPath = path.join(project, "protected", "secure");
+    const sibling = path.join(project, "sibling");
+    await fs.mkdir(protectedPath, { recursive: true });
+    await fs.mkdir(sibling, { recursive: true });
+    const scripts = await canonicalScriptsFixture(root);
+    await fs.writeFile(
+      path.join(project, "LOCK.scope.txt"),
+      scopedLockText("protected/secure"),
+      "utf-8"
+    );
+
+    await expectLockParity(project, scripts, "locked");
+    await expectLockParity(protectedPath, scripts, "locked");
+    await expectLockParity(sibling, scripts, "clear");
+  });
+
+  it("fails closed for unknown and malformed protected-path metadata", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-scope-invalid-"));
+    const project = path.join(root, "project");
+    const sibling = path.join(project, "sibling");
+    await fs.mkdir(sibling, { recursive: true });
+    const scripts = await canonicalScriptsFixture(root);
+    const lock = path.join(project, "LOCK.scope.txt");
+
+    await fs.writeFile(lock, scopedLockText("../escape", "1"), "utf-8");
+    await expectLockParity(sibling, scripts, "locked");
+    await fs.writeFile(lock, scopedLockText("protected", "2"), "utf-8");
+    await expectLockParity(sibling, scripts, "locked");
+  });
+
+  it("matches lock_scan for locks inherited from a worktree main clone", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-worktree-parity-"));
+    const mainClone = path.join(root, "main-clone");
+    const worktree = path.join(root, "worktrees", "linked");
+    await fs.mkdir(path.join(mainClone, "protected"), { recursive: true });
+    await fs.mkdir(path.join(mainClone, "sibling"), { recursive: true });
+    await fs.writeFile(path.join(mainClone, "protected", "tracked.txt"), "fixture", "utf-8");
+    await fs.writeFile(path.join(mainClone, "sibling", "tracked.txt"), "fixture", "utf-8");
+    execFileSync("git", ["init", "--quiet", mainClone]);
+    execFileSync("git", ["-C", mainClone, "config", "user.name", "fixture"]);
+    execFileSync("git", ["-C", mainClone, "config", "user.email", "fixture@example.invalid"]);
+    execFileSync("git", ["-C", mainClone, "add", "--all"]);
+    execFileSync("git", ["-C", mainClone, "commit", "--quiet", "-m", "fixture"]);
+    await fs.mkdir(path.dirname(worktree), { recursive: true });
+    execFileSync("git", ["-C", mainClone, "worktree", "add", "--detach", "--quiet", worktree]);
+    await fs.writeFile(
+      path.join(mainClone, "LOCK.scope.txt"),
+      scopedLockText("protected"),
+      "utf-8"
+    );
+    const scripts = await canonicalScriptsFixture(root);
+
+    await expectLockParity(path.join(worktree, "protected"), scripts, "locked");
+    await expectLockParity(path.join(worktree, "sibling"), scripts, "clear");
+  });
+
+  it("matches twin scoped locks and returns unknown when the twin index is missing", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-twin-parity-"));
+    const clone = path.join(root, "clone");
+    const mirror = path.join(root, "mirror");
+    const protectedPath = path.join(clone, "protected");
+    const sibling = path.join(clone, "sibling");
+    await fs.mkdir(protectedPath, { recursive: true });
+    await fs.mkdir(sibling, { recursive: true });
+    await fs.mkdir(path.join(mirror, "protected"), { recursive: true });
+    await fs.mkdir(path.join(mirror, "sibling"), { recursive: true });
+    const index = path.join(root, "twin-index.json");
+    await fs.writeFile(index, JSON.stringify({
+      by_repo_name: {},
+      by_clone_path: { [path.resolve(clone).toLowerCase()]: [mirror] },
+      unreadable_pointers_by_dirname: {}
+    }), "utf-8");
+    const scripts = await canonicalScriptsFixture(root, {
+      clone_roots: [clone],
+      index_path: index
+    });
+    await fs.writeFile(
+      path.join(mirror, "LOCK.scope.txt"),
+      scopedLockText("protected"),
+      "utf-8"
+    );
+
+    await expectLockParity(protectedPath, scripts, "locked");
+    await expectLockParity(sibling, scripts, "clear");
+
+    const missingRoot = await fs.mkdtemp(path.join(os.tmpdir(), "controlroom-twin-missing-"));
+    const missingClone = path.join(missingRoot, "clone");
+    const missingTarget = path.join(missingClone, "child");
+    await fs.mkdir(missingTarget, { recursive: true });
+    const missingScripts = await canonicalScriptsFixture(missingRoot, {
+      clone_roots: [missingClone],
+      index_path: path.join(missingRoot, "absent-index.json")
+    });
+    await expectLockParity(missingTarget, missingScripts, "unknown");
+  }, 120_000);
 
   it("applies precedence deny > ask > allow", async () => {
     const root = await permissionFixture();
