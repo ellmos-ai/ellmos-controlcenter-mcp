@@ -1,5 +1,56 @@
 # Changelog
 
+## [Unreleased] - 2026-10-18
+
+### Surface After-Care: Publication Hygiene, Verified Sibling Figures & Dependency Audit (2026-10-18)
+
+- **Internal pipeline log removed from the repository and the npm package:**
+  `MARKETING-LOG.txt` was tracked *and* listed in the `files` manifest, so every
+  `npm install` shipped an internal automation log containing the maintainer's clone
+  path, internal ticket identifiers and host names. The file is now git-ignored
+  (`git rm --cached`, no history rewrite -- the content is unresolvable for readers
+  rather than secret), dropped from `files`, and the four contract tests that pinned
+  its contents were removed or reduced to the public `CHANGELOG.md`.
+- **Maintainer-local paths removed from published documents:**
+  `CONTRIBUTING.md` declared a local Windows path as the authoritative "Source of
+  Truth" and required contributors to work "exclusively in the local clone"; the
+  same path appeared in a `CHANGELOG.md` entry and as a label in the architecture
+  diagram of both READMEs. All four are gone; section 3's heading no longer carries
+  an internal ticket identifier.
+- **Privacy guard turned around and widened (`test/metadata.test.ts`):**
+  the previous guard scanned only `src/` and matched a single hard-coded user name,
+  so it reported "zero personal developer paths" while two published files carried
+  one. It now walks the whole tracked set, matches any concrete Windows home
+  directory and the local development root, and a separate assertion forbids such a
+  path in `CONTRIBUTING.md` -- where the old contract test had *required* it.
+- **Sibling tool counts counted against each sibling's own statement:**
+  FileCommander 47 -> 50, CodeCommander 22 -> 23, Homebase 45 -> 51, Blender Use
+  3 -> 4, Open Compute 10 -> 19 (Clatcher 12, n8n Manager 19, ServerCommander 8 and
+  ControlCenter 34 were already correct). Both READMEs are now checked against one
+  map so they cannot drift apart again.
+- **Six reader-facing 404 links fixed or removed:** `ProFiler` now points at
+  `file-bricks`, `build-your-users-mind` at `ellmos-ai`; the rows for
+  `file-bricks/lock-master` and `open-bricks/DokuZen` (neither repository exists),
+  `dev-bricks/automation-master` and `ellmos-ai/workflowhooker-provenance` (both
+  private) were removed. A regression test keeps them out.
+- **Three open advisories closed (1 critical, 2 high):**
+  `@modelcontextprotocol/sdk` raised to `^1.31.0` (GHSA-6qxp-vccf-f47h, OAuth client
+  could send credentials to an authorization server chosen by the MCP server -- on
+  the gateway path this server advertises), plus overrides for `proxy-addr`
+  `^2.0.8` (GHSA-jqcg-44mw-7w3h, critical) and `source-map-js` `^1.2.2`
+  (GHSA-68fv-2mgg-jv7q). `npm audit` is back to 0 findings.
+- **Literal pins replaced by format and consistency checks:** the suite pinned the
+  test count (`267/267`), the verification date (`2026-09-29`) and the dated
+  `[Unreleased]` heading as literals, so adding a test or refreshing a freshness
+  stamp -- the stamp's only purpose -- turned it red. The test count had meanwhile
+  drifted to three different values (badges `267`, `llms.txt` prose `257`, actual
+  `279`); all surfaces now state the measured figure and are checked against each
+  other.
+- **`.gitattributes` added:** tracked files were stored as LF with a CRLF working
+  tree and no attribute, the phantom-diff pattern. Renormalization changes nothing
+  in the index; the pin prevents the next cross-platform checkout from reporting
+  every file as modified.
+
 ## [Unreleased] - 2026-10-03
 
 ### AI Security, Supply-Chain & Dependency Audit (0 Vulnerabilities), 30d Remediation SLA & Defensive Hygiene (2026-10-03)
@@ -29,7 +80,7 @@
 - **Bilingual Contributing Guidelines (`CONTRIBUTING.md`):**
   - Created comprehensive bilingual `CONTRIBUTING.md` in repository root with complete English and German sections.
   - Specified all 10 Governance and Runtime Invariants (`INV-LOCAL-01` to `INV-SLA-10`) tailored to ControlCenter MCP (loopback dashboard, fail-closed gateway policies, ephemeral stdio child processes, bounded secret scrubbing, unprivileged `RunAsInvoker` mode, multi-agent lock awareness, hierarchical permission introspection, read-only host governance mirroring, cloud-sync conflict hardening, and 48h security SLA).
-  - Codified Plan D Local Development Workflow (`C:\_Local_DEV\repos\ellmos-controlcenter-mcp` as authoritative Source of Truth), strict version freeze discipline, quality gates (`npm run build`, `npm test`, `git diff --check`, `git diff -G"version"`), statutory liability notice (§ 521 BGB Gefälligkeitsrecht), and private security contact channels.
+  - Codified the local development workflow (clone, build, test before a pull request), strict version freeze discipline, quality gates (`npm run build`, `npm test`, `git diff --check`, `git diff -G"version"`), statutory liability notice (§ 521 BGB Gefälligkeitsrecht), and private security contact channels.
   - Registered `CONTRIBUTING.md` in `package.json` `files` manifest.
 - **Multi-Host Lock & Sync Defense in `.gitignore`:**
   - Hardened `.gitignore` against additional multi-host patterns (`*-IDEAPAD-GEI*`, `*-IDEAPAD-GEI.*`), Taskplan artifacts (`TASKPLAN_*.md`, `*-TASKPLAN*`), agent-specific scoped locks (`LOCK.dev.*`, `LOCK.antigravity.*`, `LOCK.bugsearch.*`), and Windows OS artifacts (`Desktop.ini`, `ehthumbs.db`).

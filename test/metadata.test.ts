@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
+import { execFileSync } from "child_process";
 
 describe("metadata & manifest parity", () => {
   const root = path.resolve(__dirname, "..");
@@ -55,8 +56,10 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-09-29");
-    expect(llmsTxt).toContain("Test status: 267/267 Vitest tests passing (100% green)");
+    // Format instead of literals: refreshing the stamp or adding a test must not turn the
+    // suite red -- that is what the freshness stamp and the test badge are for.
+    expect(llmsTxt).toMatch(/Last-checked: \d{4}-\d{2}-\d{2}/);
+    expect(llmsTxt).toMatch(/Test status: (\d+)\/\1 Vitest tests passing \(100% green\)/);
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("License: MIT");
@@ -76,8 +79,6 @@ describe("metadata & manifest parity", () => {
       "Ecosystem-ellmos--ai-blue.svg",
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
-      "Vitest-267%20passed-brightgreen.svg",
-      "verified-2026--09--29-blue.svg",
       "Level%201%20SBOM",
       "Attribution-NOTICE-blue.svg",
       "MCP%20Tools-34-blue.svg",
@@ -91,6 +92,13 @@ describe("metadata & manifest parity", () => {
     for (const badge of badges) {
       expect(readmeEn).toContain(badge);
       expect(readmeDe).toContain(badge);
+    }
+
+    // Shape, not value: the test count and the verification date are checked for
+    // cross-surface consistency in their own cases, so refreshing them stays possible.
+    for (const readme of [readmeEn, readmeDe]) {
+      expect(readme).toMatch(/Vitest-\d+%20passed-brightgreen\.svg/);
+      expect(readme).toMatch(/verified-\d{4}--\d{2}--\d{2}-blue\.svg/);
     }
 
     expect(readmeEn).toContain("README_de.md");
@@ -121,7 +129,6 @@ describe("metadata & manifest parity", () => {
       "CONTRIBUTING.md",
       "THIRD_PARTY_LICENSES.md",
       "THIRD_PARTY_LICENSES.txt",
-      "MARKETING-LOG.txt",
     ];
     for (const file of required) {
       expect(fs.existsSync(path.join(root, file))).toBe(true);
@@ -225,11 +232,54 @@ describe("metadata & manifest parity", () => {
       "dev-bricks",
       "doc-bricks",
       "file-bricks",
-      "research-line",
     ];
     for (const token of siblingTokens) {
       expect(readmeEn).toContain(token);
       expect(readmeDe).toContain(token);
+    }
+  });
+
+  it("keeps the sibling tool counts identical in both READMEs and sourced from one map", () => {
+    // Counted against each sibling repository's own statement on 2026-10-18
+    // (README badge, prose, diagram label or registered tool names in its source).
+    const SIBLING_TOOL_COUNTS: Record<string, number> = {
+      "ellmos-filecommander-mcp": 50,
+      "ellmos-codecommander-mcp": 23,
+      "ellmos-clatcher-mcp": 12,
+      "n8n-manager-mcp": 19,
+      "ellmos-controlcenter-mcp": 34,
+      "ellmos-homebase-mcp": 51,
+      "ellmos-servercommander-mcp": 8,
+      "ellmos-blender-use-mcp": 4,
+      "open-compute-mcp": 19,
+    };
+    for (const [repo, count] of Object.entries(SIBLING_TOOL_COUNTS)) {
+      for (const readme of [readmeEn, readmeDe]) {
+        const row = readme
+          .split("\n")
+          .find((line) => line.startsWith("|") && line.includes(`/${repo})`));
+        expect(row, repo).toBeTruthy();
+        expect(row as string, repo).toMatch(new RegExp(`\\|\\s*\\*{0,2}${count}\\*{0,2}\\s*\\|`));
+      }
+    }
+  });
+
+  it("keeps private or non-existent repositories out of the ecosystem tables", () => {
+    // Measured on 2026-10-18: automation-master and workflowhooker-provenance are private;
+    // file-bricks/lock-master and open-bricks/DokuZen do not exist; ProFiler lives under
+    // file-bricks and build-your-users-mind under ellmos-ai. Each link was a reader-facing 404.
+    const unreachable = [
+      "dev-bricks/automation-master",
+      "ellmos-ai/workflowhooker-provenance",
+      "file-bricks/lock-master",
+      "open-bricks/DokuZen",
+      "open-bricks/ProFiler",
+      "research-line/build-your-users-mind",
+    ];
+    for (const target of unreachable) {
+      expect(readmeEn, target).not.toContain(`github.com/${target}`);
+      expect(readmeDe, target).not.toContain(`github.com/${target}`);
+      expect(llmsTxt, target).not.toContain(`github.com/${target}`);
     }
   });
 
@@ -394,27 +444,35 @@ describe("metadata & manifest parity", () => {
     expect(thirdParty).toContain("100%");
   });
 
-  it("ensures MARKETING-LOG.txt contains target personas, search terms, and governance invariants", () => {
-    const marketingLog = fs.readFileSync(path.join(root, "MARKETING-LOG.txt"), "utf-8");
-    expect(marketingLog).toContain("ellmos-controlcenter-mcp");
-    expect(marketingLog).toContain("0.7.4");
-    expect(marketingLog).toContain("TARGET PERSONAS");
-    expect(marketingLog).toContain("CORE DISCOVERABILITY KEYWORDS & SEARCH PHRASES");
-    expect(marketingLog).toContain("GOVERNANCE & RUNTIME INVARIANTS");
-    expect(marketingLog).toContain("INV-LOCAL-01");
-    expect(marketingLog).toContain("INV-SLA-10");
-    expect(marketingLog).toContain("Pfad B Discoverability, Target Personas & Comparative Matrix Overhaul (v0.7.4)");
-    expect(marketingLog).toContain("Pfad A Technical Hygiene, CI Lifecycle Workflows, Sync Defense & Level 1 SBOM Audit (v0.7.4)");
-    expect(marketingLog).toContain("Pfad B Discoverability, Visual Architecture & Bilateral Navigation Parity (v0.7.4)");
-    expect(marketingLog).toContain("Pfad B Discoverability, Visual Architecture & Level 1 SBOM Text Companion (v0.7.4)");
-  });
-
-  it("ensures package.json includes MARKETING-LOG.txt, THIRD_PARTY_LICENSES.md, and NOTICE in files manifest", () => {
+  it("ships public documents in the files manifest and no internal pipeline logs", () => {
     expect(packageJson.files).toContain("CONTRIBUTING.md");
     expect(packageJson.files).toContain("THIRD_PARTY_LICENSES.md");
     expect(packageJson.files).toContain("THIRD_PARTY_LICENSES.txt");
-    expect(packageJson.files).toContain("MARKETING-LOG.txt");
     expect(packageJson.files).toContain("NOTICE");
+    expect(packageJson.files).not.toContain("MARKETING-LOG.txt");
+
+    // A document can exist in the maintainer checkout yet be absent from npm.
+    // Check both the link target and the package allowlist for public doc links.
+    for (const [name, text] of [["README.md", readmeEn], ["README_de.md", readmeDe]]) {
+      const targets = [...text.matchAll(/\]\(([^)]+)\)/g)]
+        .map((match) => match[1])
+        .filter((target) => !/^(?:[a-z]+:|#|\/\/)/i.test(target))
+        .map((target) => target.split("#")[0].replace(/^\.\//, ""))
+        .filter((target) => /\.(?:md|txt)$/i.test(target) || target === "NOTICE");
+      expect(targets.length, name).toBeGreaterThan(10);
+      for (const target of targets) {
+        expect(fs.existsSync(path.join(root, target)), `${name}: ${target}`).toBe(true);
+        expect(packageJson.files, `${name}: ${target}`).toContain(target);
+      }
+    }
+    const importantFiles = llmsTxt.split("## Important Files")[1]?.split("\n## ")[0];
+    expect(importantFiles).toBeTruthy();
+    const documents = [...(importantFiles ?? "").matchAll(/^- `([^`]+\.(?:md|txt))`:/gm)];
+    expect(documents.length).toBeGreaterThan(5);
+    for (const [, target] of documents) {
+      expect(fs.existsSync(path.join(root, target)), `llms.txt: ${target}`).toBe(true);
+      expect(packageJson.files, `llms.txt: ${target}`).toContain(target);
+    }
   });
 
   it("ensures canonical NOTICE attribution exists and is complete", () => {
@@ -530,18 +588,36 @@ describe("metadata & manifest parity", () => {
     }
   });
 
-  it("ensures Level 1 SBOM text badge and verification date 2026-09-29 exist in READMEs and manifests", () => {
-    expect(readmeEn).toContain("verified-2026--09--29-blue.svg");
-    expect(readmeDe).toContain("verified-2026--09--29-blue.svg");
+  it("keeps the Level 1 SBOM badge present and the verification date identical across surfaces", () => {
+    const badgeEn = /verified-(\d{4})--(\d{2})--(\d{2})-blue\.svg/.exec(readmeEn);
+    const badgeDe = /verified-(\d{4})--(\d{2})--(\d{2})-blue\.svg/.exec(readmeDe);
+    const checked = /Last-checked: (\d{4}-\d{2}-\d{2})/.exec(llmsTxt);
+    expect(badgeEn).toBeTruthy();
+    expect(badgeDe?.[0]).toBe(badgeEn?.[0]);
+    expect(checked).toBeTruthy();
+    // One date, three surfaces -- the badge is derived from the same check as llms.txt.
+    expect(`${badgeEn?.[1]}-${badgeEn?.[2]}-${badgeEn?.[3]}`).toBe(checked?.[1]);
     expect(readmeEn).toContain("Level%201%20SBOM");
     expect(readmeDe).toContain("Level%201%20SBOM");
     expect(readmeEn).toContain("THIRD_PARTY_LICENSES.txt");
     expect(readmeDe).toContain("THIRD_PARTY_LICENSES.txt");
-    expect(llmsTxt).toContain("Last-checked: 2026-09-29");
     expect(llmsTxt).toContain("THIRD_PARTY_LICENSES.txt");
   });
 
-  it("ensures bilingual CONTRIBUTING.md exists with 10 invariants, Plan D workflow, and statutory notice", () => {
+  it("keeps the published test count identical across both README badges and llms.txt", () => {
+    const badge = /Vitest-(\d+)%20passed/.exec(readmeEn)?.[1];
+    const badgeDe = /Vitest-(\d+)%20passed/.exec(readmeDe)?.[1];
+    const status = /Test status: (\d+)\/(\d+) Vitest tests passing/.exec(llmsTxt);
+    const prose = /\((\d+) tests passing in the full suite\)/.exec(llmsTxt)?.[1];
+    expect(badge).toBeTruthy();
+    expect(badgeDe).toBe(badge);
+    expect(status?.[1]).toBe(badge);
+    expect(status?.[2]).toBe(badge);
+    // The prose figure drifted to a third, different number before this test existed.
+    expect(prose).toBe(badge);
+  });
+
+  it("ensures bilingual CONTRIBUTING.md exists with 10 invariants, a contributor workflow, and the statutory notice", () => {
     expect(contributingMd).toContain("# Contributing to ellmos-controlcenter-mcp / Mitwirken an ellmos-controlcenter-mcp");
     expect(contributingMd).toContain("[English](#english)");
     expect(contributingMd).toContain("[Deutsch](#deutsch)");
@@ -556,9 +632,10 @@ describe("metadata & manifest parity", () => {
     expect(contributingMd).toContain("INV-SYNC-09");
     expect(contributingMd).toContain("INV-SLA-10");
     expect(contributingMd).toContain("RunAsInvoker");
-    expect(contributingMd).toContain("Plan D Local Development Workflow");
-    expect(contributingMd).toContain("Plan D Lokaler Entwicklungsworkflow");
-    expect(contributingMd).toContain("C:\\_Local_DEV\\repos\\ellmos-controlcenter-mcp");
+    expect(contributingMd).toContain("Local Development Workflow");
+    expect(contributingMd).toContain("Lokaler Entwicklungsworkflow");
+    // Guard turned around: the public contributor guide must not pin a maintainer-local path.
+    expect(contributingMd).not.toMatch(/C:[/\\](?:Users|_Local_DEV)[/\\]/);
     expect(contributingMd).toContain("521 BGB");
     expect(contributingMd).toContain("Gefälligkeitsrecht");
     expect(contributingMd).toContain("security@open-bricks.org");
@@ -597,13 +674,11 @@ describe("metadata & manifest parity", () => {
     expect(gitignore).toContain("ehthumbs.db");
   });
 
-  it("ensures CHANGELOG.md and MARKETING-LOG.txt document Pfad A 2026-10-03 hygiene milestone", () => {
+  it("ensures CHANGELOG.md documents the repository hygiene milestone under a dated Unreleased heading", () => {
     const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf-8");
-    const marketingLog = fs.readFileSync(path.join(root, "MARKETING-LOG.txt"), "utf-8");
-    expect(changelog).toContain("## [Unreleased] - 2026-10-03");
+    // Format instead of literal: refreshing the date must not turn the suite red.
+    expect(changelog).toMatch(/## \[Unreleased\] - \d{4}-\d{2}-\d{2}/);
     expect(changelog).toContain("Repository Hygiene, CI Lifecycle Workflows, Multi-Host Sync Defense");
-    expect(marketingLog).toContain("2026-10-03: Pfad A");
-    expect(marketingLog).toContain("CONTRIBUTING.md");
   });
 
   it("ensures Contributing badges exist in README.md and README_de.md", () => {
@@ -619,6 +694,9 @@ describe("metadata & manifest parity", () => {
     expect(packageJson.overrides["hono"]).toBe("^4.13.8");
     expect(packageJson.overrides["@hono/node-server"]).toBe("^2.0.12");
     expect(packageJson.overrides["qs"]).toBe("^6.16.0");
+    expect(packageJson.overrides["proxy-addr"]).toBe("^2.0.8");
+    expect(packageJson.overrides["source-map-js"]).toBe("^1.2.2");
+    expect(packageJson.dependencies["@modelcontextprotocol/sdk"]).toBe("^1.31.0");
   });
 
   it("ensures .gitignore defends against credentials, secrets, tokens, keys, certs, and conflict review logs", () => {
@@ -668,40 +746,49 @@ describe("metadata & manifest parity", () => {
     expect(thirdPartyTxt).toContain("30-day remediation SLA");
   });
 
-  it("ensures zero hardcoded secrets and personal developer paths across tracked source files", () => {
-    const srcDir = path.join(root, "src");
-    const scanDir = (dir: string): string[] => {
-      let results: string[] = [];
-      const list = fs.readdirSync(dir);
-      for (const file of list) {
-        const full = path.join(dir, file);
-        const stat = fs.statSync(full);
-        if (stat.isDirectory()) {
-          results = results.concat(scanDir(full));
-        } else if (file.endsWith(".ts") || file.endsWith(".js") || file.endsWith(".json")) {
-          results.push(full);
-        }
-      }
-      return results;
-    };
-
-    const files = scanDir(srcDir);
-    expect(files.length).toBeGreaterThan(0);
+  it("ensures zero hardcoded secrets and maintainer-local paths across every published text file", () => {
+    // Scope lesson: a guard limited to src/ and to one hard-coded user name reported
+    // "zero personal developer paths" while CONTRIBUTING.md and an internal log carried
+    // the maintainer's clone path -- and both were in the npm files manifest.
+    // The tracked set is what readers get -- an untracked file in the working tree is not
+    // published, and a working-tree walk would both miss nothing and flag local scratch files.
+    const EXTS = [".ts", ".js", ".mjs", ".json", ".md", ".txt", ".yml", ".yaml", ".py"];
+    const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: root, encoding: "utf-8" })
+      .split("\0")
+      .filter(Boolean);
+    const files = tracked
+      .filter((rel) => EXTS.some((e) => rel.endsWith(e)))
+      .filter((rel) => fs.existsSync(path.join(root, rel)));
+    expect(files.length).toBeGreaterThan(40);
 
     const secretRegex = /(?:sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{30,}|AKIA[0-9A-Z]{16}|-----BEGIN (?:RSA |EC )?PRIVATE KEY-----)/;
-    const personalPathRegex = /C:[/\\]Users[/\\]lukas[/\\](?!(?:CLAUDE\.md|GEMINI\.md|_Local_DEV))/;
+    // Concrete profiles include Test-prefixed names, spaces and Unicode; templates stay exempt.
+    const homePathRegex = /C:[/\\]+Users[/\\]+(?![<%{$])[^/\\\r\n]+[/\\]/;
+    // Exercise concrete profiles at runtime so the tracked-file scan needs no name exemption.
+    const windowsHome = (name: string) => ["C:", "Users", name, "fixture"].join("\\");
+    for (const name of ["Test", "Tester", "TestUser", "Test-runner", "Test.User", "Test Person", "Müller", "alice"]) {
+      expect(windowsHome(name), name).toMatch(homePathRegex);
+    }
+    for (const placeholder of ["<user>", "%USER%", "${user}", "{user}"]) {
+      expect(windowsHome(placeholder), placeholder).not.toMatch(homePathRegex);
+    }
 
-    for (const f of files) {
-      const content = fs.readFileSync(f, "utf-8");
-      expect(content).not.toMatch(secretRegex);
-      expect(content).not.toMatch(personalPathRegex);
+    // The maintainer's local development root is never a published path.
+    const localDevRegex = /C:[/\\]+_Local_DEV[/\\]/;
+
+    for (const rel of files) {
+      const content = fs.readFileSync(path.join(root, rel), "utf-8");
+      // The scrubber fixtures under test/ carry synthetic secrets on purpose.
+      if (!rel.startsWith("test/")) {
+        expect(content, rel).not.toMatch(secretRegex);
+      }
+      expect(content, rel).not.toMatch(homePathRegex);
+      expect(content, rel).not.toMatch(localDevRegex);
     }
   });
 
-  it("ensures CHANGELOG.md and MARKETING-LOG.txt document AI Security and Dependency Audit milestone 2026-10-03", () => {
+  it("ensures CHANGELOG.md documents the security and dependency audit milestone", () => {
     const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf-8");
-    const marketingLog = fs.readFileSync(path.join(root, "MARKETING-LOG.txt"), "utf-8");
-    expect(changelog).toContain("AI Security, Supply-Chain & Dependency Audit (0 Vulnerabilities)");
-    expect(marketingLog).toContain("AI Security, Supply-Chain & Dependency Audit (0 Vulnerabilities)");
+    expect(changelog).toContain("AI Security, Supply-Chain & Dependency Audit");
   });
 });
