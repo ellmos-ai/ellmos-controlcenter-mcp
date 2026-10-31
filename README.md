@@ -766,7 +766,6 @@ Full SPDX license texts, copyright notices, and compliance attestations are docu
 | Architecture | [ARCHITECTURE.md](./ARCHITECTURE.md) |
 | Roadmap | [ROADMAP.md](./ROADMAP.md) |
 | Decisions | [DECISIONS.md](./DECISIONS.md) |
-| Open tasks | [TODO.md](./TODO.md) |
 | Changes | [CHANGELOG.md](./CHANGELOG.md) |
 | Contributing | [CONTRIBUTING.md](./CONTRIBUTING.md) |
 | Notice & attribution | [NOTICE](./NOTICE) |

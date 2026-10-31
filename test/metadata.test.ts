@@ -450,6 +450,43 @@ describe("metadata & manifest parity", () => {
     expect(packageJson.files).toContain("THIRD_PARTY_LICENSES.txt");
     expect(packageJson.files).toContain("NOTICE");
     expect(packageJson.files).not.toContain("MARKETING-LOG.txt");
+
+    // A document can exist in the maintainer checkout yet be absent from npm.
+    // Check both the link target and the package allowlist for public doc links.
+    for (const [name, text] of [["README.md", readmeEn], ["README_de.md", readmeDe]]) {
+      const targets = [...text.matchAll(/\]\(([^)]+)\)/g)]
+        .map((match) => match[1])
+        .filter((target) => !/^(?:[a-z]+:|#|\/\/)/i.test(target))
+        .map((target) => target.split("#")[0].replace(/^\.\//, ""))
+        .filter((target) => /\.(?:md|txt)$/i.test(target) || target === "NOTICE");
+      expect(targets.length, name).toBeGreaterThan(10);
+      for (const target of targets) {
+        expect(fs.existsSync(path.join(root, target)), `${name}: ${target}`).toBe(true);
+        expect(packageJson.files, `${name}: ${target}`).toContain(target);
+      }
+    }
+    const importantFiles = llmsTxt.split("## Important Files")[1]?.split("\n## ")[0];
+    expect(importantFiles).toBeTruthy();
+    const documents = [...(importantFiles ?? "").matchAll(/^- `([^`]+\.(?:md|txt))`:/gm)];
+    expect(documents.length).toBeGreaterThan(5);
+    for (const [, target] of documents) {
+      expect(fs.existsSync(path.join(root, target)), `llms.txt: ${target}`).toBe(true);
+      expect(packageJson.files, `llms.txt: ${target}`).toContain(target);
+    }
+  });
+
+  it("keeps relative documentation links in READMEs and llms.txt resolvable", () => {
+    const documents: Array<[string, string]> = [
+      ["README.md", readmeEn],
+      ["README_de.md", readmeDe],
+      ["llms.txt", llmsTxt],
+    ];
+    for (const [name, text] of documents) {
+      const targets = [...text.matchAll(/\]\(\.\/([^)#\s]+)[^)]*\)/g)].map((match) => match[1]);
+      for (const target of targets) {
+        expect(fs.existsSync(path.join(root, target)), `${name} links to missing ${target}`).toBe(true);
+      }
+    }
   });
 
   it("keeps relative documentation links in READMEs and llms.txt resolvable", () => {
@@ -753,8 +790,17 @@ describe("metadata & manifest parity", () => {
     expect(files.length).toBeGreaterThan(40);
 
     const secretRegex = /(?:sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{30,}|AKIA[0-9A-Z]{16}|-----BEGIN (?:RSA |EC )?PRIVATE KEY-----)/;
-    // Any concrete Windows home directory, except clearly synthetic fixture names.
-    const homePathRegex = /C:[/\\]+Users[/\\]+(?!Test|<|%|\$|\{)[A-Za-z0-9._-]+[/\\]/;
+    // Concrete profiles include Test-prefixed names, spaces and Unicode; templates stay exempt.
+    const homePathRegex = /C:[/\\]+Users[/\\]+(?![<%{$])[^/\\\r\n]+[/\\]/;
+    // Exercise concrete profiles at runtime so the tracked-file scan needs no name exemption.
+    const windowsHome = (name: string) => ["C:", "Users", name, "fixture"].join("\\");
+    for (const name of ["Test", "Tester", "TestUser", "Test-runner", "Test.User", "Test Person", "Müller", "alice"]) {
+      expect(windowsHome(name), name).toMatch(homePathRegex);
+    }
+    for (const placeholder of ["<user>", "%USER%", "${user}", "{user}"]) {
+      expect(windowsHome(placeholder), placeholder).not.toMatch(homePathRegex);
+    }
+
     // The maintainer's local development root is never a published path.
     const localDevRegex = /C:[/\\]+_Local_DEV[/\\]/;
 
