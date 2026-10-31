@@ -45,6 +45,8 @@ import {
 } from "../src/skills.js";
 import { findSkills, scoreSkill, tokenize } from "../src/skillFinder.js";
 import {
+  scanAntigravityPlugins,
+  scanCodexPlugins,
   scanInstalledPlugins,
   scanModules,
   scanPluginsAndModules,
@@ -1397,11 +1399,51 @@ describe("plugins helpers", () => {
     expect(all.some((p) => p.type === "module" && p.name === "combo-module")).toBe(true);
   });
 
-  it("resolves default modules root from OneDrive env", () => {
+  it("resolves default modules root from OneDrive env and scans Codex + Antigravity plugins", async () => {
     const fakeHome = ["C:", "Users", "TestUser"].join("\\");
     const fakeEnv = { OneDrive: path.win32.join(fakeHome, "OneDrive") };
     const result = getDefaultModulesRoot(fakeEnv, fakeHome);
     expect(result).toContain(".AI");
     expect(result).toContain(".MODULES");
+
+    const codexRoot = await createTempDirectory("controlcenter-codex-plugins-");
+    const codexPluginDir = path.join(codexRoot, "cache", "openai-curated", "figma", "11c74d6b");
+    await fs.mkdir(path.join(codexPluginDir, ".codex-plugin"), { recursive: true });
+    await fs.mkdir(path.join(codexPluginDir, "skills"), { recursive: true });
+    await fs.writeFile(
+      path.join(codexPluginDir, ".codex-plugin", "plugin.json"),
+      JSON.stringify({ name: "figma", version: "2.0.13", mcpServers: "./.mcp.json" }),
+      "utf-8"
+    );
+    const codexPlugins = await scanCodexPlugins(codexRoot);
+    expect(codexPlugins).toHaveLength(1);
+    expect(codexPlugins[0]).toMatchObject({
+      name: "figma",
+      provider: "codex",
+      version: "2.0.13",
+      marketplace: "openai-curated",
+      hasSkills: true,
+      hasMcp: true
+    });
+
+    const agyRoot = await createTempDirectory("controlcenter-agy-plugins-");
+    const agyPluginDir = path.join(agyRoot, "science");
+    await fs.mkdir(path.join(agyPluginDir, "skills"), { recursive: true });
+    await fs.writeFile(
+      path.join(agyPluginDir, "plugin.json"),
+      JSON.stringify({ name: "science", version: "1.3.1" }),
+      "utf-8"
+    );
+    await fs.writeFile(path.join(agyPluginDir, "mcp_config.json"), "{}", "utf-8");
+    const agyPlugins = await scanAntigravityPlugins(agyRoot);
+    expect(agyPlugins).toHaveLength(1);
+    expect(agyPlugins[0]).toMatchObject({
+      name: "science",
+      provider: "antigravity",
+      version: "1.3.1",
+      marketplace: "antigravity",
+      hasSkills: true,
+      hasMcp: true
+    });
   });
 });

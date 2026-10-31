@@ -1168,8 +1168,14 @@ describe.skipIf(!HAS_CANONICAL)("controlroom against the canonical lock modules"
     await fs.mkdir(sibling, { recursive: true });
     await fs.mkdir(path.join(mirror, "protected"), { recursive: true });
     await fs.mkdir(path.join(mirror, "sibling"), { recursive: true });
+    await fs.writeFile(path.join(mirror, "REPO.pointer.json"), JSON.stringify({
+      repo_id: "ellmos-ai/clone",
+      local_locator: { repo_name: "clone", windows_default: clone }
+    }), "utf-8");
     const index = path.join(root, "twin-index.json");
     await fs.writeFile(index, JSON.stringify({
+      schema: "ellmos-lock-twin-index-v2",
+      producer_host: os.hostname(),
       by_repo_name: {},
       by_clone_path: { [path.resolve(clone).toLowerCase()]: [mirror] },
       unreadable_pointers_by_dirname: {}

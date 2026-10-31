@@ -5,6 +5,13 @@ import * as path from "path";
 export const DEFAULT_PLUGINS_ROOT =
   process.env.ELLMOS_PLUGINS_ROOT ?? path.join(os.homedir(), ".claude", "plugins");
 
+export const DEFAULT_CODEX_PLUGINS_ROOT =
+  process.env.ELLMOS_CODEX_PLUGINS_ROOT ?? path.join(os.homedir(), ".codex", "plugins");
+
+export const DEFAULT_ANTIGRAVITY_PLUGINS_ROOT =
+  process.env.ELLMOS_ANTIGRAVITY_PLUGINS_ROOT ??
+  path.join(os.homedir(), ".gemini", "config", "plugins");
+
 export const DEFAULT_MODULES_ROOT =
   process.env.ELLMOS_MODULES_ROOT ?? getDefaultModulesRoot();
 
@@ -30,6 +37,7 @@ function firstNonEmptyPath(...values: Array<string | undefined>): string | null 
 export interface PluginSummary {
   name: string;
   type: "plugin" | "module";
+  provider?: "claude-code" | "codex" | "antigravity" | "module";
   version: string | null;
   marketplace: string | null;
   scope: string | null;
@@ -88,12 +96,14 @@ async function detectPluginCapabilities(installPath: string): Promise<{
   }
 
   return {
-    hasSkills: entries.includes("skills"),
+    hasSkills: entries.includes("skills") || entries.includes("skill.md"),
     hasCommands: entries.includes("commands"),
     hasMcp:
       entries.some((e) => e.endsWith(".mcp.json")) ||
       entries.includes("mcp.json") ||
-      entries.includes("server.json")
+      entries.includes("mcp_config.json") ||
+      entries.includes("server.json") ||
+      entries.includes(".app.json")
   };
 }
 
@@ -131,6 +141,7 @@ export async function scanInstalledPlugins(
       results.push({
         name: pluginName,
         type: "plugin",
+        provider: "claude-code",
         version: typeof install.version === "string" ? install.version : null,
         marketplace,
         scope: typeof install.scope === "string" ? install.scope : null,
@@ -143,6 +154,218 @@ export async function scanInstalledPlugins(
   }
 
   return results;
+}
+
+// ──────────────────────────────────────────────
+// Codex & Antigravity plugin scanning (read-only)
+// ──────────────────────────────────────────────
+
+async function readPluginManifest(
+  pluginDir: string,
+  candidates: string[]
+): Promise<Record<string, unknown> | null> {
+  for (const rel of candidates) {
+    const parsed = await readJsonFile(path.join(pluginDir, rel));
+    if (isRecord(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
+  }
+  return null;
+}
+
+function isTransientPluginDir(name: string): boolean {
+  return (
+    name.startsWith(".") ||
+    name === "node_modules" ||
+    name.startsWith("plugin-backup-") ||
+    name.startsWith("plugin-install-") ||
+    name.startsWith("marketplace-plugin-source-") ||
+    name.startsWith("remote-plugin-bundle-")
+  );
+}
+
+/**
+ * Scans locally installed OpenAI Codex plugins (`~/.codex/plugins/cache/<marketplace>/<plugin>/<version>`
+ * or direct `<codexPluginsRoot>/<plugin>` directories) reading `plugin.json` or `.codex-plugin/plugin.json`.
+ */
+export async function scanCodexPlugins(
+  codexPluginsRoot: string = DEFAULT_CODEX_PLUGINS_ROOT
+): Promise<PluginSummary[]> {
+  const results: PluginSummary[] = [];
+  const manifestCandidates = [
+    "plugin.json",
+    path.join(".codex-plugin", "plugin.json"),
+    path.join(".claude-plugin", "plugin.json")
+  ];
+
+  const inspectDir = async (
+    installPath: string,
+    fallbackName: string,
+    marketplace: string | null,
+    fallbackVersion: string | null
+  ): Promise<PluginSummary | null> => {
+    const manifest = await readPluginManifest(installPath, manifestCandidates);
+    const capabilities = await detectPluginCapabilities(installPath);
+    if (!manifest && !capabilities.hasSkills && !capabilities.hasCommands && !capabilities.hasMcp) {
+      return null;
+    }
+    const name =
+      manifest && typeof manifest["name"] === "string" && manifest["name"].trim()
+        ? (manifest["name"] as string).trim()
+        : fallbackName;
+    const version =
+      manifest && typeof manifest["version"] === "string" && manifest["version"].trim()
+        ? (manifest["version"] as string).trim()
+        : fallbackVersion;
+    const hasManifestMcp = Boolean(manifest && manifest["mcpServers"]);
+    return {
+      name,
+      type: "plugin",
+      provider: "codex",
+      version: version ?? null,
+      marketplace: marketplace ?? "codex",
+      scope: "codex",
+      absolutePath: installPath,
+      installedAt: null,
+      lastUpdated: null,
+      hasSkills: capabilities.hasSkills || Boolean(manifest && manifest["skills"]),
+      hasCommands: capabilities.hasCommands,
+      hasMcp: capabilities.hasMcp || hasManifestMcp
+    };
+  };
+
+  // 1. Scan cache/<marketplace>/<plugin>/<version>
+  const cacheRoot = path.join(codexPluginsRoot, "cache");
+  try {
+    const marketplaces = await fs.readdir(cacheRoot, { withFileTypes: true });
+    for (const mpEntry of marketplaces) {
+      if (!mpEntry.isDirectory() || isTransientPluginDir(mpEntry.name)) continue;
+      const mpPath = path.join(cacheRoot, mpEntry.name);
+      let pluginDirs: import("fs").Dirent[] = [];
+      try {
+        pluginDirs = await fs.readdir(mpPath, { withFileTypes: true });
+      } catch {
+        continue;
+      }
+      for (const plugEntry of pluginDirs) {
+        if (!plugEntry.isDirectory() || isTransientPluginDir(plugEntry.name)) continue;
+        const plugPath = path.join(mpPath, plugEntry.name);
+        // Check if plugPath itself has a manifest or if versions are nested one level deeper
+        const directManifest = await readPluginManifest(plugPath, manifestCandidates);
+        if (directManifest) {
+          const item = await inspectDir(plugPath, plugEntry.name, mpEntry.name, null);
+          if (item) results.push(item);
+          continue;
+        }
+        let versionDirs: import("fs").Dirent[] = [];
+        try {
+          versionDirs = await fs.readdir(plugPath, { withFileTypes: true });
+        } catch {
+          continue;
+        }
+        for (const verEntry of versionDirs) {
+          if (!verEntry.isDirectory() || isTransientPluginDir(verEntry.name)) continue;
+          const verPath = path.join(plugPath, verEntry.name);
+          const item = await inspectDir(verPath, plugEntry.name, mpEntry.name, verEntry.name);
+          if (item) results.push(item);
+        }
+      }
+    }
+  } catch {
+    // cache directory not present; check direct children below
+  }
+
+  // 2. Scan direct plugin directories under codexPluginsRoot (excluding cache/ and data/)
+  try {
+    const directEntries = await fs.readdir(codexPluginsRoot, { withFileTypes: true });
+    for (const entry of directEntries) {
+      if (
+        !entry.isDirectory() ||
+        entry.name === "cache" ||
+        entry.name === "data" ||
+        isTransientPluginDir(entry.name)
+      ) {
+        continue;
+      }
+      const dirPath = path.join(codexPluginsRoot, entry.name);
+      const item = await inspectDir(dirPath, entry.name, "codex", null);
+      if (item) results.push(item);
+    }
+  } catch {
+    // root does not exist
+  }
+
+  return results;
+}
+
+/**
+ * Scans locally installed Antigravity plugins (`~/.gemini/config/plugins/<plugin>`)
+ * reading `plugin.json` or `gemini-extension.json`.
+ */
+export async function scanAntigravityPlugins(
+  antigravityPluginsRoot: string = DEFAULT_ANTIGRAVITY_PLUGINS_ROOT
+): Promise<PluginSummary[]> {
+  let entries: import("fs").Dirent[];
+  try {
+    entries = await fs.readdir(antigravityPluginsRoot, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+
+  const manifestCandidates = [
+    "plugin.json",
+    "gemini-extension.json",
+    path.join(".antigravity-plugin", "plugin.json")
+  ];
+
+  const results: PluginSummary[] = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory() || isTransientPluginDir(entry.name)) continue;
+    const pluginPath = path.join(antigravityPluginsRoot, entry.name);
+    const manifest = await readPluginManifest(pluginPath, manifestCandidates);
+    const capabilities = await detectPluginCapabilities(pluginPath);
+    if (!manifest && !capabilities.hasSkills && !capabilities.hasCommands && !capabilities.hasMcp) {
+      continue;
+    }
+    const name =
+      manifest && typeof manifest["name"] === "string" && manifest["name"].trim()
+        ? (manifest["name"] as string).trim()
+        : entry.name;
+    const version =
+      manifest && typeof manifest["version"] === "string" && manifest["version"].trim()
+        ? (manifest["version"] as string).trim()
+        : null;
+    results.push({
+      name,
+      type: "plugin",
+      provider: "antigravity",
+      version,
+      marketplace: "antigravity",
+      scope: "antigravity",
+      absolutePath: pluginPath,
+      installedAt: null,
+      lastUpdated: null,
+      ...capabilities
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Scans installed plugins across Claude Code, OpenAI Codex, and Antigravity.
+ */
+export async function scanAllInstalledPlugins(
+  claudePluginsRoot: string = DEFAULT_PLUGINS_ROOT,
+  codexPluginsRoot: string = DEFAULT_CODEX_PLUGINS_ROOT,
+  antigravityPluginsRoot: string = DEFAULT_ANTIGRAVITY_PLUGINS_ROOT
+): Promise<PluginSummary[]> {
+  const [claude, codex, antigravity] = await Promise.all([
+    scanInstalledPlugins(claudePluginsRoot),
+    scanCodexPlugins(codexPluginsRoot),
+    scanAntigravityPlugins(antigravityPluginsRoot)
+  ]);
+  return [...claude, ...codex, ...antigravity];
 }
 
 // ──────────────────────────────────────────────
@@ -167,20 +390,20 @@ interface EllmosModulesCatalog {
 async function readModuleVersion(modulePath: string): Promise<string | null> {
   // Priority 1: portable v2 module manifest
   const moduleV2Json = await readJsonFile(path.join(modulePath, "ellmos-module.v2.json"));
-  if (isRecord(moduleV2Json) && typeof moduleV2Json["version"] === "string") {
-    return moduleV2Json["version"] as string;
+  if (isRecord(moduleV2Json) && typeof (moduleV2Json as Record<string, unknown>)["version"] === "string") {
+    return (moduleV2Json as Record<string, unknown>)["version"] as string;
   }
 
   // Priority 2: legacy ellmos-module.json
   const moduleJson = await readJsonFile(path.join(modulePath, "ellmos-module.json"));
-  if (isRecord(moduleJson) && typeof moduleJson["version"] === "string") {
-    return moduleJson["version"] as string;
+  if (isRecord(moduleJson) && typeof (moduleJson as Record<string, unknown>)["version"] === "string") {
+    return (moduleJson as Record<string, unknown>)["version"] as string;
   }
 
   // Priority 3: package.json
   const pkgJson = await readJsonFile(path.join(modulePath, "package.json"));
-  if (isRecord(pkgJson) && typeof pkgJson["version"] === "string") {
-    return pkgJson["version"] as string;
+  if (isRecord(pkgJson) && typeof (pkgJson as Record<string, unknown>)["version"] === "string") {
+    return (pkgJson as Record<string, unknown>)["version"] as string;
   }
 
   // Priority 4: pyproject.toml — read first line match
@@ -309,11 +532,15 @@ export async function scanModules(
 
 export async function scanPluginsAndModules(
   pluginsRoot: string = DEFAULT_PLUGINS_ROOT,
-  modulesRoot: string = DEFAULT_MODULES_ROOT
+  modulesRoot: string = DEFAULT_MODULES_ROOT,
+  codexPluginsRoot?: string,
+  antigravityPluginsRoot?: string
 ): Promise<PluginSummary[]> {
-  const [plugins, modules] = await Promise.all([
+  const [claudePlugins, codexPlugins, antigravityPlugins, modules] = await Promise.all([
     scanInstalledPlugins(pluginsRoot),
+    codexPluginsRoot ? scanCodexPlugins(codexPluginsRoot) : Promise.resolve([]),
+    antigravityPluginsRoot ? scanAntigravityPlugins(antigravityPluginsRoot) : Promise.resolve([]),
     scanModules(modulesRoot)
   ]);
-  return [...plugins, ...modules];
+  return [...claudePlugins, ...codexPlugins, ...antigravityPlugins, ...modules];
 }

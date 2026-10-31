@@ -23,7 +23,17 @@ import {
 } from "./mcpCatalog.js";
 import { buildStackContextPack, CONTEXT_PACK_LEVELS } from "./contextPack.js";
 import { DEFAULT_STACKS_ROOT, describeStack, scanStacks, type StackSummary } from "./stacks.js";
-import { DEFAULT_PLUGINS_ROOT, DEFAULT_MODULES_ROOT, scanInstalledPlugins, scanModules, scanPluginsAndModules, type PluginSummary } from "./plugins.js";
+import {
+  DEFAULT_ANTIGRAVITY_PLUGINS_ROOT,
+  DEFAULT_CODEX_PLUGINS_ROOT,
+  DEFAULT_MODULES_ROOT,
+  DEFAULT_PLUGINS_ROOT,
+  scanAllInstalledPlugins,
+  scanInstalledPlugins,
+  scanModules,
+  scanPluginsAndModules,
+  type PluginSummary
+} from "./plugins.js";
 import { DEFAULT_SKILLS_ROOT, DEFAULT_SOURCE_SKILLS_ROOT, scanSkills, type SkillSummary } from "./skills.js";
 import { findSkills, type SkillMatch } from "./skillFinder.js";
 import { DEFAULT_SEMANTIC_ROUTING_MAP, loadSemanticRoutingMap, resolveSemanticRoute } from "./semanticRouting.js";
@@ -1040,7 +1050,7 @@ function formatPluginsTable(plugins: PluginSummary[]): string {
     `|---|---|---|---|---|---|---|---|`
   ];
   for (const p of plugins) {
-    const marketplaceScope = [p.marketplace, p.scope].filter(Boolean).join(" / ") || labels.common.notAvailable;
+    const marketplaceScope = [p.provider !== "module" ? p.provider : null, p.marketplace, p.scope].filter((v, idx, arr): v is string => Boolean(v) && arr.indexOf(v) === idx).join(" / ") || labels.common.notAvailable;
     lines.push(
       `| ${escapeMarkdownTableCell(p.name)} | ${p.type} | ${p.version ?? labels.common.notAvailable} | ${escapeMarkdownTableCell(marketplaceScope)} | ${p.hasSkills ? labels.common.yes : labels.common.no} | ${p.hasCommands ? labels.common.yes : labels.common.no} | ${p.hasMcp ? labels.common.yes : labels.common.no} | ${escapeMarkdownTableCell(p.absolutePath)} |`
     );
@@ -1190,24 +1200,39 @@ server.registerTool(
     description: toolText("controlcenter_list_plugins").description,
     inputSchema: {
       pluginsRoot: z.string().optional().describe(inputText("pluginsRoot")),
+      codexPluginsRoot: z.string().optional().describe("Optional override for Codex plugins root (~/.codex/plugins)"),
+      antigravityPluginsRoot: z.string().optional().describe("Optional override for Antigravity plugins root (~/.gemini/config/plugins)"),
       modulesRoot: z.string().optional().describe(inputText("modulesRoot")),
       pluginsOnly: z.boolean().default(false).describe(inputText("pluginsOnly")),
       modulesOnly: z.boolean().default(false).describe(inputText("modulesOnly"))
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
   },
-  async ({ pluginsRoot, modulesRoot, pluginsOnly, modulesOnly }) => {
+  async ({ pluginsRoot, codexPluginsRoot, antigravityPluginsRoot, modulesRoot, pluginsOnly, modulesOnly }) => {
     const labels = t();
     const resolvedPluginsRoot = pluginsRoot ?? DEFAULT_PLUGINS_ROOT;
+    const resolvedCodexRoot = codexPluginsRoot ?? (pluginsRoot ? undefined : DEFAULT_CODEX_PLUGINS_ROOT);
+    const resolvedAntigravityRoot = antigravityPluginsRoot ?? (pluginsRoot ? undefined : DEFAULT_ANTIGRAVITY_PLUGINS_ROOT);
     const resolvedModulesRoot = modulesRoot ?? DEFAULT_MODULES_ROOT;
 
     let plugins: PluginSummary[];
     if (pluginsOnly) {
-      plugins = await scanInstalledPlugins(resolvedPluginsRoot);
+      plugins = resolvedCodexRoot || resolvedAntigravityRoot
+        ? await scanAllInstalledPlugins(
+            resolvedPluginsRoot,
+            resolvedCodexRoot ?? "",
+            resolvedAntigravityRoot ?? ""
+          )
+        : await scanInstalledPlugins(resolvedPluginsRoot);
     } else if (modulesOnly) {
       plugins = await scanModules(resolvedModulesRoot);
     } else {
-      plugins = await scanPluginsAndModules(resolvedPluginsRoot, resolvedModulesRoot);
+      plugins = await scanPluginsAndModules(
+        resolvedPluginsRoot,
+        resolvedModulesRoot,
+        resolvedCodexRoot,
+        resolvedAntigravityRoot
+      );
     }
 
     const pluginEntries = plugins.filter((p) => p.type === "plugin");
