@@ -130,18 +130,13 @@ def _main_clone_target(lock_utils, target: Path) -> Path | None:
     if not main_dir.is_dir():
         raise OSError(f"resolved main clone does not exist: {main_dir}")
 
-    try:
-        result = subprocess.run(
-            ["git", "-C", str(anchor), "rev-parse", "--show-toplevel"],
-            capture_output=True, text=True, encoding="utf-8", timeout=10,
-            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
-        )
-    except (OSError, subprocess.SubprocessError) as exc:
-        raise OSError(f"cannot resolve worktree root for {target}: {exc}") from exc
-    if result.returncode != 0 or not result.stdout.strip():
+    top_dir_fn = getattr(lock_utils, "git_worktree_top_dir", None)
+    if not callable(top_dir_fn):
+        raise OSError("canonical lock_utils lacks git_worktree_top_dir")
+    worktree_root = top_dir_fn(anchor)
+    if worktree_root is None:
         raise OSError(f"cannot resolve worktree root for {target}")
-
-    worktree_root = Path(result.stdout.strip()).resolve()
+    worktree_root = Path(worktree_root).resolve()
     try:
         relative = target.resolve().relative_to(worktree_root)
     except (OSError, ValueError) as exc:
@@ -246,6 +241,35 @@ def cmd_check_lock(args) -> dict:
             "locks": [],
         }
 
+    # Keep the lexical query intact until the canonical scanner has checked
+    # redirects. Resolving first can discard a locked junction ancestor.
+    try:
+        lock_scan = _load_scan(scripts_dir)
+        redirect_guard = getattr(lock_scan, "_query_redirect_or_error", None)
+        if not callable(redirect_guard):
+            raise BridgeError("canonical lock_scan lacks query redirect guard")
+        roots_config = lock_scan.load_config(scripts_dir / "lock_roots.json")
+        query_error = redirect_guard(target, roots_config)
+    except (OSError, ValueError, RuntimeError, AttributeError, BridgeError) as exc:
+        return {
+            "schema": SCHEMA,
+            "command": "check-lock",
+            "path": str(target),
+            "verdict": "unknown",
+            "safe_to_proceed": False,
+            "reason": f"canonical query-path check failed: {exc}",
+            "locks": [],
+        }
+    if query_error is not None:
+        return {
+            "schema": SCHEMA,
+            "command": "check-lock",
+            "path": str(target),
+            "verdict": "unknown",
+            "safe_to_proceed": False,
+            "reason": f"canonical query-path check: {query_error}",
+            "locks": [],
+        }
     try:
         target = target.resolve()
     except (OSError, RuntimeError):
