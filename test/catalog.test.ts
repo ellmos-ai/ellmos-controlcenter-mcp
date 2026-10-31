@@ -1119,8 +1119,9 @@ status: active
   });
 
   it("resolves default source skills root from OneDrive env", () => {
-    const fakeEnv = { OneDrive: "C:\\Users\\TestUser\\OneDrive" };
-    const result = getDefaultSourceSkillsRoot(fakeEnv, "C:\\Users\\TestUser");
+    const fakeHome = ["C:", "Users", "TestUser"].join("\\");
+    const fakeEnv = { OneDrive: path.win32.join(fakeHome, "OneDrive") };
+    const result = getDefaultSourceSkillsRoot(fakeEnv, fakeHome);
     expect(result).toContain(".AI");
     expect(result).toContain(".SKILLS");
     expect(result).toContain("skills");
@@ -1397,8 +1398,9 @@ describe("plugins helpers", () => {
   });
 
   it("resolves default modules root from OneDrive env", () => {
-    const fakeEnv = { OneDrive: "C:\\Users\\TestUser\\OneDrive" };
-    const result = getDefaultModulesRoot(fakeEnv, "C:\\Users\\TestUser");
+    const fakeHome = ["C:", "Users", "TestUser"].join("\\");
+    const fakeEnv = { OneDrive: path.win32.join(fakeHome, "OneDrive") };
+    const result = getDefaultModulesRoot(fakeEnv, fakeHome);
     expect(result).toContain(".AI");
     expect(result).toContain(".MODULES");
   });
