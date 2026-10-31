@@ -14,8 +14,8 @@
 [![Attribution: NOTICE](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
 [![Contributing: Guide](https://img.shields.io/badge/Contributing-Guide-blue.svg)](CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-267%20passed-brightgreen.svg)](https://vitest.dev/)
-[![Verified: 2026-09-29](https://img.shields.io/badge/verified-2026--09--29-blue.svg)](CHANGELOG.md)
+[![Vitest](https://img.shields.io/badge/Vitest-278%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Verified: 2026-10-31](https://img.shields.io/badge/verified-2026--10--31-blue.svg)](CHANGELOG.md)
 [![Level 1 SBOM](https://img.shields.io/badge/Level%201%20SBOM-Plain%20Text%20Audited-blue.svg)](THIRD_PARTY_LICENSES.txt)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
@@ -211,6 +211,7 @@ sequenceDiagram
     participant Backend as Backend MCP Server (Unloaded)
     participant Scrub as Hardening & Secret Scrubber
     participant Audit as Audit Logger (JSONL)
+    participant Lock as Host Governance & Lock Guard
 
     Note over Agent,CC: 1. Administration & Profile Discovery
     Agent->>CC: controlcenter_suggest_profile / resolve_profile
@@ -234,6 +235,17 @@ sequenceDiagram
         Scrub-->>CC: Sanitized Payload & Truncation Status
         CC->>Audit: Append structured audit event (gateway-audit.jsonl)
         CC-->>Agent: Safe Tool Result wrapped with Data Banners
+    end
+
+    Note over Agent,CC: 3. Host Governance & Canonical Lock Verification
+    Agent->>CC: controlcenter_check_lock(path) / evaluate_permission(action, path)
+    CC->>Lock: Traverse nearest LOCK.user.* / LOCK.until.* / LOCK.permissions.json
+    alt Lock Active or Unverified Authority
+        Lock-->>CC: Fail-Closed Denial (Read-Only Enforced)
+        CC-->>Agent: Lock Status: LOCKED / Read-Only Guard Active (INV-LOCK-06)
+    else Path Unlocked & Authorized
+        Lock-->>CC: Path Clearance Confirmed
+        CC-->>Agent: Status: UNLOCKED / Safe to Proceed
     end
 ```
 

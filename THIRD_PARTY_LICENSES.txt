@@ -1,7 +1,7 @@
 # Third-Party Licenses & Level 1 SBOM
 
-Last checked: 2026-10-03 against npm metadata (Baseline: 2026-09-29).
-Audited: Stand: 2026-10-03 (Initial: 2026-09-29) against Level 1 SBOM and runtime invariants.
+Last checked: 2026-10-31 against npm metadata (Baseline: 2026-09-29).
+Audited: Stand: 2026-10-31 (Initial: 2026-09-29) against Level 1 SBOM and runtime invariants.
 
 Scope: direct runtime dependencies declared in `package.json`, transitive
 overrides, and development/testing tooling. This inventory provides a direct

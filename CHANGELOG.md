@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased] - 2026-10-31
+
+### Discoverability, Enhanced Sequence Diagram (Host Governance & Canonical Lock Verification), Test Currency & Level 1 SBOM Re-Audit (Pfad B) (2026-10-31)
+- **Lifecycle Sequence Diagram Expansion (Host Governance & Lock Introspection):**
+  - Expanded Section 05 Sequence Diagram in both `README.md` and `README_de.md` to include Phase 3: Host Governance & Canonical Lock Verification (`controlcenter_check_lock`, `controlcenter_evaluate_permission`, `INV-LOCK-06`, `INV-PERM-07`).
+  - Illustrates fail-closed lock boundaries, upward hierarchical directory traversal for `LOCK.user.*` / `LOCK.until.*` / `LOCK.permissions.json`, and read-only enforcement.
+- **Shields.io Badges & Test Count Currency:**
+  - Synchronized verification badge to `verified-2026--10--31-blue.svg` across `README.md` and `README_de.md`.
+  - Updated Vitest badge to reflect the verified passing test suite (`Vitest-278 passed`).
+  - Synchronized `llms.txt` context index Stand 2026-10-31 with 278 passed tests.
+- **Level 1 SBOM Plain-Text & Markdown Re-Audit (Stand 2026-10-31):**
+  - Re-audited `THIRD_PARTY_LICENSES.md` and plain-text companion `THIRD_PARTY_LICENSES.txt` as of 2026-10-31, confirming 100% permissive licensing, zero copyleft/AGPL exposure, and adherence to invariants `INV-LOCAL-01` through `INV-SLA-10`.
+- **Contract Tests:**
+  - Added new automated contract tests in `test/metadata.test.ts` verifying the enhanced sequence diagram, Stand 2026-10-31 recency, and test badge synchronization.
+- **Strict Version Freeze Discipline:**
+  - Preserved version `0.7.4` unchanged across all package manifests and source code in strict compliance with `T-20260920-167562623`.
+
 ## [Unreleased] - 2026-10-03
 
 ### AI Security, Supply-Chain & Dependency Audit (0 Vulnerabilities), 30d Remediation SLA & Defensive Hygiene (2026-10-03)

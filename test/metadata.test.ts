@@ -55,8 +55,8 @@ describe("metadata & manifest parity", () => {
   });
 
   it("ensures llms.txt contains required metadata and ecosystem links", () => {
-    expect(llmsTxt).toContain("Last-checked: 2026-09-29");
-    expect(llmsTxt).toContain("Test status: 267/267 Vitest tests passing (100% green)");
+    expect(llmsTxt).toContain("Last-checked: 2026-10-31");
+    expect(llmsTxt).toContain("Test status: 278/278 Vitest tests passing (100% green)");
     expect(llmsTxt).toContain("io.github.ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("https://github.com/ellmos-ai/ellmos-controlcenter-mcp");
     expect(llmsTxt).toContain("License: MIT");
@@ -76,8 +76,8 @@ describe("metadata & manifest parity", () => {
       "Ecosystem-ellmos--ai-blue.svg",
       "Umbrella-open--bricks-blueviolet.svg",
       "LLM--Ready-llms.txt-success.svg",
-      "Vitest-267%20passed-brightgreen.svg",
-      "verified-2026--09--29-blue.svg",
+      "Vitest-278%20passed-brightgreen.svg",
+      "verified-2026--10--31-blue.svg",
       "Level%201%20SBOM",
       "Attribution-NOTICE-blue.svg",
       "MCP%20Tools-34-blue.svg",
@@ -384,6 +384,7 @@ describe("metadata & manifest parity", () => {
     expect(thirdParty).toContain("2026-09-26");
     expect(thirdParty).toContain("2026-09-28");
     expect(thirdParty).toContain("2026-09-29");
+    expect(thirdParty).toContain("2026-10-31");
     expect(thirdParty).toContain("THIRD_PARTY_LICENSES.txt");
     expect(thirdParty).toContain("Level 1 SBOM Invariant Cross-Reference Matrix");
     expect(thirdParty).toContain("INV-LOCAL-01");
@@ -407,6 +408,7 @@ describe("metadata & manifest parity", () => {
     expect(marketingLog).toContain("Pfad A Technical Hygiene, CI Lifecycle Workflows, Sync Defense & Level 1 SBOM Audit (v0.7.4)");
     expect(marketingLog).toContain("Pfad B Discoverability, Visual Architecture & Bilateral Navigation Parity (v0.7.4)");
     expect(marketingLog).toContain("Pfad B Discoverability, Visual Architecture & Level 1 SBOM Text Companion (v0.7.4)");
+    expect(marketingLog).toContain("Pfad B Discoverability, Enhanced Sequence Diagram (Host Governance & Canonical Lock Verification), Test Currency & Level 1 SBOM Re-Audit (v0.7.4)");
   });
 
   it("ensures package.json includes MARKETING-LOG.txt, THIRD_PARTY_LICENSES.md, and NOTICE in files manifest", () => {
@@ -427,6 +429,7 @@ describe("metadata & manifest parity", () => {
 
   it("ensures CHANGELOG.md documents latest 0.7.4 release and Unreleased Pfad A/B entries", () => {
     const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf-8");
+    expect(changelog).toContain("## [Unreleased] - 2026-10-31");
     expect(changelog).toContain("## [Unreleased] - 2026-09-29");
     expect(changelog).toContain("## [Unreleased] - 2026-09-28");
     expect(changelog).toContain("Discoverability, Visual Architecture, 18-Point Bilingual Navigation Parity, § 521 BGB Statutory Disclaimer & Level 1 SBOM Audit");
@@ -530,14 +533,14 @@ describe("metadata & manifest parity", () => {
     }
   });
 
-  it("ensures Level 1 SBOM text badge and verification date 2026-09-29 exist in READMEs and manifests", () => {
-    expect(readmeEn).toContain("verified-2026--09--29-blue.svg");
-    expect(readmeDe).toContain("verified-2026--09--29-blue.svg");
+  it("ensures Level 1 SBOM text badge and verification date 2026-10-31 exist in READMEs and manifests", () => {
+    expect(readmeEn).toContain("verified-2026--10--31-blue.svg");
+    expect(readmeDe).toContain("verified-2026--10--31-blue.svg");
     expect(readmeEn).toContain("Level%201%20SBOM");
     expect(readmeDe).toContain("Level%201%20SBOM");
     expect(readmeEn).toContain("THIRD_PARTY_LICENSES.txt");
     expect(readmeDe).toContain("THIRD_PARTY_LICENSES.txt");
-    expect(llmsTxt).toContain("Last-checked: 2026-09-29");
+    expect(llmsTxt).toContain("Last-checked: 2026-10-31");
     expect(llmsTxt).toContain("THIRD_PARTY_LICENSES.txt");
   });
 
@@ -703,5 +706,16 @@ describe("metadata & manifest parity", () => {
     const marketingLog = fs.readFileSync(path.join(root, "MARKETING-LOG.txt"), "utf-8");
     expect(changelog).toContain("AI Security, Supply-Chain & Dependency Audit (0 Vulnerabilities)");
     expect(marketingLog).toContain("AI Security, Supply-Chain & Dependency Audit (0 Vulnerabilities)");
+  });
+  it("ensures sequence diagram in README.md and README_de.md includes Phase 3 Host Governance & Canonical Lock Verification", () => {
+    expect(readmeEn).toContain("Note over Agent,CC: 3. Host Governance & Canonical Lock Verification");
+    expect(readmeEn).toContain("controlcenter_check_lock(path) / evaluate_permission(action, path)");
+    expect(readmeEn).toContain("Traverse nearest LOCK.user.* / LOCK.until.* / LOCK.permissions.json");
+    expect(readmeEn).toContain("INV-LOCK-06");
+
+    expect(readmeDe).toContain("Note over Agent,CC: 3. Host-Governance- & Kanonische Lock-Verifikation");
+    expect(readmeDe).toContain("controlcenter_check_lock(path) / evaluate_permission(action, path)");
+    expect(readmeDe).toContain("Durchsucht nächstgelegene LOCK.user.* / LOCK.until.* / LOCK.permissions.json");
+    expect(readmeDe).toContain("INV-LOCK-06");
   });
 });

@@ -7,8 +7,8 @@
 # Ecosystem: ellmos-ai (AI Infrastructure & MCP Control Plane)
 # Umbrella: open-bricks (AI-Native Desktop & Developer Tools)
 # Current Version: 0.7.4 (frozen per T-20260920-167562623)
-# Maintenance Path: Pfad A (Repository Hygiene, CI Lifecycle Workflows, Sync Defense & Bilingual Contributing Guidelines)
-# Last Updated: 2026-10-03
+# Maintenance Path: Pfad B (Repository Discoverability, Enhanced Sequence Diagram, Badges Currency & Level 1 SBOM Re-Audit)
+# Last Updated: 2026-10-31
 # ==============================================================================
 
 [POSITIONING & VALUE PROPOSITION]
@@ -144,3 +144,11 @@ Key Differentiators:
   - 30-Day Remediation Commitment: Updated SECURITY.md in English and German committing to a binding 30-calendar-day remediation window for confirmed vulnerabilities (INV-SLA-10). Harmonized THIRD_PARTY_LICENSES.md and THIRD_PARTY_LICENSES.txt with 48h/5d/30d SLA.
   - Defensive Gitignore Hygiene: Expanded .gitignore exclusions covering environment configs (.env, .env.*), package manager auth (.npmrc, .pypirc), keys/certs/CSRs (*.key, *.pem, *.crt, *.cert, *.csr), tokens/secrets/credentials (*.token, *.secret, credentials.json, secrets.json, id_rsa*, id_ed25519*), and conflict review logs (CONFLICT_REVIEW_LOG*).
   - Automated Contract Tests & AST Verification: Expanded test/metadata.test.ts to verify dependency overrides, gitignore security patterns, 30d remediation SLA, and 0 hardcoded secrets / personal developer paths across all tracked files. Version 0.7.4 strictly preserved per T-20260920-167562623.
+2026-10-31: Pfad B Discoverability, Enhanced Sequence Diagram (Host Governance & Canonical Lock Verification), Test Currency & Level 1 SBOM Re-Audit (v0.7.4):
+  - Expanded Section 05 Sequence Diagram in both README.md and README_de.md to include Phase 3: Host Governance & Canonical Lock Verification (controlcenter_check_lock, controlcenter_evaluate_permission, INV-LOCK-06, INV-PERM-07).
+  - Illustrates fail-closed lock boundaries, upward hierarchical directory traversal for LOCK.user.* / LOCK.until.* / LOCK.permissions.json, and read-only enforcement.
+  - Synchronized Shields.io verification date badge to verified-2026--10--31-blue.svg and updated Vitest badge to Vitest-278 passed in README.md and README_de.md.
+  - Re-audited Level 1 SBOM in THIRD_PARTY_LICENSES.md (Stand 2026-10-31) and plain-text companion THIRD_PARTY_LICENSES.txt, confirming 100% permissive licensing, zero copyleft/AGPL exposure, and adherence to invariants INV-LOCAL-01 through INV-SLA-10.
+  - Updated llms.txt context index Stand 2026-10-31 with 278 passed tests.
+  - Added [Unreleased] entry in CHANGELOG.md; version 0.7.4 strictly preserved per T-20260920-167562623.
+  - Expanded automated metadata contract test suite in test/metadata.test.ts verifying the enhanced sequence diagram, Stand 2026-10-31 recency, and test badge synchronization (278/278 passed, 100% green).

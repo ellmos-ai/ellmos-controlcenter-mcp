@@ -7,6 +7,7 @@
 > **Re-Audit (Pfad B):** 2026-09-29<br>
 > **Re-Audit (Pfad A):** 2026-10-03<br>
 > **Re-Audit (Security & Dependency Audit):** 2026-10-03<br>
+> **Re-Audit (Pfad B):** 2026-10-31<br>
 > **Level 1 SBOM Plain-Text Companion:** [THIRD_PARTY_LICENSES.txt](THIRD_PARTY_LICENSES.txt)<br>
 > **Contributing Guidelines:** [CONTRIBUTING.md](CONTRIBUTING.md)<br>
 > **Repository License:** [MIT License](LICENSE)<br>

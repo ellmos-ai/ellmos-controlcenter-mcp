@@ -15,8 +15,8 @@
 [![Attribution: NOTICE](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
 [![Mitwirken: Leitfaden](https://img.shields.io/badge/Mitwirken-Leitfaden-blue.svg)](CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-267%20passed-brightgreen.svg)](https://vitest.dev/)
-[![Verified: 2026-09-29](https://img.shields.io/badge/verified-2026--09--29-blue.svg)](CHANGELOG.md)
+[![Vitest](https://img.shields.io/badge/Vitest-278%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Verified: 2026-10-31](https://img.shields.io/badge/verified-2026--10--31-blue.svg)](CHANGELOG.md)
 [![Level 1 SBOM](https://img.shields.io/badge/Level%201%20SBOM-Plain%20Text%20Auditiert-blue.svg)](THIRD_PARTY_LICENSES.txt)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
@@ -212,6 +212,7 @@ sequenceDiagram
     participant Backend as Backend MCP Server (Ungeladen)
     participant Scrub as Härtung & Secret-Scrubber
     participant Audit as Audit-Logger (JSONL)
+    participant Lock as Host-Governance- & Lock-Guard
 
     Note over Agent,CC: 1. Administration & Profil-Discovery
     Agent->>CC: controlcenter_suggest_profile / resolve_profile
@@ -235,6 +236,17 @@ sequenceDiagram
         Scrub-->>CC: Bereinigte Nutzlast & Kürzungsstatus
         CC->>Audit: Strukturiertes Audit-Event (gateway-audit.jsonl)
         CC-->>Agent: Sicheres Tool-Ergebnis mit Daten-Bannern
+    end
+
+    Note over Agent,CC: 3. Host-Governance- & Kanonische Lock-Verifikation
+    Agent->>CC: controlcenter_check_lock(path) / evaluate_permission(action, path)
+    CC->>Lock: Durchsucht nächstgelegene LOCK.user.* / LOCK.until.* / LOCK.permissions.json
+    alt Lock aktiv oder unbestätigte Autorität
+        Lock-->>CC: Fail-Closed Verweigerung (Schreibschutz aktiv)
+        CC-->>Agent: Lock-Status: LOCKED / Read-Only Guard aktiv (INV-LOCK-06)
+    else Pfad entsperrt & autorisiert
+        Lock-->>CC: Pfad-Freigabe bestätigt
+        CC-->>Agent: Status: UNLOCKED / Sicher zur Bearbeitung
     end
 ```
 
