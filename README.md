@@ -211,6 +211,7 @@ sequenceDiagram
     participant Backend as Backend MCP Server (Unloaded)
     participant Scrub as Hardening & Secret Scrubber
     participant Audit as Audit Logger (JSONL)
+    participant Lock as Host Governance & Lock Guard
 
     Note over Agent,CC: 1. Administration & Profile Discovery
     Agent->>CC: controlcenter_suggest_profile / resolve_profile
@@ -234,6 +235,17 @@ sequenceDiagram
         Scrub-->>CC: Sanitized Payload & Truncation Status
         CC->>Audit: Append structured audit event (gateway-audit.jsonl)
         CC-->>Agent: Safe Tool Result wrapped with Data Banners
+    end
+
+    Note over Agent,CC: 3. Host Governance & Canonical Lock Verification
+    Agent->>CC: controlcenter_check_lock(path) / evaluate_permission(action, path)
+    CC->>Lock: Traverse nearest LOCK.user.* / LOCK.until.* / LOCK.permissions.json
+    alt Lock Active or Unverified Authority
+        Lock-->>CC: Fail-Closed Denial (Read-Only Enforced)
+        CC-->>Agent: Lock Status: LOCKED (INV-LOCK-06 / INV-PERM-07)
+    else Unlocked & Authorized
+        Lock-->>CC: Confirmed Clear & Scope Authorized
+        CC-->>Agent: Lock Status: UNLOCKED (Proceed)
     end
 ```
 

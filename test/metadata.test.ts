@@ -819,4 +819,15 @@ describe("metadata & manifest parity", () => {
     const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf-8");
     expect(changelog).toContain("AI Security, Supply-Chain & Dependency Audit");
   });
+  it("ensures sequence diagram in README.md and README_de.md includes Phase 3 Host Governance & Canonical Lock Verification", () => {
+    expect(readmeEn).toContain("Note over Agent,CC: 3. Host Governance & Canonical Lock Verification");
+    expect(readmeEn).toContain("controlcenter_check_lock(path) / evaluate_permission(action, path)");
+    expect(readmeEn).toContain("Traverse nearest LOCK.user.* / LOCK.until.* / LOCK.permissions.json");
+    expect(readmeEn).toContain("INV-LOCK-06");
+
+    expect(readmeDe).toContain("Note over Agent,CC: 3. Host-Governance- & Kanonische Lock-Verifikation");
+    expect(readmeDe).toContain("controlcenter_check_lock(path) / evaluate_permission(action, path)");
+    expect(readmeDe).toContain("Durchsucht nächstgelegene LOCK.user.* / LOCK.until.* / LOCK.permissions.json");
+    expect(readmeDe).toContain("INV-LOCK-06");
+  });
 });
