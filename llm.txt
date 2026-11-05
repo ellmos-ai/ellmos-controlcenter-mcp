@@ -1,0 +1,4 @@
+# ellmos-controlcenter-mcp — LLM Guidance Pointer
+
+This repository provides canonical LLM guidance, architecture notes, and machine-readable navigation in **[llms.txt](llms.txt)**.
+For autonomous agent workflows, tool definitions, governance invariants, and MCP integration procedures, see **[SKILL.md](SKILL.md)**.

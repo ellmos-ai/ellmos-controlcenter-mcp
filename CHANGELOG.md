@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased] - 2026-11-05
+
+### Repository Hygiene, GITHUB-POLICY Compliance, LLM Skill & Community Health Standards (2026-11-05)
+
+- **Bilingual Code of Conduct (`CODE_OF_CONDUCT.md`):**
+  Added canonical Contributor Covenant v2.1 code of conduct in German and English, with reporting channels (`conduct@ellmos.ai`, `support@lukasgeiger.com`) to foster an inclusive, safe, and harassment-free development ecosystem.
+- **Product-Specific LLM Skill (`SKILL.md`):**
+  Created authoritative agent skill manifest (P-022) specifying tool capabilities across localization, MCP stack discovery, capability cataloging, profile audits, semantic routing, host governance introspection, and policy-gated gateway execution, bound by invariants `INV-LOCAL-01` through `INV-SLA-10`.
+- **LLM Guidance Pointer (`llm.txt`):**
+  Added standard compatibility pointer referencing `llms.txt` and `SKILL.md` for seamless automated agent navigation.
+- **GitHub Community Health Templates (`.github/`):**
+  Provisioned `.github/FUNDING.yml` sponsorship metadata and bilingual issue templates for bugs (`.github/ISSUE_TEMPLATE/bug_report.md`) and feature requests (`.github/ISSUE_TEMPLATE/feature_request.md`).
+- **NPM Package Manifest Parity (`package.json`):**
+  Included `CODE_OF_CONDUCT.md`, `SKILL.md`, and `llm.txt` in the distribution `files` manifest; version `0.7.4` remains strictly frozen per T-20260920-167562623.
+- **Contract Test Suite Expansion (`test/metadata.test.ts`):**
+  Expanded metadata contract tests verifying existence and compliance of Community Health templates, bilingual Code of Conduct, LLM skill, and package manifest parity.
+
 ## [Unreleased] - 2026-10-18
 
 ### Surface After-Care: Publication Hygiene, Verified Sibling Figures & Dependency Audit (2026-10-18)

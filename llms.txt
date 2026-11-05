@@ -142,6 +142,8 @@ ellmos-controlcenter-mcp
 - `README_de.md`: German documentation with Zielgruppen and Vergleichsmatrix.
 - `SECURITY.md`: bilingual security policy, no-telemetry/background-egress default, and explicit remote HTTPS gateway boundary.
 - `CONTRIBUTING.md`: bilingual contributing guidelines, Plan D development workflow, and 10 governance invariants.
+- `CODE_OF_CONDUCT.md`: bilingual Contributor Covenant v2.1 code of conduct and reporting channels.
+- `SKILL.md`: product-specific agent skill, tool reference, runtime invariants, and MCP client integration.
 - `THIRD_PARTY_LICENSES.md`: third-party open-source dependency licenses, audit summary, and notices.
 - `THIRD_PARTY_LICENSES.txt`: canonical plain-text Level 1 SBOM companion and runtime invariants.
 - `CHANGELOG.md`: version history and release logs.

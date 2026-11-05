@@ -24,7 +24,11 @@ All contributions must strictly uphold our core architectural invariants:
 9. **Cloud-Sync Conflict Hardening (`INV-SYNC-09`)**: Hardened `.gitignore` defense preventing cloud-sync collisions (`*-WORKSTATION*`, `*-IDEAPAD*`, `*conflicted copy*`) and multi-agent coordination locks (`LOCK*`, `LOCK.user.*`, `LOCK.until.*`, `LOCK.condition.*`).
 10. **Bilingual Security SLA (`INV-SLA-10`)**: Binding 48-hour response confirmation, 5-business-day triage assessment, and coordinated vulnerability remediation via `security@open-bricks.org` and `security@ellmos.ai`.
 
-### 2. Local Development Workflow
+### 2. Community Standards & Code of Conduct
+
+We are committed to providing a friendly, safe, and welcoming environment for all participants. All contributors are expected to adhere to our [Code of Conduct](CODE_OF_CONDUCT.md). Please report unacceptable behavior to [conduct@ellmos.ai](mailto:conduct@ellmos.ai) or [support@lukasgeiger.com](mailto:support@lukasgeiger.com).
+
+### 3. Local Development Workflow
 
 The GitHub repository linked above is the authoritative source. Work in your own clone or fork, build and run the test suite locally, and open a pull request from a topic branch.
 
@@ -87,7 +91,11 @@ Alle Beiträge müssen unsere verbindlichen Kern-Invarianten strikt einhalten:
 9. **Cloud-Sync Konflikt- & Lock-Schutz (`INV-SYNC-09`)**: Gehärtete `.gitignore` gegen Cloud-Sync-Konfliktdateien (`*-WORKSTATION*`, `*-IDEAPAD*`, `*conflicted copy*`) und Multi-Agenten-Locks (`LOCK*`, `LOCK.user.*`, `LOCK.until.*`, `LOCK.condition.*`).
 10. **Zweisprachige Sicherheits-SLA (`INV-SLA-10`)**: Verbindliche 48-Stunden-Erstantwortgarantie, 5-Werktage-Triage-Zusage und koordinierte Behebung von Sicherheitsmeldungen über `security@open-bricks.org` und `security@ellmos.ai`.
 
-### 2. Lokaler Entwicklungsworkflow
+### 2. Community-Standards & Verhaltenskodex
+
+Wir setzen uns für ein offenes, sicheres und einladendes Umfeld für alle Teilnehmenden ein. Alle Beitragenden verpflichten sich zur Einhaltung unseres [Verhaltenskodex](CODE_OF_CONDUCT.md). Bitte melden Sie inakzeptables Verhalten an [conduct@ellmos.ai](mailto:conduct@ellmos.ai) oder [support@lukasgeiger.com](mailto:support@lukasgeiger.com).
+
+### 3. Lokaler Entwicklungsworkflow
 
 Maßgeblich ist das oben verlinkte GitHub-Repository. Arbeite in deinem eigenen Klon oder Fork, baue und teste lokal und stelle den Pull Request aus einem Themenbranch.
 
