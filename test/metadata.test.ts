@@ -123,10 +123,13 @@ describe("metadata & manifest parity", () => {
       "LICENSE",
       "NOTICE",
       "llms.txt",
+      "llm.txt",
+      "SKILL.md",
       "CHANGELOG.md",
       "server.json",
       "glama.json",
       "CONTRIBUTING.md",
+      "CODE_OF_CONDUCT.md",
       "THIRD_PARTY_LICENSES.md",
       "THIRD_PARTY_LICENSES.txt",
     ];
@@ -829,5 +832,43 @@ describe("metadata & manifest parity", () => {
     expect(readmeDe).toContain("controlcenter_check_lock(path) / evaluate_permission(action, path)");
     expect(readmeDe).toContain("Durchsucht nächstgelegene LOCK.user.* / LOCK.until.* / LOCK.permissions.json");
     expect(readmeDe).toContain("INV-LOCK-06");
+  });
+
+  it("ensures CODE_OF_CONDUCT.md is bilingual and adheres to Contributor Covenant v2.1", () => {
+    const coc = fs.readFileSync(path.join(root, "CODE_OF_CONDUCT.md"), "utf-8");
+    expect(coc).toContain("# Verhaltenskodex / Code of Conduct");
+    expect(coc).toContain("## Deutsch");
+    expect(coc).toContain("## English");
+    expect(coc).toContain("conduct@ellmos.ai");
+    expect(coc).toContain("support@lukasgeiger.com");
+    expect(coc).toContain("Contributor Covenant v2.1");
+    expect(packageJson.files).toContain("CODE_OF_CONDUCT.md");
+  });
+
+  it("ensures SKILL.md and llm.txt provide authoritative agent guidance and manifest parity", () => {
+    const skill = fs.readFileSync(path.join(root, "SKILL.md"), "utf-8");
+    const llm = fs.readFileSync(path.join(root, "llm.txt"), "utf-8");
+    expect(skill).toContain("name: ellmos-controlcenter-mcp");
+    expect(skill).toContain(`version: "${packageJson.version}"`);
+    expect(skill).toContain("type: mcp-control-plane");
+    expect(skill).toContain("INV-LOCAL-01");
+    expect(skill).toContain("INV-SLA-10");
+    expect(skill).toContain("controlcenter_invoke");
+    expect(skill).toContain("controlcenter_list_tools");
+    expect(llm).toContain("llms.txt");
+    expect(llm).toContain("SKILL.md");
+    expect(packageJson.files).toContain("SKILL.md");
+    expect(packageJson.files).toContain("llm.txt");
+  });
+
+  it("ensures GitHub community health templates exist for funding and issue intake", () => {
+    const funding = fs.readFileSync(path.join(root, ".github", "FUNDING.yml"), "utf-8");
+    const bug = fs.readFileSync(path.join(root, ".github", "ISSUE_TEMPLATE", "bug_report.md"), "utf-8");
+    const feature = fs.readFileSync(path.join(root, ".github", "ISSUE_TEMPLATE", "feature_request.md"), "utf-8");
+    expect(funding).toContain("github: lukisch");
+    expect(bug).toContain("Bug Report / Fehlerbericht");
+    expect(bug).toContain("labels: bug");
+    expect(feature).toContain("Feature Request / Funktionswunsch");
+    expect(feature).toContain("labels: enhancement");
   });
 });
