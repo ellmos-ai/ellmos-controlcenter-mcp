@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-label="ellmos ControlCenter MCP Local Dashboard and Control Plane Overview">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1120"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="540" rx="14" fill="url(#bg)"/>
+  <rect x="1" y="1" width="958" height="538" rx="13" fill="none" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Top Bar -->
+  <rect x="20" y="20" width="920" height="52" rx="10" fill="#131c31" stroke="#24324a"/>
+  <circle cx="44" cy="46" r="6" fill="#22c55e"/>
+  <text x="62" y="51" fill="#f8fafc" font-family="Segoe UI, Inter, system-ui, sans-serif" font-size="16" font-weight="700">ellmos ControlCenter Dashboard</text>
+  <rect x="330" y="34" width="180" height="24" rx="6" fill="#0f172a" stroke="#334155"/>
+  <text x="344" y="50" fill="#94a3b8" font-family="Consolas, monospace" font-size="12">http://127.0.0.1:3737</text>
+
+  <!-- Language & Loopback Pills -->
+  <rect x="530" y="34" width="142" height="24" rx="12" fill="#0c4a6e" stroke="#0284c7"/>
+  <text x="543" y="50" fill="#bae6fd" font-family="Segoe UI, sans-serif" font-size="11" font-weight="600">Loopback / Local-First</text>
+  <rect x="684" y="34" width="136" height="24" rx="12" fill="#1e1b4b" stroke="#4f46e5"/>
+  <text x="698" y="50" fill="#c7d2fe" font-family="Segoe UI, sans-serif" font-size="11" font-weight="600">i18n: EN DE ES ZH JA RU</text>
+  <rect x="832" y="34" width="94" height="24" rx="12" fill="#14532d" stroke="#16a34a"/>
+  <text x="847" y="50" fill="#bbf7d0" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700">34 MCP Tools</text>
+
+  <!-- Stat Cards Row -->
+  <g font-family="Segoe UI, Inter, system-ui, sans-serif">
+    <rect x="20" y="88" width="218" height="76" rx="10" fill="#131c31" stroke="#24324a"/>
+    <text x="36" y="112" fill="#94a3b8" font-size="12" font-weight="600">LOCAL MCP SERVERS</text>
+    <text x="36" y="143" fill="#38bdf8" font-size="24" font-weight="700">Scanned Catalog</text>
+    <text x="36" y="156" fill="#64748b" font-size="10">Bounded concurrency &amp; 1 MiB cap</text>
+
+    <rect x="254" y="88" width="218" height="76" rx="10" fill="#131c31" stroke="#24324a"/>
+    <text x="270" y="112" fill="#94a3b8" font-size="12" font-weight="600">ACTIVE PROFILE</text>
+    <text x="270" y="143" fill="#a78bfa" font-size="24" font-weight="700">software (extends)</text>
+    <text x="270" y="156" fill="#64748b" font-size="10">Backup before --mcp-config write</text>
+
+    <rect x="488" y="88" width="218" height="76" rx="10" fill="#131c31" stroke="#24324a"/>
+    <text x="504" y="112" fill="#94a3b8" font-size="12" font-weight="600">GATEWAY POLICY</text>
+    <text x="504" y="143" fill="#34d399" font-size="24" font-weight="700">Fail-Closed</text>
+    <text x="504" y="156" fill="#64748b" font-size="10">Recursive redaction &amp; audit JSONL</text>
+
+    <rect x="722" y="88" width="218" height="76" rx="10" fill="#131c31" stroke="#24324a"/>
+    <text x="738" y="112" fill="#94a3b8" font-size="12" font-weight="600">HOST GOVERNANCE</text>
+    <text x="738" y="143" fill="#fbbf24" font-size="24" font-weight="700">Locks &amp; Perms</text>
+    <text x="738" y="156" fill="#64748b" font-size="10">LOCK*.txt &amp; LOCK.permissions.json</text>
+  </g>
+
+  <!-- Left Panel: Local MCP Servers & Profile Toggle -->
+  <rect x="20" y="180" width="452" height="236" rx="10" fill="#131c31" stroke="#24324a"/>
+  <text x="38" y="206" fill="#e2e8f0" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700">Profile &amp; Capability Bundle Matrix</text>
+  <rect x="36" y="220" width="420" height="36" rx="6" fill="#0f172a" stroke="#1e293b"/>
+  <circle cx="52" cy="238" r="5" fill="#22c55e"/>
+  <text x="66" y="242" fill="#e2e8f0" font-family="Consolas, monospace" font-size="12">filecommander-mcp</text>
+  <text x="255" y="242" fill="#94a3b8" font-family="Segoe UI, sans-serif" font-size="11">core-local</text>
+  <rect x="372" y="228" width="70" height="20" rx="10" fill="#14532d"/>
+  <text x="388" y="242" fill="#86efac" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">ENABLED</text>
+
+  <rect x="36" y="264" width="420" height="36" rx="6" fill="#0f172a" stroke="#1e293b"/>
+  <circle cx="52" cy="282" r="5" fill="#22c55e"/>
+  <text x="66" y="286" fill="#e2e8f0" font-family="Consolas, monospace" font-size="12">codecommander-mcp</text>
+  <text x="255" y="286" fill="#94a3b8" font-family="Segoe UI, sans-serif" font-size="11">dev-tools</text>
+  <rect x="372" y="272" width="70" height="20" rx="10" fill="#14532d"/>
+  <text x="388" y="286" fill="#86efac" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">ENABLED</text>
+
+  <rect x="36" y="308" width="420" height="36" rx="6" fill="#0f172a" stroke="#1e293b"/>
+  <circle cx="52" cy="326" r="5" fill="#f59e0b"/>
+  <text x="66" y="330" fill="#e2e8f0" font-family="Consolas, monospace" font-size="12">n8n-manager-mcp</text>
+  <text x="255" y="330" fill="#94a3b8" font-family="Segoe UI, sans-serif" font-size="11">automation</text>
+  <rect x="358" y="316" width="84" height="20" rx="10" fill="#1e293b" stroke="#38bdf8"/>
+  <text x="369" y="330" fill="#7dd3fc" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">ON-DEMAND</text>
+
+  <rect x="36" y="352" width="420" height="36" rx="6" fill="#0f172a" stroke="#1e293b"/>
+  <circle cx="52" cy="370" r="5" fill="#38bdf8"/>
+  <text x="66" y="374" fill="#e2e8f0" font-family="Consolas, monospace" font-size="12">servercommander-mcp</text>
+  <text x="255" y="374" fill="#94a3b8" font-family="Segoe UI, sans-serif" font-size="11">ops-ssh</text>
+  <rect x="358" y="360" width="84" height="20" rx="10" fill="#1e293b" stroke="#38bdf8"/>
+  <text x="369" y="374" fill="#7dd3fc" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">ON-DEMAND</text>
+
+  <!-- Right Panel: Audited Gateway & Profile Audit -->
+  <rect x="488" y="180" width="452" height="236" rx="10" fill="#131c31" stroke="#24324a"/>
+  <text x="506" y="206" fill="#e2e8f0" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700">Gateway Invocation &amp; Audit Trace</text>
+
+  <rect x="506" y="220" width="416" height="176" rx="8" fill="#0b1120" stroke="#1e293b"/>
+  <text x="522" y="244" fill="#38bdf8" font-family="Consolas, monospace" font-size="12">$ controlcenter_invoke(server=&quot;n8n-manager&quot;, tool=&quot;list_workflows&quot;)</text>
+  <text x="522" y="268" fill="#34d399" font-family="Consolas, monospace" font-size="11">[PASS] policy rule matched (data/gateway-policy.json)</text>
+  <text x="522" y="288" fill="#34d399" font-family="Consolas, monospace" font-size="11">[PASS] ephemeral stdio transport opened &amp; closed cleanly</text>
+  <text x="522" y="308" fill="#fbbf24" font-family="Consolas, monospace" font-size="11">[SAFE] recursive secret redaction applied (0 leaks, &lt;= 1 MiB)</text>
+  <text x="522" y="328" fill="#a78bfa" font-family="Consolas, monospace" font-size="11">[MARK] untrusted-data framing wrapped before LLM handoff</text>
+  <text x="522" y="348" fill="#94a3b8" font-family="Consolas, monospace" font-size="11">[LOG ] gateway-audit.jsonl recorded (arguments omitted)</text>
+  <rect x="522" y="362" width="384" height="22" rx="4" fill="#131c31"/>
+  <text x="532" y="377" fill="#cbd5e1" font-family="Consolas, monospace" font-size="11">Audit Score: PASS | 0 blocked warnings | No session restart needed</text>
+
+  <!-- Bottom Action Bar -->
+  <rect x="20" y="432" width="920" height="88" rx="10" fill="#131c31" stroke="#24324a"/>
+  <rect x="20" y="432" width="920" height="3" fill="url(#accent)"/>
+  <text x="38" y="460" fill="#f8fafc" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700">Write-Safe Profile Generator &amp; MCP Config Preview</text>
+  <rect x="38" y="472" width="690" height="32" rx="6" fill="#0b1120" stroke="#334155"/>
+  <text x="52" y="492" fill="#7dd3fc" font-family="Consolas, monospace" font-size="12">claude --mcp-config ~/.claude/profiles/_generated/software.mcp.json</text>
+  <rect x="744" y="472" width="178" height="32" rx="6" fill="#2563eb"/>
+  <text x="774" y="492" fill="#ffffff" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700">Confirm &amp; Backup</text>
+</svg>

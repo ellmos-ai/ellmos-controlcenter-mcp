@@ -871,4 +871,26 @@ describe("metadata & manifest parity", () => {
     expect(feature).toContain("Feature Request / Funktionswunsch");
     expect(feature).toContain("labels: enhancement");
   });
+
+  it("ensures bilingual Install with your LLM prompt blocks exist in both READMEs and reference llms.txt and SKILL.md", () => {
+    const enSection = readmeEn.split("### Install with your LLM")[1]?.split("### Option 1:")[0] ?? "";
+    const deSection = readmeDe.split("### Mit deinem LLM installieren")[1]?.split("### Option 1:")[0] ?? "";
+    expect(enSection).toBeTruthy();
+    expect(deSection).toBeTruthy();
+    for (const section of [enSection, deSection]) {
+      const promptBlock = /```text\r?\n([\s\S]*?)```/.exec(section)?.[1] ?? "";
+      expect(promptBlock).toContain("llms.txt");
+      expect(promptBlock).toContain("SKILL.md");
+      expect(promptBlock).not.toMatch(/curl[^`\n]*\|\s*(sh|bash)/i);
+    }
+  });
+
+  it("ensures dashboard preview SVG visual asset exists and is embedded in both READMEs", () => {
+    const svgPath = path.join(root, "assets", "controlcenter-dashboard-preview.svg");
+    expect(fs.existsSync(svgPath)).toBe(true);
+    const svg = fs.readFileSync(svgPath, "utf-8");
+    expect(svg).toContain("<svg");
+    expect(readmeEn).toContain("assets/controlcenter-dashboard-preview.svg");
+    expect(readmeDe).toContain("assets/controlcenter-dashboard-preview.svg");
+  });
 });
