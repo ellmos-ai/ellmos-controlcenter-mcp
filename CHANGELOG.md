@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] - 2026-11-14
+
+### Discoverability, Visual Dashboard Preview & Copy-Ready LLM Install Prompt (Pfad B) (2026-11-14)
+
+- **Bilingual Copy-Paste LLM Install Prompts (`README.md`, `README_de.md`, `llms.txt`):**
+  Added dedicated `### Install with your LLM` / `### Mit deinem LLM installieren` sections under `## Installation` with safe, zero-`curl|sh` fenced `text` instruction blocks pointing to `llms.txt` and `SKILL.md`, and enriched `llms.txt` with explicit prerequisites, verification, and minimal configuration snippets.
+- **Dashboard Visual Preview (`assets/controlcenter-dashboard-preview.svg`):**
+  Added a sanitized vector overview of the local loopback control-plane dashboard (`http://127.0.0.1:3737`) illustrating profile switching, bundle status, gateway policy audit traces, and lock governance without host-local path leakage.
+- **Badge & Metadata Consistency Sync (`README.md`, `README_de.md`, `llms.txt`, `test/metadata.test.ts`):**
+  Refreshed verification stamps to `2026-11-14`, aligned test-count badges and `llms.txt` status to the measured passing suite (`293` passing, plus 2 environment-conditional canonical-lock skips), and added contract tests for the LLM install prompt and dashboard visual asset. Version `0.7.4` remains frozen.
+
 ## [Unreleased] - 2026-11-05
 
 ### Repository Hygiene, GITHUB-POLICY Compliance, LLM Skill & Community Health Standards (2026-11-05)

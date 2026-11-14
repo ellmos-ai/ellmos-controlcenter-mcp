@@ -15,8 +15,8 @@
 [![Attribution: NOTICE](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
 [![Mitwirken: Leitfaden](https://img.shields.io/badge/Mitwirken-Leitfaden-blue.svg)](CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-279%20passed-brightgreen.svg)](https://vitest.dev/)
-[![Verified: 2026-10-18](https://img.shields.io/badge/verified-2026--10--18-blue.svg)](CHANGELOG.md)
+[![Vitest](https://img.shields.io/badge/Vitest-293%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Verified: 2026-11-14](https://img.shields.io/badge/verified-2026--11--14-blue.svg)](CHANGELOG.md)
 [![Level 1 SBOM](https://img.shields.io/badge/Level%201%20SBOM-Plain%20Text%20Auditiert-blue.svg)](THIRD_PARTY_LICENSES.txt)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
@@ -563,6 +563,10 @@ Standardadresse:
 http://127.0.0.1:3737
 ```
 
+<p align="center">
+  <img src="assets/controlcenter-dashboard-preview.svg" alt="ellmos ControlCenter Lokales Dashboard Vorschau" width="840">
+</p>
+
 Das Dashboard kann aktuell lokale Server und Profile anzeigen, seine UI-Sprache wechseln, Server pro Profil aktivieren oder deaktivieren, Profil-Audits zusammenfassen, MCP-Tools für das gewählte Profil oder lokale Repositories scannen, Tool-Bundle-Zuordnungen anzeigen und eine generierte `--mcp-config` schreiben. Schreibaktionen verlangen eine Bestätigung und legen vor dem Überschreiben ein Backup an.
 
 ## Discovery- und Registry-Metadaten
@@ -592,6 +596,17 @@ Passende Suchphrasen:
 <a id="sec-01"></a>
 <a id="installation"></a>
 ## Installation
+
+### Mit deinem LLM installieren
+
+Kopiere diesen Prompt in Claude Code, Codex, Gemini oder einen anderen MCP-fähigen Assistenten, um `ellmos-controlcenter-mcp` sicher über npm oder ein getaggtes Release zu installieren und zu prüfen:
+
+```text
+Installiere und verifiziere https://github.com/ellmos-ai/ellmos-controlcenter-mcp (bevorzuge das npm-Paket oder ein getaggtes Release, niemals ungeprüfte Remote-Shell-Pipes):
+1. Lies zuerst llms.txt und SKILL.md im Repo-Root.
+2. Installiere global über `npm install -g ellmos-controlcenter-mcp` (Node.js >=20) oder baue sauber aus dem Quellcode (`npm ci && npm run build`).
+3. Prüfe den Build mit `npm test` (aus dem Quellcode) bzw. über `npm list -g ellmos-controlcenter-mcp` und übernimm die unten gezeigte `mcpServers`-Konfiguration, ohne unbeteiligte Dateien zu verändern.
+```
 
 ### Option 1: Installation über npm
 
