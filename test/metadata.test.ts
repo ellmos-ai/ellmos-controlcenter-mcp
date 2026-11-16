@@ -492,20 +492,6 @@ describe("metadata & manifest parity", () => {
     }
   });
 
-  it("keeps relative documentation links in READMEs and llms.txt resolvable", () => {
-    const documents: Array<[string, string]> = [
-      ["README.md", readmeEn],
-      ["README_de.md", readmeDe],
-      ["llms.txt", llmsTxt],
-    ];
-    for (const [name, text] of documents) {
-      const targets = [...text.matchAll(/\]\(\.\/([^)#\s]+)[^)]*\)/g)].map((match) => match[1]);
-      for (const target of targets) {
-        expect(fs.existsSync(path.join(root, target)), `${name} links to missing ${target}`).toBe(true);
-      }
-    }
-  });
-
   it("ensures canonical NOTICE attribution exists and is complete", () => {
     expect(notice).toContain("ellmos-controlcenter-mcp");
     expect(notice).toContain("Copyright (c) 2026 Lukas Geiger <lukas@open-bricks.org>");
@@ -892,5 +878,46 @@ describe("metadata & manifest parity", () => {
     expect(svg).toContain("<svg");
     expect(readmeEn).toContain("assets/controlcenter-dashboard-preview.svg");
     expect(readmeDe).toContain("assets/controlcenter-dashboard-preview.svg");
+  });
+
+  it("ensures CI/CD workflows, dependabot, and issue template chooser config are hardened", () => {
+    const ciYml = fs.readFileSync(path.join(root, ".github", "workflows", "ci.yml"), "utf-8");
+    const dependabotYml = fs.readFileSync(path.join(root, ".github", "dependabot.yml"), "utf-8");
+    const templateConfig = fs.readFileSync(path.join(root, ".github", "ISSUE_TEMPLATE", "config.yml"), "utf-8");
+
+    expect(autoAssignYml).toContain("if: github.event.pull_request.user.type != 'Bot'");
+    expect(ciYml).toContain("git diff --check");
+    expect(dependabotYml).toContain('package-ecosystem: "npm"');
+    expect(dependabotYml).toContain("applies-to: security-updates");
+    expect(templateConfig).toContain("blank_issues_enabled: false");
+    expect(templateConfig).toContain("security/advisories/new");
+  });
+
+  it("ensures .gitignore blocks role-lock markers, agent state dirs, and MARKETING-LOG.txt", () => {
+    const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf-8");
+    for (const pattern of [
+      "LOCK-CACHE.*",
+      "LOCK.orchestrator.*",
+      "LOCK.operator.*",
+      "LOCK.worker.*",
+      "LOCK.thinker.*",
+      "LOCK.reviewer.*",
+      "*MARKETING-LOG.txt",
+      ".claude/",
+      ".codex/",
+      ".gemini/",
+      ".agent/",
+    ]) {
+      expect(gitignore).toContain(pattern);
+    }
+  });
+
+  it("ensures THIRD_PARTY_LICENSES.txt documents every package.json override entry", () => {
+    const thirdPartyTxt = fs.readFileSync(path.join(root, "THIRD_PARTY_LICENSES.txt"), "utf-8");
+    const overrides = Object.keys(packageJson.overrides ?? {});
+    expect(overrides.length).toBeGreaterThan(0);
+    for (const pkg of overrides) {
+      expect(thirdPartyTxt).toContain(`| ${pkg} |`);
+    }
   });
 });

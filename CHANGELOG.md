@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased] - 2026-11-16
+
+### Technical Hygiene, CI Hardening, Lockfile Security & Contract Parity (Pfad A) (2026-11-16)
+
+- **Lockfile Security Refresh (`package-lock.json` via `npm audit fix`):**
+  Updated transitive lockfile resolutions without breaking API or version changes (`@modelcontextprotocol/sdk` `1.29.0 -> 1.32.1`, `@hono/node-server` `2.0.12 -> 2.1.8`, `hono` `4.13.12 -> 4.13.18`, `fast-uri` `3.1.8 -> 3.1.9`, `ip-address` `10.7.3 -> 10.7.6`, `body-parser` `2.3.0 -> 2.4.0`, `qs` `6.16.0 -> 6.17.1`, `proxy-addr` `2.0.7 -> 2.0.8`, `source-map-js` `1.2.1 -> 1.2.2`, `vitest` `4.1.11 -> 4.1.12`), leaving `0` non-breaking production advisories (`zod` remains intentionally on `^3.23.8`; `version` `0.7.4` remains frozen).
+- **Workflow & Community Template Hardening (`.github/`):**
+  Added a bot-PR guard (`if: github.event.pull_request.user.type != 'Bot'`) to `.github/workflows/auto-assign.yml`, added `git diff --check` whitespace/conflict hygiene verification to `.github/workflows/ci.yml`, and added `.github/ISSUE_TEMPLATE/config.yml` disabling blank issues and linking security advisories + documentation.
+- **Ignore Hygiene & SBOM Parity (`.gitignore`, `THIRD_PARTY_LICENSES.md`, `THIRD_PARTY_LICENSES.txt`):**
+  Extended `.gitignore` with fleet role-lock patterns (`LOCK-CACHE.*`, `LOCK.orchestrator.*`, `LOCK.operator.*`, `LOCK.worker.*`, `LOCK.thinker.*`, `LOCK.reviewer.*`), `*MARKETING-LOG.txt`, `.claude/`, `.codex/`, `.gemini/`, `.agent/`, and `*.prof`; documented `proxy-addr` (`^2.0.8`) and `source-map-js` (`^1.2.2`) in `THIRD_PARTY_LICENSES.txt` and refreshed audit stamps to `2026-11-16`.
+- **Metadata Contract Suite Cleanup & Expansion (`test/metadata.test.ts`):**
+  Removed a duplicate `keeps relative documentation links in READMEs and llms.txt resolvable` test block, added contract assertions covering CI/Dependabot/issue-template hardening, `.gitignore` lock/agent patterns, and `THIRD_PARTY_LICENSES.txt` `overrides` parity, and synchronized verified badges/docs to `2026-11-16` (`295` passing, plus 2 environment-conditional canonical-lock skips; `297` defined).
+
 ## [Unreleased] - 2026-11-14
 
 ### Discoverability, Visual Dashboard Preview & Copy-Ready LLM Install Prompt (Pfad B) (2026-11-14)

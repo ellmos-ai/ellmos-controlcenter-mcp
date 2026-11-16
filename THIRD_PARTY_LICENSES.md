@@ -143,7 +143,7 @@ SOFTWARE.
 
 ## Compliance & Audit Summary / Lizenz- & Audit-Übersicht
 
-- **Audit Date / Prüfdatum:** 2026-09-14 (Initial Pfad B Audit); 2026-09-26 (Pfad A Technical Hygiene Re-Audit); 2026-09-28 (Pfad B Discoverability Re-Audit); 2026-09-29 (Pfad B Text Companion Re-Audit); 2026-10-03 (Pfad A Technical Hygiene & Contributing Guidelines Re-Audit); 2026-10-18 (Security & Dependency Re-Audit: 3 advisories closed, `npm audit` back to 0 findings)
+- **Audit Date / Prüfdatum:** 2026-09-14 (Initial Pfad B Audit); 2026-09-26 (Pfad A Technical Hygiene Re-Audit); 2026-09-28 (Pfad B Discoverability Re-Audit); 2026-09-29 (Pfad B Text Companion Re-Audit); 2026-10-03 (Pfad A Technical Hygiene & Contributing Guidelines Re-Audit); 2026-10-18 (Security & Dependency Re-Audit: 3 advisories closed, `npm audit` back to 0 findings); 2026-11-16 (Pfad A Technical Hygiene, CI, SBOM & Lockfile Re-Audit)
 - **Audited By / Prüfer:** Gemini / Antigravity Agent (Pfad B Marketing, Discoverability & Navigation Parity); Gemini / Antigravity Agent (One Repo Cleaner Pfad A); Codex release review (2026-09-14)
 - **Contributing & Governance Guidelines:** Bilingual guidelines in [CONTRIBUTING.md](CONTRIBUTING.md) enforcing INV-LOCAL-01..INV-SLA-10, Plan D workflow, and statutory notice (§ 521 BGB Gefälligkeitsrecht)
 - **Canonical Attribution Notice:** Root [NOTICE](NOTICE) file declares copyright (c) 2026 Lukas Geiger, open-bricks and ellmos-ai ecosystems
