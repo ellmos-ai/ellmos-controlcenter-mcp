@@ -46,3 +46,5 @@ jobs:
       - name: Packaging Dry-Run
         run: npm pack --dry-run
 
+      - name: Diff & Whitespace Hygiene Check
+        run: git diff --check
