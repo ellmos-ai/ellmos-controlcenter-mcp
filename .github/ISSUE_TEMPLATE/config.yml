@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Advisories / Sicherheitsmeldungen
+    url: https://github.com/ellmos-ai/ellmos-controlcenter-mcp/security/advisories/new
+    about: Vertrauliche Meldung von Sicherheitslücken / Report security vulnerabilities privately
+  - name: Documentation & Architecture / Dokumentation & Architektur
+    url: https://github.com/ellmos-ai/ellmos-controlcenter-mcp#readme
+    about: Setup-Anleitung, MCP-Tools, Profile und Sicherheitsarchitektur / Setup guide, MCP tools, profiles, and security architecture

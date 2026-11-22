@@ -1,7 +1,7 @@
 # Third-Party Licenses & Level 1 SBOM
 
-Last checked: 2026-10-18 against npm metadata (Baseline: 2026-09-29).
-Audited: Stand: 2026-10-18 (Initial: 2026-09-29) against Level 1 SBOM and runtime invariants.
+Last checked: 2026-11-16 against npm metadata (Baseline: 2026-09-29; Re-Audit: 2026-10-18).
+Audited: Stand: 2026-11-16 (Baseline: 2026-09-29; Re-Audit: 2026-10-18) against Level 1 SBOM and runtime invariants.
 
 Scope: direct runtime dependencies declared in `package.json`, transitive
 overrides, and development/testing tooling. This inventory provides a direct
@@ -45,6 +45,8 @@ Copyright (c) 2026 Lukas Geiger, ellmos-ai family under open-bricks umbrella.
 | qs | Node / npm | ^6.16.0 | BSD-3-Clause | Query string parsing and stringification |
 | vitest | Node / npm | ^4.1.11 | MIT | Fast unit and contract testing framework |
 | postcss | Node / npm | ^8.5.18 | MIT | CSS parsing and transformation pipeline |
+| proxy-addr | Node / npm | ^2.0.8 | MIT | Trusted reverse-proxy client IP address resolution |
+| source-map-js | Node / npm | ^1.2.2 | BSD-3-Clause | Source map generation and consumption for PostCSS |
 
 ## Development & Test Tooling
 
@@ -57,7 +59,7 @@ Copyright (c) 2026 Lukas Geiger, ellmos-ai family under open-bricks umbrella.
 | @emnapi/core | Node / npm | ^1.10.0 | MIT | Emscripten N-API implementation helper |
 | @emnapi/runtime | Node / npm | ^1.10.0 | MIT | Emscripten N-API runtime support |
 
-## Level 1 SBOM Invariant Verification (Stand: 2026-10-03)
+## Level 1 SBOM Invariant Verification (Stand: 2026-11-16)
 
 All 10 architectural and runtime governance invariants are confirmed:
 - INV-LOCAL-01: Local-First & Explicit Egress (Dashboard binds strictly to loopback 127.0.0.1; no background telemetry or phone-home requests; explicit gateway calls require configured HTTPS backends)
