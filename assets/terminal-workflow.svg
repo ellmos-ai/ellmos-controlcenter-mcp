@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 540" role="img" aria-label="ellmos ControlCenter MCP Terminal, Gateway and Governance Workflow">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="headerBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#162033"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="880" height="540" rx="14" fill="url(#bg)"/>
+  <rect x="1" y="1" width="878" height="538" rx="13" fill="none" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Window Header -->
+  <rect x="1" y="1" width="878" height="44" rx="13" fill="url(#headerBar)"/>
+  <rect x="1" y="32" width="878" height="13" fill="url(#headerBar)"/>
+  <circle cx="24" cy="23" r="6" fill="#ef4444"/>
+  <circle cx="44" cy="23" r="6" fill="#f59e0b"/>
+  <circle cx="64" cy="23" r="6" fill="#22c55e"/>
+  <text x="90" y="27" fill="#e2e8f0" font-family="Consolas, Monaco, monospace" font-size="13" font-weight="700">ellmos-controlcenter-mcp v0.7.4 — Control Plane, Gateway &amp; Lock Governance</text>
+  <rect x="742" y="11" width="120" height="24" rx="12" fill="#0f172a" stroke="#38bdf8"/>
+  <text x="758" y="27" fill="#7dd3fc" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700">34 MCP Tools</text>
+
+  <!-- Step 1: Install & Start -->
+  <rect x="20" y="60" width="840" height="86" rx="8" fill="#0f172a" stroke="#1e293b"/>
+  <text x="36" y="82" fill="#38bdf8" font-family="Consolas, monospace" font-size="12" font-weight="700">1. Install &amp; Launch Control Plane (stdio + Loopback Dashboard)</text>
+  <text x="36" y="104" fill="#e2e8f0" font-family="Consolas, monospace" font-size="12">$ npm install -g ellmos-controlcenter-mcp &amp;&amp; ellmos-controlcenter</text>
+  <text x="36" y="124" fill="#34d399" font-family="Consolas, monospace" font-size="11">[READY] 34 tools | i18n: de/en/es/zh/ja/ru | Dashboard: http://127.0.0.1:3737 (RunAsInvoker)</text>
+
+  <!-- Step 2: Profile & Bundle Resolution -->
+  <rect x="20" y="160" width="840" height="92" rx="8" fill="#0f172a" stroke="#1e293b"/>
+  <text x="36" y="182" fill="#a78bfa" font-family="Consolas, monospace" font-size="12" font-weight="700">2. Profile &amp; Capability Bundle Resolution</text>
+  <text x="36" y="204" fill="#e2e8f0" font-family="Consolas, monospace" font-size="12">&gt; controlcenter_suggest_profile(task="audit repository and run tests")</text>
+  <text x="36" y="224" fill="#c4b5fd" font-family="Consolas, monospace" font-size="11">[MATCH] profile="software" (extends: base) | bundles: [core-local, software, control-plane]</text>
+  <text x="36" y="240" fill="#94a3b8" font-family="Consolas, monospace" font-size="11">[SAFE ] No live session mutation; writes --mcp-config preview or backup-guarded file</text>
+
+  <!-- Step 3: Policy-Gated Ephemeral Gateway -->
+  <rect x="20" y="266" width="840" height="114" rx="8" fill="#0f172a" stroke="#1e293b"/>
+  <text x="36" y="288" fill="#fbbf24" font-family="Consolas, monospace" font-size="12" font-weight="700">3. Policy-Gated Gateway Invocation (Unloaded Backend Server)</text>
+  <text x="36" y="310" fill="#e2e8f0" font-family="Consolas, monospace" font-size="12">&gt; controlcenter_invoke(server="n8n-manager", tool="list_workflows", args={"limit": 10})</text>
+  <text x="36" y="330" fill="#34d399" font-family="Consolas, monospace" font-size="11">[GATE ] data/gateway-policy.json ALLOW (fail-closed; deny patterns checked first)</text>
+  <text x="36" y="348" fill="#34d399" font-family="Consolas, monospace" font-size="11">[STDIO] Ephemeral child spawned -&gt; response received -&gt; child terminated cleanly</text>
+  <text x="36" y="366" fill="#7dd3fc" font-family="Consolas, monospace" font-size="11">[SCRUB] Narrow secret redaction + untrusted data banner | [AUDIT] gateway-audit.jsonl</text>
+
+  <!-- Step 4: Host Lock & Governance -->
+  <rect x="20" y="394" width="840" height="86" rx="8" fill="#0f172a" stroke="#1e293b"/>
+  <text x="36" y="416" fill="#22c55e" font-family="Consolas, monospace" font-size="12" font-weight="700">4. Read-Only Host Lock &amp; Permission Introspection</text>
+  <text x="36" y="438" fill="#e2e8f0" font-family="Consolas, monospace" font-size="12">&gt; controlcenter_check_lock(path="./project") &amp;&amp; controlcenter_evaluate_permission(...)</text>
+  <text x="36" y="458" fill="#86efac" font-family="Consolas, monospace" font-size="11">[CLEAR] Fail-closed ancestor traversal (LOCK*.txt / LOCK.user.* / LOCK.permissions.json)</text>
+
+  <!-- Footer Invariant Strip -->
+  <rect x="20" y="494" width="840" height="30" rx="6" fill="#131c31" stroke="#24324a"/>
+  <text x="36" y="513" fill="#94a3b8" font-family="Segoe UI, sans-serif" font-size="11" font-weight="600">INV-LOCAL-01 .. INV-SLA-10  |  Local-First &amp; Explicit HTTPS  |  256 KiB Req / 1 MiB Resp  |  48h Security SLA  |  MIT</text>
+</svg>

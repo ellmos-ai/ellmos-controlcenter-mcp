@@ -14,8 +14,8 @@
 [![Attribution: NOTICE](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
 [![Contributing: Guide](https://img.shields.io/badge/Contributing-Guide-blue.svg)](CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-295%20passed-brightgreen.svg)](https://vitest.dev/)
-[![Verified: 2026-11-16](https://img.shields.io/badge/verified-2026--11--16-blue.svg)](CHANGELOG.md)
+[![Vitest](https://img.shields.io/badge/Vitest-299%20passed-brightgreen.svg)](https://vitest.dev/)
+[![Verified: 2026-11-26](https://img.shields.io/badge/verified-2026--11--26-blue.svg)](CHANGELOG.md)
 [![Level 1 SBOM](https://img.shields.io/badge/Level%201%20SBOM-Plain%20Text%20Audited-blue.svg)](THIRD_PARTY_LICENSES.txt)
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-34-blue.svg)](#tools)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://nodejs.org/)
@@ -24,6 +24,7 @@
 [![Security SLA](https://img.shields.io/badge/Security%20SLA-48h%20SLA-blue.svg)](SECURITY.md)
 [![Ecosystem](https://img.shields.io/badge/Ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
 [![Umbrella](https://img.shields.io/badge/Umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
+[![Product Skill](https://img.shields.io/badge/Product%20Skill-SKILL.md-blue.svg)](SKILL.md)
 [![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-success.svg)](llms.txt)
 
 > [!NOTE]
@@ -248,6 +249,12 @@ sequenceDiagram
         CC-->>Agent: Lock Status: UNLOCKED (Proceed)
     end
 ```
+
+### CLI, Gateway & Governance Workflow Preview
+
+<p align="center">
+  <img src="assets/terminal-workflow.svg" alt="ellmos ControlCenter MCP Terminal, Gateway and Governance Workflow" width="840">
+</p>
 
 <a id="sec-06"></a>
 <a id="governance--runtime-invariants"></a>
@@ -797,6 +804,8 @@ Full SPDX license texts, copyright notices, and compliance attestations are docu
 | Contributing | [CONTRIBUTING.md](./CONTRIBUTING.md) |
 | Notice & attribution | [NOTICE](./NOTICE) |
 | Third-party licenses | [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) |
+| Product skill (agent guide) | [SKILL.md](./SKILL.md) |
+| LLM guidance pointer | [llm.txt](./llm.txt) |
 | LLM crawler summary | [llms.txt](./llms.txt) |
 
 <a id="sec-16"></a>
@@ -893,6 +902,8 @@ As codified in [SECURITY.md](SECURITY.md), we maintain a strict binding security
 ## License
 
 [MIT](LICENSE) - Lukas Geiger ([ellmos-ai](https://github.com/ellmos-ai))
+
+**Origin & AI Disclosure:** Concept & Approval: Geiger · Text assistance: LLM-assisted · Graphics: AI-assisted
 
 ## Bundles and partners
 

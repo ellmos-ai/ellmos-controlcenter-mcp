@@ -105,3 +105,17 @@ Or configure via a local clone:
   }
 }
 ```
+
+## Verification & Output Contract
+
+- **Installation check:** `npm list -g ellmos-controlcenter-mcp` (global npm) or `npm run build && npm test` (source checkout).
+- **Dashboard health:** Run `ellmos-controlcenter-dashboard` and open `http://127.0.0.1:3737` (loopback only).
+- **Structured gateway outcomes (`controlcenter_invoke`):** Explicitly separates `unknown-server`, `unreachable`, `unknown-tool`, and `target-error` so partial or unreachable targets never masquerade as empty successes.
+- **Audit trail readback:** Inspect `~/.ellmos/controlcenter/gateway-audit.jsonl` (records server, tool, argument names and count, masked target, outcome, and duration — never argument values).
+
+## Boundaries & Limitations
+
+- **Does not mutate active sessions:** `controlcenter_switch_profile` generates `--mcp-config` JSON and launch commands without restarting or altering running MCP client sessions.
+- **Inert host registers by default:** Host lock, permission, decision, governance, and resource tools remain inactive and fail closed (`unknown`) unless their respective `ELLMOS_*` environment variables are configured.
+- **Gateway scope & budgets:** Targets are restricted to `ELLMOS_MCP_ROOT` or declared profile servers; remote targets require HTTPS (no redirects), with finite 256 KiB request and 1 MiB response limits.
+- **Lexical skill matching:** `controlcenter_find_skill` matches keywords and technical terms lexically; pass concise keywords rather than full natural-language sentences.

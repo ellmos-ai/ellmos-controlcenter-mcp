@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] - 2026-11-26
+
+### Discoverability, Terminal Workflow SVG, Policy P-022 & Public Attribution Parity (Pfad B) (2026-11-26)
+
+- **Terminal, Gateway & Governance Workflow SVG (`assets/terminal-workflow.svg`):**
+  Added a dark-mode vector workflow preview illustrating npm installation, profile/bundle resolution, policy-gated `controlcenter_invoke` ephemeral dispatch with secret scrubbing and audit logging, and fail-closed host lock checks without host-local path leakage (embedded in Section 05 of `README.md` and `README_de.md` while preserving `assets/controlcenter-logo.jpg` and `assets/controlcenter-dashboard-preview.svg`).
+- **Policy P-022 Skill & Documentation Parity (`SKILL.md`, `README.md`, `README_de.md`, `llms.txt`):**
+  Expanded `SKILL.md` with explicit `## Verification & Output Contract` and `## Boundaries & Limitations` sections; added the `Product Skill` badge and `SKILL.md` / `llm.txt` links to the bilingual documentation tables and `llms.txt` `## Important Files`; added concise public AI origin disclosure notices (`Concept & Approval: Geiger` / `Idee & Abnahme: Geiger`) in Section 18; and clarified direct email as the primary vulnerability reporting channel in `SECURITY.md`.
+- **Freshness & Contract Test Sync (`THIRD_PARTY_LICENSES.*`, `test/metadata.test.ts`):**
+  Synchronized verification badges and `llms.txt` stamps to `2026-11-26` (`299` passing Vitest tests, plus `2` environment-conditional canonical-lock skips; `301` defined) and added 4 metadata contract tests. `version` `0.7.4` remains strictly frozen.
+
 ## [Unreleased] - 2026-11-16
 
 ### Technical Hygiene, CI Hardening, Lockfile Security & Contract Parity (Pfad A) (2026-11-16)
