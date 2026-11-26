@@ -42,7 +42,7 @@ Since version 0.5.0, ControlCenter includes a policy-gated gateway (`controlcent
 
 ### Reporting a Vulnerability
 
-If you discover a security vulnerability, please report it privately via GitHub **[Private Vulnerability Reporting](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/security/advisories)** or directly via email:
+If you discover a security vulnerability, please report it privately via email (primary channel) or GitHub **[Security Advisories](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/security/advisories)** when private reporting is enabled:
 - **Umbrella Security Contact:** [security@open-bricks.org](mailto:security@open-bricks.org)
 - **Security Contact:** [security@ellmos.ai](mailto:security@ellmos.ai)
 - **Maintainer:** [support@lukasgeiger.com](mailto:support@lukasgeiger.com)
@@ -94,7 +94,7 @@ Seit Version 0.5.0 verfügt ControlCenter über ein richtliniengesteuertes Gatew
 
 ### Meldung von Sicherheitslücken
 
-Sicherheitsrelevante Schwachstellen melden Sie bitte vertraulich über die GitHub-Funktion **[Private Vulnerability Reporting](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/security/advisories)** oder direkt per E-Mail:
+Sicherheitsrelevante Schwachstellen melden Sie bitte vertraulich per E-Mail (primärer Meldeweg) oder über GitHub **[Security Advisories](https://github.com/ellmos-ai/ellmos-controlcenter-mcp/security/advisories)**, sofern Private Vulnerability Reporting aktiviert ist:
 - **Sicherheitskontakt (Dachorganisation):** [security@open-bricks.org](mailto:security@open-bricks.org)
 - **Sicherheitskontakt:** [security@ellmos.ai](mailto:security@ellmos.ai)
 - **Maintainer:** [support@lukasgeiger.com](mailto:support@lukasgeiger.com)

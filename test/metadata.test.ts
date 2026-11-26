@@ -920,4 +920,39 @@ describe("metadata & manifest parity", () => {
       expect(thirdPartyTxt).toContain(`| ${pkg} |`);
     }
   });
+
+  it("ensures terminal workflow preview SVG exists, is XML-valid without local paths, and is embedded in both READMEs", () => {
+    const svgPath = path.join(root, "assets", "terminal-workflow.svg");
+    expect(fs.existsSync(svgPath)).toBe(true);
+    const svg = fs.readFileSync(svgPath, "utf-8");
+    expect(svg).toContain("<svg");
+    expect(svg).toContain("</svg>");
+    expect(svg).not.toMatch(/C:[/\\]+(?:Users|_Local_DEV)[/\\]/i);
+    expect(readmeEn).toContain("assets/terminal-workflow.svg");
+    expect(readmeDe).toContain("assets/terminal-workflow.svg");
+  });
+
+  it("ensures SKILL.md includes P-022 verification and boundaries sections and READMEs link SKILL.md and llm.txt", () => {
+    const skill = fs.readFileSync(path.join(root, "SKILL.md"), "utf-8");
+    expect(skill).toContain("## Verification & Output Contract");
+    expect(skill).toContain("## Boundaries & Limitations");
+    expect(readmeEn).toContain("Product%20Skill-SKILL.md-blue.svg");
+    expect(readmeDe).toContain("Produkt--Skill-SKILL.md-blue.svg");
+    expect(readmeEn).toContain("[SKILL.md](./SKILL.md)");
+    expect(readmeDe).toContain("[SKILL.md](./SKILL.md)");
+    expect(readmeEn).toContain("[llm.txt](./llm.txt)");
+    expect(readmeDe).toContain("[llm.txt](./llm.txt)");
+  });
+
+  it("ensures concise public AI disclosure notice (Geiger) without LG abbreviation in both READMEs", () => {
+    expect(readmeEn).toContain("Concept & Approval: Geiger");
+    expect(readmeDe).toContain("Idee & Abnahme: Geiger");
+    expect(readmeEn).not.toContain("Approval: LG");
+    expect(readmeDe).not.toContain("Abnahme: LG");
+  });
+
+  it("ensures SECURITY.md clarifies email as primary reporting channel alongside GitHub advisories", () => {
+    expect(securityMd).toContain("via email (primary channel)");
+    expect(securityMd).toContain("per E-Mail (primärer Meldeweg)");
+  });
 });
